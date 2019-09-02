@@ -9,3 +9,8 @@ head(metadata$belongs_to_collection)
 
 belongs <- fromJSON(metadata$belongs_to_collection)
 head(belongs)
+
+ratings = read.csv('../data-raw/ratings.csv')
+average <- aggregate(ratings[,3], list(ratings$movieId), mean)
+
+ 

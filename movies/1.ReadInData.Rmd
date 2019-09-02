@@ -52,10 +52,13 @@ test <- fromJSON('[{"id": 80, "name": "Crime"}, {"id": 18, "name": "Drama"}]')
 
 ```{r}
 genre <- dataframe(id="", name="", id.1="", name)
+genre <- data.frame(string= "")
 
 for (x in metadata$genres) {
   genre2 <- rbind(data.frame(x))
 }
+
+genre3 <- data.frame(metadata$genres)
 
 belongs <- data.frame(fromJSON(metadata$belongs_to_collection))
 ```
