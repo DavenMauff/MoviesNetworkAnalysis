@@ -33,3 +33,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+data-raw/
+./movies/.Rhistory
+./movies/.Rproj.user
+.Rproj.user
+.Rhistory
+*/*.nb.html
+*/*.knit.md
+*/*.utf8.md

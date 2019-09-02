@@ -1,0 +1,27 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO)
+```
+
+```{r}
+metadata = read.csv("../data-raw/movies_metadata.csv")
+```
+
+```{r}
+head(metadata$belongs_to_collection)
+```
+
+```{r}
+metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
+head(metadata$belongs_to_collection)
+```
+
+```{r}
+belongs <- fromJSON(metadata$belongs_to_collection)
+head(belongs)
+```
+
