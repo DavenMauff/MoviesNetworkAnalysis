@@ -20,7 +20,12 @@ head(metadata$keywords)
 ```
 
 ```{r}
-metadata$keywords <- gsub("'", '"', metadata$keywords)
+metadata$keywords <- gsub(" '", ' "', metadata$keywords)
+metadata$keywords <- gsub("':", '":', metadata$keywords)
+metadata$keywords <- gsub("'}", '"}', metadata$keywords)
+metadata$keywords <- gsub("\\{'", '\\{"', metadata$keywords)
+metadata$keywords <- gsub("\\\\xa0", '', metadata$keywords)
+metadata$keywords <- gsub("\"n'", '', metadata$keywords)
 metadata$keywords <- gsub('^$', '{}', metadata$keywords)
 ```
 
@@ -43,30 +48,9 @@ for (i in metadata_filtered$keywords) {
   
 }
 
-dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
+dfs <- lapply(keywords_list, data.frame, stringsAsFactors = FALSE)
 
-genre_df <- rbindlist(dfs, fill = T)
+keywords_df <- rbindlist(dfs, fill = T)
 
-metadata_filtered <- cbind(metadata_filtered, genre_df)
-```
-
-```{r}
-production_list <- list()
-
-as.data.frame(fromJSON(metadata[1, 'genres']))
-
-genre_df <- data.frame()
-row <- data.frame()
-
-for (i in metadata$genres) {
-  row <- fromJSON(i)
-  genre_list <- c(genre_list, list(row))
-  
-}
-
-dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
-
-genre_df <- rbindlist(dfs, fill = T)
-
-metadata_filtered <- cbind(metadata_filtered, genre_df)
+metadata_filtered <- cbind(metadata_filtered, keywords_df)
 ```
