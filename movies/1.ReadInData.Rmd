@@ -17,11 +17,46 @@ head(metadata$belongs_to_collection)
 
 ```{r}
 metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
-head(metadata$belongs_to_collection)
+metadata$belongs_to_collection <- gsub('^$', '{}', metadata$belongs_to_collection)
+```
+
+
+```{r}
+json_function <- function(x) {
+  temp <- fromJSON(x)
+  return(temp)
+}
+
+belongs <- data.frame(lapply(metadata$belongs_to_collection, json_function(metadata$belongs_to_collection)))
+```
+
+
+```{r}
+for (x in metadata$belongs_to_collection) {
+  belongs <- fromJSON(x)
+}
+
+belongs <- data.frame(fromJSON(metadata$belongs_to_collection))
 ```
 
 ```{r}
-belongs <- fromJSON(metadata$belongs_to_collection)
-head(belongs)
+genre <- data.frame(fromJSON('[{"id": 80, "name": "Crime"}, {"id": 18, "name": "Drama"}]'))
+```
+
+
+```{r}
+test <- fromJSON('[{"id": 80, "name": "Crime"}, {"id": 18, "name": "Drama"}]')
+```
+
+
+
+```{r}
+genre <- dataframe(id="", name="", id.1="", name)
+
+for (x in metadata$genres) {
+  genre2 <- rbind(data.frame(x))
+}
+
+belongs <- data.frame(fromJSON(metadata$belongs_to_collection))
 ```
 
