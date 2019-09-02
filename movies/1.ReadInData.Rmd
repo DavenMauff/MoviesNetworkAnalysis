@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
 ```
 
 ```{r}
@@ -25,6 +25,14 @@ metadata$genres <- gsub("'", '"', metadata$genres)
 metadata$genres <- gsub('^$', '{}', metadata$genres)
 ```
 
+
+```{r}
+metadata_filtered <- metadata %>% 
+  filter(genres != '[]')
+  
+```
+
+
 ```{r}
 genres <- data.frame(id="", name="", id.1="", name.1="", id.2="", name.2="", id.3="", name.3="")
 
@@ -41,13 +49,12 @@ for (i in metadata$genres) {
   
 }
 
-#genres_df <- as.data.frame(genre_list)
+dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
 
-#for (i in metadata$genres) {
- # row <- fromJSON(i)
-  #rbind(genre_df, row)
-  
-#}
+genre_df <- rbindlist(dfs, fill = T)
+
+metadata_filtered <- cbind(metadata_filtered, genre_df)
+
 
 ```
 
