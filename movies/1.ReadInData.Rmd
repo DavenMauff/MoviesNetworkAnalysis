@@ -28,9 +28,29 @@ metadata$genres <- gsub('^$', '{}', metadata$genres)
 ```{r}
 genres <- data.frame(id="", name="", id.1="", name.1="", id.2="", name.2="", id.3="", name.3="")
 
-fromJSON(metadata[1,'genres'], simplifyVector = FALSE)
+genre_list <- list()
+
+as.data.frame(fromJSON(metadata[1, 'genres']))
+
+genre_df <- data.frame()
+row <- data.frame()
+
+for (i in metadata$genres) {
+  row <- fromJSON(i)
+  genre_list <- c(genre_list, list(row))
+  
+}
+
+#genres_df <- as.data.frame(genre_list)
+
+#for (i in metadata$genres) {
+ # row <- fromJSON(i)
+  #rbind(genre_df, row)
+  
+#}
 
 ```
+
 
 ```{r}
 #Takes in the dataframe and column name to be trnasformed
