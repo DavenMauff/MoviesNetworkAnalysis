@@ -22,6 +22,10 @@ metadata$genres <- gsub("'", '"', metadata$genres)
 metadata$genres <- gsub('^$', '{}', metadata$genres)
 metadata$production_companies <- gsub("'", '"', metadata$production_companies)
 metadata$production_companies <- gsub('^$', '{}', metadata$production_companies)
+metadata$production_countries <- gsub("'", '"', metadata$production_countries)
+metadata$production_countries <- gsub('^$', '{}', metadata$production_countries)
+metadata$spoken_languages <- gsub("'", '"', metadata$spoken_languages)
+metadata$spoken_languages <- gsub('^$', '{}', metadata$spoken_languages)
 ```
 
 ```{r}
@@ -45,10 +49,13 @@ metadata_filtered$spoken_val <- lapply(metadata_filtered$spoken_languages, valid
 
 ```{r}
 metadata_filtered <- metadata_filtered %>% 
-  filter(genre_val==T) %>% 
-  filter(pro_com_val==T) %>% 
-  filter(pro_coun_val==T) %>% 
-  filter(spoken_val==^)
+  filter(genre_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(pro_com_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(pro_coun_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(spoken_val==T)
 ```
 
 
