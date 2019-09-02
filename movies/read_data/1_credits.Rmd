@@ -7,3 +7,60 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
+```
+
+```{r}
+metadata = read.csv("../../../dataraw/credits.csv")
+```
+
+- CAST COLUMN -
+
+```{r}
+head(metadata$cast)
+```
+
+```{r}
+metadata$cast <- gsub(" '", ' "', metadata$cast)
+metadata$cast <- gsub("':", '":', metadata$cast)
+metadata$cast <- gsub("'}", '"}', metadata$cast)
+metadata$cast <- gsub("\\{'", '\\{"', metadata$cast)
+metadata$cast <- gsub("\\\\xa0", '', metadata$cast)
+metadata$cast <- gsub("\"n'", '', metadata$cast)
+metadata$cast <- gsub('^$', '{}', metadata$cast)
+```
+
+```{r}
+metadata_filtered <- metadata %>% 
+  filter(cast != '[]')
+```
+
+```{r}
+keywords_list <- list()
+
+as.data.frame(fromJSON(metadata_filtered[1, 'cast']))
+
+cast_df <- data.frame()
+row <- data.frame()
+
+for (i in metadata_filtered$cast) {
+  row <- fromJSON(i)
+  cast_list <- c(cast_list, list(row))
+}
+
+dfs <- lapply(cast_list, data.frame, stringsAsFactors = FALSE)
+
+cast_df <- rbindlist(dfs, fill = T)
+
+metadata_filtered <- cbind(metadata_filtered, cast_df)
+```
+
+
+```{r}
+write.csv(metadata_filtered, file = "filtered/keywords_filtered.csv")
+```
