@@ -20,32 +20,40 @@ metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
 metadata$belongs_to_collection <- gsub('^$', '{}', metadata$belongs_to_collection)
 ```
 
+```{r}
+metadata$genres <- gsub("'", '"', metadata$genres)
+metadata$genres <- gsub('^$', '{}', metadata$genres)
+```
 
 ```{r}
-json_function <- function(x) {
-  temp <- fromJSON(x)
-  return(temp)
+genres <- data.frame(id="", name="", id.1="", name.1="", id.2="", name.2="", id.3="", name.3="")
+
+fromJSON(metadata[1,'genres'], simplifyVector = FALSE)
+nrow(metadata)
+```
+
+```{r}
+#Takes in the dataframe and column name to be trnasformed
+json_to_df <- function(df, column){
+  df <- metadata
+  column <- "genres"
+  
+  column_1 <- df[apply(df[,column],1,nchar)>2,]  #Checks if there is an entry
+  list_1 <- lapply(column_1[[column]], fromJSON) #Converts the JSON to a list
+  values <- data.frame(unlist(lapply(list_1, function(x) paste(x$name,collapse = ",")))) #Collapsing all the values of the list as a key value pair
+  
+  final_df <- cbind(column_1$id, column_1$title, values) #new data frame with the key and values a s columns
+  names(final_df)  <- c("id", "title", column)
+  return(final_df)
+  
 }
-
-belongs <- data.frame(lapply(metadata$belongs_to_collection, json_function(metadata$belongs_to_collection)))
 ```
 
 
-```{r}
-for (x in metadata$belongs_to_collection) {
-  belongs <- fromJSON(x)
-}
-
-belongs <- data.frame(fromJSON(metadata$belongs_to_collection))
-```
 
 ```{r}
-genre <- data.frame(fromJSON('[{"id": 80, "name": "Crime"}, {"id": 18, "name": "Drama"}]'))
-```
-
-
-```{r}
-test <- fromJSON('[{"id": 80, "name": "Crime"}, {"id": 18, "name": "Drama"}]')
+dim(metadata)
+genres_df <- json_to_df(metadata, "genres")
 ```
 
 
