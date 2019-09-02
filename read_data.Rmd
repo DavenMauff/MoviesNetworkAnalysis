@@ -1,0 +1,30 @@
+---
+title: "Read Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+pacman::p_load(rjson, readr,jsonlite)
+```
+
+```{r Read CSV file}
+csv_file <- "../dataraw/keywords.csv"
+
+csv <- read_csv(csv_file)
+```
+
+```{r Read JSON file}
+# Use jsonlite for parsing json
+library(jsonlite)
+# single quote is invalid, so if real, you need to replace them all by double quote
+tab$ratings <- gsub("'", "\"", tab$ratings)
+# parse the json
+rating <- fromJSON(tab$ratings)
+rating
+```
+
