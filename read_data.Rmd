@@ -7,24 +7,82 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Load Packages
 ```{r}
-
 pacman::p_load(rjson, readr,jsonlite)
 ```
 
+Read in CSV files
 ```{r Read CSV file}
-csv_file <- "../dataraw/keywords.csv"
-
-csv <- read_csv(csv_file)
+metadata <- "../dataraw/keywords.csv"
+metadata <- read.csv(metadata)
 ```
 
-```{r Read JSON file}
-# Use jsonlite for parsing json
-library(jsonlite)
-# single quote is invalid, so if real, you need to replace them all by double quote
-tab$ratings <- gsub("'", "\"", tab$ratings)
-# parse the json
-rating <- fromJSON(tab$ratings)
-rating
+Look at Data
+```{r}
+head(metadata)
 ```
 
+----------- KEYWORDS.CSV ----------- 
+
+```{r}
+
+metadata$keywords <- gsub("\"", '****', metadata$keywords)
+metadata$keywords <- gsub(" '", ' "', metadata$keywords)
+metadata$keywords <- gsub("':", '":', metadata$keywords)
+metadata$keywords <- gsub("'}", '"}', metadata$keywords)
+metadata$keywords <- gsub("\\{'", '\\{"', metadata$keywords)
+metadata$keywords <- gsub("\\\\xa0", '', metadata$keywords)
+metadata$keywords <- gsub("\"n'", '', metadata$keywords)
+metadata$keywords <- gsub('\\*\\*\\*\\*', '"', metadata$keywords)
+```
+
+
+
+```{r}
+
+df <- jsonlite::fromJSON(metadata$keywords[1])
+
+for (i in 2:nrow(metadata)) {
+  print(i)
+  j <- jsonlite::fromJSON(metadata$keywords[i])
+  rbind(df, j)
+}
+
+
+```
+
+Check for valid JSON
+```{r}
+
+for(i in 1:nrow(metadata)) {
+  if (!validate(toJSON(metadata$keywords[i]))) {
+    metadata <- metadata[-i,]
+  }
+}
+
+
+```
+
+
+Read in the JSON file
+```{r}
+col <- fromJSON(metadata$keywords)
+
+cols <- lapply(metadata$keywords, fromJSON)
+head(col)
+```
+
+Unnest
+```{r}
+test <- do.call(rbind.data.frame, col)
+
+# Convert JSON file to a data frame.
+#json_data_frame <- as.data.frame(result)
+```
+
+```{r}
+head(test)
+```
+
+------------------
