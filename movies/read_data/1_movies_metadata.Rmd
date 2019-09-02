@@ -20,19 +20,9 @@ metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
 metadata$belongs_to_collection <- gsub('^$', '{}', metadata$belongs_to_collection)
 metadata$genres <- gsub("'", '"', metadata$genres)
 metadata$genres <- gsub('^$', '{}', metadata$genres)
-metadata$production_companies <- gsub(" '", ' "', metadata$production_companies)
-metadata$production_companies <- gsub("':", '":', metadata$production_companies)
-metadata$production_companies <- gsub("'}", '"}', metadata$production_companies)
-metadata$production_companies <- gsub("\\{'", '\\{"', metadata$production_companies)
-metadata$production_companies <- gsub("\\\\xa0", '', metadata$production_companies)
-metadata$production_companies <- gsub("\"n'", '', metadata$production_companies)
+metadata$production_companies <- gsub("'", '"', metadata$production_companies)
 metadata$production_companies <- gsub('^$', '{}', metadata$production_companies)
 ```
-
-```{r}
-
-```
-
 
 ```{r}
 metadata_filtered <- metadata %>% 
@@ -43,6 +33,22 @@ metadata_filtered <- metadata_filtered %>%
   filter(production_countries != '[]')
 metadata_filtered <- metadata_filtered %>% 
   filter(spoken_languages != '[]')
+```
+
+```{r}
+#Validate the json and store the boolean result in a new column
+metadata_filtered$genre_val <- lapply(metadata_filtered$genres, validate)
+metadata_filtered$pro_com_val <- lapply(metadata_filtered$production_companies, validate)
+metadata_filtered$pro_coun_val <- lapply(metadata_filtered$production_countries, validate)
+metadata_filtered$spoken_val <- lapply(metadata_filtered$spoken_languages, validate)
+```
+
+```{r}
+metadata_filtered <- metadata_filtered %>% 
+  filter(genre_val==T) %>% 
+  filter(pro_com_val==T) %>% 
+  filter(pro_coun_val==T) %>% 
+  filter(spoken_val==^)
 ```
 
 
@@ -91,6 +97,8 @@ for (i in 1:30) {
   print(metadata_filtered[i,'production_companies'])
   #kevin_hart <- fromJSON(metadata_filtered[i,'production_companies'])
 }
+
+validate(metadata_filtered[29,'production_companies'])
 
 kevin_hart <- fromJSON(metadata_filtered[29,'production_companies'])
 
