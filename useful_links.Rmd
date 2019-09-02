@@ -1,0 +1,60 @@
+---
+title: "Links"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Useful Links
+
+> 1. Dataset
+
+https://www.kaggle.com/rounakbanik/the-movies-dataset
+
+-----
+
+> 2. Grab some popcorn: Analysis of The Movie DataBase (TMDB)
+
+https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
+
+* Number of Movies Released Vs Month [Heatmap]
+* Distribution of IMDB ratings
+* Impact of Rating on ROI
+* Analysis of Movie runtime
+* Vote Counts over the years
+* Populatity over the years
+* Analysis of Budget and Revenue
+* 3D view of the movies that made a profit
+
+-----
+
+> 3. IMDB Movies Analysis
+
+https://rpubs.com/jasmine36/234304
+
+* Most Successful Directors
+* 20 Most Profitable Movies
+* 20 Most Profitable Movies based on its Return on Investment
+* Commercial success Vs Critical acclaim
+* Top 20 genres with the most movies
+
+-----
+
+> 4. Project Report: IMDB 5000 Movie Dataset
+
+http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
+
+* Histogram of Movie Released
+* Top 20 movies based on its Profit
+* Top 20 movies based on its Return on Investment
+* Top 20 directors with highest average IMDB score
+* Commercial Success v.s. Critical Acclaim
+* Relation between number of facebook likes and imdb_score
+
+-----
+
+
+
+
