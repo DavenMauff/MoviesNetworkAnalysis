@@ -45,7 +45,6 @@ row <- data.frame()
 for (i in metadata_filtered$keywords) {
   row <- fromJSON(i)
   keywords_list <- c(keywords_list, list(row))
-  
 }
 
 dfs <- lapply(keywords_list, data.frame, stringsAsFactors = FALSE)
@@ -54,3 +53,9 @@ keywords_df <- rbindlist(dfs, fill = T)
 
 metadata_filtered <- cbind(metadata_filtered, keywords_df)
 ```
+
+
+```{r}
+write.csv(metadata_filtered, file = "filtered/keywords_filtered.csv")
+```
+
