@@ -26,13 +26,32 @@ metadata$keywords <- gsub('^$', '{}', metadata$keywords)
 
 ```{r}
 metadata_filtered <- metadata %>% 
-  filter(genres != '[]')
+  filter(keywords != '[]')
 ```
 
 ```{r}
-genres <- data.frame(id="", name="", id.1="", name.1="", id.2="", name.2="", id.3="", name.3="")
+keywords_list <- list()
 
-genre_list <- list()
+as.data.frame(fromJSON(metadata_filtered[1, 'keywords']))
+
+keywords_df <- data.frame()
+row <- data.frame()
+
+for (i in metadata_filtered$keywords) {
+  row <- fromJSON(i)
+  keywords_list <- c(keywords_list, list(row))
+  
+}
+
+dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
+
+genre_df <- rbindlist(dfs, fill = T)
+
+metadata_filtered <- cbind(metadata_filtered, genre_df)
+```
+
+```{r}
+production_list <- list()
 
 as.data.frame(fromJSON(metadata[1, 'genres']))
 
@@ -50,41 +69,4 @@ dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
 genre_df <- rbindlist(dfs, fill = T)
 
 metadata_filtered <- cbind(metadata_filtered, genre_df)
-
-
-```
-
-```{r}
-#Takes in the dataframe and column name to be trnasformed
-json_to_df <- function(df, column){
-  df <- metadata
-  column <- "genres"
-  
-  column_1 <- df[apply(df[,column],1,nchar)>2,]  #Checks if there is an entry
-  list_1 <- lapply(column_1[[column]], fromJSON) #Converts the JSON to a list
-  values <- data.frame(unlist(lapply(list_1, function(x) paste(x$name,collapse = ",")))) #Collapsing all the values of the list as a key value pair
-  
-  final_df <- cbind(column_1$id, column_1$title, values) #new data frame with the key and values a s columns
-  names(final_df)  <- c("id", "title", column)
-  return(final_df)
-  
-}
-```
-
-```{r}
-dim(metadata)
-genres_df <- json_to_df(metadata, "genres")
-```
-
-```{r}
-genre <- dataframe(id="", name="", id.1="", name)
-genre <- data.frame(string= "")
-
-for (x in metadata$genres) {
-  genre2 <- rbind(data.frame(x))
-}
-
-genre3 <- data.frame(metadata$genres)
-
-belongs <- data.frame(fromJSON(metadata$belongs_to_collection))
 ```
