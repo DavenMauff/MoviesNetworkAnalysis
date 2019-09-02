@@ -8,14 +8,20 @@ pacman::p_load(rjson, jsonlite, DT,  RJSONIO)
 ```
 
 ```{r}
-movies_metadata = read.csv("data-raw/movies_metadata.csv")
+metadata = read.csv("../data-raw/movies_metadata.csv")
 ```
 
 ```{r}
-head(movies_metadata)
+head(metadata$belongs_to_collection)
 ```
 
 ```{r}
-test <- fromJSON(as.factor(movies_metadata$belongs_to_collection), flatten=T) 
+metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
+head(metadata$belongs_to_collection)
+```
+
+```{r}
+belongs <- fromJSON(metadata$belongs_to_collection)
+head(belongs)
 ```
 
