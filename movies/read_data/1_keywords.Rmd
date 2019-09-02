@@ -7,36 +7,27 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
 ```
 
 ```{r}
-metadata = read.csv("../data-raw/keywords.csv")
+metadata = read.csv("../../../dataraw/keywords.csv")
 ```
 
 ```{r}
-head(metadata$belongs_to_collection)
+head(metadata$keywords)
 ```
 
 ```{r}
-metadata$belongs_to_collection <- gsub("'", '"', metadata$belongs_to_collection)
-metadata$belongs_to_collection <- gsub('^$', '{}', metadata$belongs_to_collection)
+metadata$keywords <- gsub("'", '"', metadata$keywords)
+metadata$keywords <- gsub('^$', '{}', metadata$keywords)
 ```
-
-```{r}
-metadata$genres <- gsub("'", '"', metadata$genres)
-metadata$genres <- gsub('^$', '{}', metadata$genres)
-```
-
 
 ```{r}
 metadata_filtered <- metadata %>% 
   filter(genres != '[]')
-  
 ```
-
 
 ```{r}
 genres <- data.frame(id="", name="", id.1="", name.1="", id.2="", name.2="", id.3="", name.3="")
@@ -63,7 +54,6 @@ metadata_filtered <- cbind(metadata_filtered, genre_df)
 
 ```
 
-
 ```{r}
 #Takes in the dataframe and column name to be trnasformed
 json_to_df <- function(df, column){
@@ -81,14 +71,10 @@ json_to_df <- function(df, column){
 }
 ```
 
-
-
 ```{r}
 dim(metadata)
 genres_df <- json_to_df(metadata, "genres")
 ```
-
-
 
 ```{r}
 genre <- dataframe(id="", name="", id.1="", name)
