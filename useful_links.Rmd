@@ -85,5 +85,56 @@ http://rpubs.com/xinmeiz/movielens2
  * What genres are most popular movies?
  * Create plot for how the ratings change across the year for genre of Action, Roman, Sci-fi and Western.
  * What the ages for the users have rated movies?
+ 
+ >  Other Links
+
+* https://www.kaggle.com/rounakbanik/the-movies-dataset/downloads/the-movies-dataset.zip/7
+* https://stackoverflow.com/questions/2617600/importing-data-from-a-json-file-into-r
+* https://drive.google.com/open?id=17B6E3koKBaHKIAJ0l9M94-bFFm9-b4Xc (Google Drive Link for Summaries & Tutorials)
+* https://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 
 -----
+
+> Possible ratios
+
+ * The highest rated movies vs likes 
+ * Worst rated movies
+ * Highest rated genre
+ 
+ * Number of critic reviews vs Facebok likes
+ * Least rated movies
+ 
+ *Country vs Budget
+ *Country vs language
+ *Country vs Aspect ratio
+ *Country vs content rating
+ *Content rating vs actor: to see who works in pg films
+  directors fb likes vs rating
+ 
+ * Budget vs year
+ * Budget vs gross
+ * IMDB score vs Budget
+ * IMDB score vs Facebook likes 
+ 
+ * Actor vs Genre
+ * Actor 1 vs Actor 2 likes
+ * Actor 1 vs critic reviews
+
+ * Ratings vs Gross
+ * Ratings vs budget
+ * Ratings vs actor 1
+ * Ratings vs actor 2
+ * Ratings vs facebook likes 
+ * Ratings vs genre 
+ * Ratings vs director
+ * Ratings of Sequels
+
+ 
+-----
+
+
+Our dataset example:
+ * https://www.kaggle.com/karrrimba/understanding-movies-through-data
+ 
+ 
+ 

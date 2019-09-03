@@ -1,0 +1,37 @@
+---
+title: "Movies"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
+```
+
+```{r}
+metadata = read.csv("../movie_metadata.csv")
+```
+
+
+# An Analysis on Movies
+
+----
+
+### Introduction
+
+----
+
+### Method
+
+----
+
+### Content (Layout)
+
+----
+
+### Conclusion
+
+
