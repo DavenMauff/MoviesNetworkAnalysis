@@ -22,6 +22,10 @@ metadata$genres <- gsub("'", '"', metadata$genres)
 metadata$genres <- gsub('^$', '{}', metadata$genres)
 metadata$production_companies <- gsub("'", '"', metadata$production_companies)
 metadata$production_companies <- gsub('^$', '{}', metadata$production_companies)
+metadata$production_countries <- gsub("'", '"', metadata$production_countries)
+metadata$production_countries <- gsub('^$', '{}', metadata$production_countries)
+metadata$spoken_languages <- gsub("'", '"', metadata$spoken_languages)
+metadata$spoken_languages <- gsub('^$', '{}', metadata$spoken_languages)
 ```
 
 ```{r}
@@ -45,15 +49,21 @@ metadata_filtered$spoken_val <- lapply(metadata_filtered$spoken_languages, valid
 
 ```{r}
 metadata_filtered <- metadata_filtered %>% 
-  filter(genre_val==T) %>% 
-  filter(pro_com_val==T) %>% 
-  filter(pro_coun_val==T) %>% 
-  filter(spoken_val==^)
+  filter(genre_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(pro_com_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(pro_coun_val==T)
+metadata_filtered <- metadata_filtered %>% 
+  filter(spoken_val==T)
 ```
 
+```{r}
+temp <- validate("{}")
+```
 
 ```{r}
-genre_list <- list()
+temp_list <- list()
 
 as.data.frame(fromJSON(metadata_filtered[1, 'genres']))
 
@@ -62,54 +72,131 @@ row <- data.frame()
 
 for (i in metadata_filtered$genres) {
   row <- fromJSON(i)
-  genre_list <- c(genre_list, list(row))
+  temp_list <- c(temp_list, list(row))
   
 }
 
-dfs <- lapply(genre_list, data.frame, stringsAsFactors = FALSE)
+dfs <- lapply(temp_list, data.frame, stringsAsFactors = FALSE)
 
 genre_df <- rbindlist(dfs, fill = T)
 
 # metadata_filtered <- cbind(metadata_filtered, genre_df)
 ```
+```{r}
+metadata_filtered$new_id <- 1:nrow(metadata_filtered)
+```
+
 
 ```{r}
-production_list <- list()
+temp_list <- list()
 
 as.data.frame(fromJSON(metadata_filtered[1, 'production_companies']))
 
 production_companies_df <- data.frame()
 row <- data.frame()
-counter <- 0
 
 for (i in metadata_filtered$production_companies) {
-  
   row <- fromJSON(i)
-  counter <- counter + 1
-  
-  print(row)
-  production_list <- c(production_list, list(row))
-  
+  temp_list <- c(temp_list, list(row))
 }
 
-for (i in 1:30) {
-  print(i)
-  print(metadata_filtered[i,'production_companies'])
-  #kevin_hart <- fromJSON(metadata_filtered[i,'production_companies'])
-}
-
-validate(metadata_filtered[29,'production_companies'])
-
-kevin_hart <- fromJSON(metadata_filtered[29,'production_companies'])
-
-
-
-metadata_filtered[29,'production_companies']
-
-dfs <- lapply(production_companies_df, data.frame, stringsAsFactors = FALSE)
+dfs <- lapply(temp_list, data.frame, stringsAsFactors = FALSE)
 
 production_companies_df <- rbindlist(dfs, fill = T)
+production_companies_df$new_df <- 1:nrow()
 
-metadata_filtered <- cbind(metadata_filtered, production_companies_df)
+
+print(production_companies_df)
+
+#metadata_filtered <- cbind(metadata_filtered, production_companies_df)
+```
+
+
+
+```{r eval=FALSE}
+# We are not looking at this
+temp_list <- list()
+dfs <- list()
+
+as.data.frame(fromJSON(metadata_filtered[1, 'production_countries']))
+
+production_countries_df <- data.frame()
+row <- data.frame()
+
+for (i in metadata_filtered$production_countries) {
+  row <- fromJSON(i)
+  temp_list <- c(temp_list, list(row))
+}
+
+dfs <- lapply(temp_list, data.frame, stringsAsFactors = FALSE)
+
+production_countries_df <- rbindlist(dfs, fill = T)
+
+print(production_countries_df)
+
+```
+
+```{r eval=FALSE}
+temp_list <- list()
+dfs <- list()
+
+as.data.frame(fromJSON(metadata_filtered[1, 'spoken_languages']))
+
+spoken_df <- data.frame()
+row <- data.frame()
+counter <- 0
+
+for (i in metadata_filtered$spoken_languages) {
+  row <- fromJSON(i)
+  temp_list <- c(temp_list, list(row))
+}
+
+dfs <- lapply(temp_list, data.frame, stringsAsFactors = FALSE)
+
+spoken_df <- rbindlist(dfs, fill = T)
+
+print(spoken_df)
+
+```
+
+```{r}
+dfs <- ""
+
+head(metadata_filtered)
+head(production_companies_df)
+
+# Rename a column in R
+
+renaming_the_ids <- function(x) {
+  x=production_companies_df
+  colnames(x)[colnames(x)=="id"] <- "production_company_id.1"
+  colnames(x)[colnames(x)=="name"] <- "production_company_name.1"
+  for(i in 1:25) {
+    old_id_name <- paste0("id.", i)
+    old_name_name <- paste0("name.", i)
+    
+    new_id_name <- paste0("production_company_id.", i+1)
+    new_name_name <- paste0("production_company_name.", i+1)
+    
+    colnames(x)[colnames(x)==old_id_name] <- new_id_name
+    colnames(x)[colnames(x)==old_name_name] <- new_name_name
+    
+  }
+  return(x)
+}
+
+production_companies_df <- renaming_the_ids(production_companies_df)
+
+head(test)
+head(metadata_filtered)
+head(production_companies_df)
+```
+
+```{r}
+head(test)
+```
+
+```{r}
+dplyr::anti_join(x=metadata_filtered, y=production_companies_df)
 ```
 

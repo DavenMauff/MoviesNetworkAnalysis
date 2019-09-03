@@ -55,6 +55,35 @@ http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2
 
 -----
 
+> 5. Movie Genre Overlappings, Ratings by Genre and Year
 
+https://rpubs.com/ceshine/movies_dataset_gt_experiment?source=post_page-----2f37a340c23f----------------------
 
+* Read and Clean Metadata
+* Parse Genres
+* Genre Statistics
+* Reading Ratings
+* Rating statistics by Genre
+* Rating statistics by Genre and Year
 
+-----
+
+> 6. Movielens Recommendation System
+
+http://rpubs.com/xinmeiz/movielens2
+
+ * Loading datastes
+ * Data snapshot
+ * 20 most and least rated movies
+ * Removing any records prior to 2000
+ * Exclude the members who have rated too fee or too many
+ * Extract into separate columns.
+ * Separated into one category per row
+ * Popular movie genres year by year
+ * Look at rating per member, Visualization
+ * Filter movies rated at least 10 times and fewer than 500 times.
+ * What genres are most popular movies?
+ * Create plot for how the ratings change across the year for genre of Action, Roman, Sci-fi and Western.
+ * What the ages for the users have rated movies?
+
+-----
