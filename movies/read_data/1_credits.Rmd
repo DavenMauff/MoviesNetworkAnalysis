@@ -7,10 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ```{r}
 pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
 ```
@@ -26,13 +22,20 @@ head(metadata$cast)
 ```
 
 ```{r}
-metadata$cast <- gsub(" '", ' "', metadata$cast)
-metadata$cast <- gsub("':", '":', metadata$cast)
-metadata$cast <- gsub("'}", '"}', metadata$cast)
-metadata$cast <- gsub("\\{'", '\\{"', metadata$cast)
-metadata$cast <- gsub("\\\\xa0", '', metadata$cast)
-metadata$cast <- gsub("\"n'", '', metadata$cast)
+
+metadata$cast <- gsub("'", '"', metadata$cast)
 metadata$cast <- gsub('^$', '{}', metadata$cast)
+metadata$cast <- gsub('None', '\\"None\\"', metadata$cast)
+metadata$cast <- gsub('\\"     ', '', metadata$cast)
+metadata$cast <- gsub(' \\"      \\w*\\"?', 
+
+#metadata$cast <- gsub(" '", ' "', metadata$cast)
+#metadata$cast <- gsub("':", '":', metadata$cast)
+#metadata$cast <- gsub("'}", '"}', metadata$cast)
+#metadata$cast <- gsub("\\{'", '\\{"', metadata$cast)
+#metadata$cast <- gsub("\\\\xa0", '', metadata$cast)
+#metadata$cast <- gsub("\"n'", '', metadata$cast)
+#metadata$cast <- gsub('^$', '{}', metadata$cast)
 ```
 
 ```{r}
@@ -41,12 +44,17 @@ metadata_filtered <- metadata %>%
 ```
 
 ```{r}
-keywords_list <- list()
+metadata_filtered$val <- lapply(metadata_filtered$cast, validate)
 
-as.data.frame(fromJSON(metadata_filtered[1, 'cast']))
+sum(metadata_filtered$val == "TRUE")
 
+```
+
+```{r}
+cast_list <- list()
 cast_df <- data.frame()
 row <- data.frame()
+
 
 for (i in metadata_filtered$cast) {
   row <- fromJSON(i)
