@@ -95,7 +95,6 @@ http://rpubs.com/xinmeiz/movielens2
  * Highest rated genre
  
  * Number of critic reviews vs Facebok likes
- * Budget vs year
  * Least rated movies
  
  *Country vs Budget
@@ -106,6 +105,7 @@ http://rpubs.com/xinmeiz/movielens2
   directors fb likes vs rating
  
  * Budget vs year
+ * Budget vs gross
  * IMDB score vs Budget
  * IMDB score vs Facebook likes 
  
