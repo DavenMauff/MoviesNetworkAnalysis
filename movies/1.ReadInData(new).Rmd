@@ -1,0 +1,36 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(stringr)
+```
+
+```{r}
+IMDB <- read.csv("../movie_metadata.csv")
+```
+
+```{r}
+#Removing Duplicates
+IMDB <- IMDB[!duplicated(IMDB), ]
+```
+
+```{r}
+#Removing White-Spaces and Special Characters
+IMDB$movie_title <- gsub("Â", "", as.character(factor(IMDB$movie_title)))
+str_trim(IMDB$movie_title, side = "right")
+```
+
+```{r}
+IMDB <- subset(IMDB, select = -c(genres))
+```
+
+```{r}
+colSums(sapply(IMDB, is.na))
+```
+
+```{r}
+
+```
+
