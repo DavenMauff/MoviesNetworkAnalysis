@@ -87,3 +87,42 @@ http://rpubs.com/xinmeiz/movielens2
  * What the ages for the users have rated movies?
 
 -----
+
+> Possible ratios
+
+ * The highest rated movies vs likes 
+ * Worst rated movies
+ * Highest rated genre
+ 
+ * Number of critic reviews vs Facebok likes
+ * Least rated movies
+ 
+ *Country vs Budget
+ *Country vs language
+ *Country vs Aspect ratio
+ *Country vs content rating
+ *Content rating vs actor: to see who works in pg films
+  directors fb likes vs rating
+ 
+ * Budget vs year
+ * Budget vs gross
+ * IMDB score vs Budget
+ * IMDB score vs Facebook likes 
+ 
+ * Actor vs Genre
+ * Actor 1 vs Actor 2 likes
+ * Actor 1 vs critic reviews
+
+ * Ratings vs Gross
+ * Ratings vs budget
+ * Ratings vs actor 1
+ * Ratings vs actor 2
+ * Ratings vs facebook likes 
+ * Ratings vs genre 
+ * Ratings vs director
+ * Ratings of Sequels
+
+ 
+
+ 
+-----
