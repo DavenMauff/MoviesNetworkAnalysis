@@ -22,18 +22,16 @@ head(metadata$cast)
 ```
 
 ```{r}
-
 metadata$cast <- gsub("'", '"', metadata$cast)
 metadata$cast <- gsub('^$', '{}', metadata$cast)
 metadata$cast <- gsub('None', '\\"None\\"', metadata$cast)
-metadata$cast <- gsub('\\"     ', '', metadata$cast)
-metadata$cast <- gsub(' \\"      \\w*\\"?', 
 
-#metadata$cast <- gsub(" '", ' "', metadata$cast)
-#metadata$cast <- gsub("':", '":', metadata$cast)
-#metadata$cast <- gsub("'}", '"}', metadata$cast)
-#metadata$cast <- gsub("\\{'", '\\{"', metadata$cast)
-#metadata$cast <- gsub("\\\\xa0", '', metadata$cast)
+
+metadata$cast <- gsub(" '", ' "', metadata$cast)
+metadata$cast <- gsub("':", '":', metadata$cast)
+metadata$cast <- gsub("'}", '"}', metadata$cast)
+metadata$cast <- gsub("\\{'", '\\{"', metadata$cast)
+metadata$cast <- gsub("\\\\xa0", '', metadata$cast)
 #metadata$cast <- gsub("\"n'", '', metadata$cast)
 #metadata$cast <- gsub('^$', '{}', metadata$cast)
 ```
