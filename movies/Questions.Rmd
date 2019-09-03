@@ -1,0 +1,130 @@
+---
+title: "Questions"
+author: "Lucia"
+date: "03/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Questions
+
+Here is a list of questions we could play around with. Each title has "[ ]" on the side. If the question has been completed successfully, add an "X" inbetween the "[ ]", like "[X]". These questions have been arranged to URL links. Hopefully the source codes helps...
+
+Also, read through ALLLLLL of the links. Let's start somewhere simple and work ourselves up. 
+
+-----
+
+### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
+
+1. HeatMap [ ]
+> Genre VS Year that Movie is Released
+
+2. Movie Budgets [ ]
+
+3. Movie Gross [ ]
+
+4. 3D Plot [ ]
+> IMDb Rating VS Budget VS Gross
+
+5. Vote counts over the years [ ]
+
+6. Popularity over the years [ ]
+
+7. Distribution of Imdb Ratings
+> Movie Count VS Imdb Ratings
+
+-----
+
+### Link 2: https://rpubs.com/jasmine36/234304
+
+1. Most Successfull Directors [ ]
+> Director vs FB likes
+> Director VS Gross
+> Director VS Imdb
+> Average Profit VS Number of Films (Points being Director)
+
+
+2. Commercial Success VS Critical Acclaim [ ]
+> Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
+> Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
+
+3. Top 20 genres with the most movies [ ]
+> Genre VS Freq of movies
+> Look at Link 4 for more inspo
+
+-----
+
+### Link 3: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
+Literally works on our data, however, this link does a lot of pre-processing that we might need to take a look at. For example, they use the first word in the genre column as the genre of the movie. 
+
+1. Number of Movies Produced Per Year [ ]
+> Count of movies VS Year
+
+2. Most Successfull Directors [ ]
+> Table representation of Director and their average IMDb rating
+
+3. Relationship between number of FB likes and Imdb score [ ]
+> Imdb score VS movie FB likes
+
+4. Correlation Heatmap [ ]
+
+5. Full-Grown Tree [ ]
+> Random Forest
+> K-Nearest Neighbour
+
+-----
+
+#### Link 4: https://www.kaggle.com/karrrimba/understanding-movies-through-data
+Literally works on our data. A lot of code to look trough. 
+
+1. Genre wise share of movies for top 10 genres [ ]
+
+2. Genre wise distribution of scores [ ]
+> All genres with Imdb rating distribution
+
+3. Bar chart for 10 highest rated genres [ ]
+> Genres VS Average IMDB Score
+
+4. Bar chart for 10 most voted genres [ ]
+> Genres VS Average User Votes
+
+5. Bar chart for 10 most FB liked genres [ ]
+> Genres VS Average Facebook Likes
+
+6. Distribution of budget and gross [ ]
+
+7. Share of movies making profit or loss [ ]
+> Did profitable movies recieve more appreciation by the users?
+
+8. Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year [ ]
+
+9. Scatter plot for User Votes vs IMDB Score [ ]
+> User Votes VS IMDB Score
+
+10. Box plot for User Votes vs IMDB Score
+> IMDB Score VS User Votes
+
+_____
+
+
+### Other Analysis Questions
+
+1. Rating VS Budget [ ]
+
+2. Rating VS Gross [ ]
+
+3. Budget VS Gross [ ]
+
+4. Most Successful/Unsuccessful Movies
+> Based on their ratings
+
+5. Highest Rated Actor
+> Movie VS Imdb Score
+> Most Popular Actor: Based on FB likes
+
+-----
+
+
