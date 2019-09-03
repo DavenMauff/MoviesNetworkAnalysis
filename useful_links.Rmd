@@ -130,6 +130,11 @@ http://rpubs.com/xinmeiz/movielens2
  * Ratings of Sequels
 
  
-
- 
 -----
+
+
+Our dataset example:
+ * https://www.kaggle.com/karrrimba/understanding-movies-through-data
+ 
+ 
+ 
