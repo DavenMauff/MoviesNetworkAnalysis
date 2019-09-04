@@ -53,16 +53,36 @@ theme(axis.title.y=element_blank(),
 ```
 
 3. Movie Gross [ ]
+```{r}
 
+```
 4. 3D Plot [ ]
-> IMDb Rating VS Budget VS Gross
+ IMDb Rating VS Budget VS Gross
+```{r}
+
+```
 
 5. Vote counts over the years [ ]
+```{r}
+
+```
 
 6. Popularity over the years [ ]
+```{r}
+
+```
 
 7. Distribution of Imdb Ratings
-> Movie Count VS Imdb Ratings
+ Movie Count VS Imdb Ratings
+```{r}
+ggplot(movie_metadata, aes(imdb_score)) +
+ geom_histogram(bins = 50) +
+ geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+ ylab("Movie Count") +
+ xlab("IMDB Rating") +
+ ggtitle("Histogram for IMDB ratings") +
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+```
 
 -----
 
