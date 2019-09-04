@@ -4,16 +4,13 @@ output: html_notebook
 ---
 
 ```{r}
-pacman::p_load("stringr","ggplot2", "tidyr", "ngram",     "trinker/qdapDictionaries",
-    "trinker/qdapRegex",
-    "trinker/qdapTools",
-    "trinker/qdap"
-)
+pacman::p_load("stringr","ggplot2", "tidyr", "ngram")
+setwd(getwd())
 options(scipen = 999)
 ```
 
 ```{r}
-IMDB <- read.csv("../movie_metadata.csv")
+IMDB <- read.csv("../movie_metadata.csv", sep=";")
 ```
 
 ```{r}
@@ -53,7 +50,7 @@ movie_aspect_graph <- IMDB %>%
 ```
 
 
-```{r fig.width=10}
+```{r fig.width=11, fig.height=5}
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
 keywords_matrix <- do.call(rbind, strsplit(IMDB$plot_keywords, '[|]'))
 keywords_df <- as.data.frame(keywords_matrix)
@@ -67,47 +64,23 @@ keyword_freq_graph <-
   keywords_one_col %>%
   group_by(value) %>% 
   tally() %>% 
-  filter(n > 30) %>% 
+  filter(n >= 30) %>% 
   ggplot() +
   geom_bar(aes(x = value, y=n), stat="identity") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("keyword") +
+  ylab("frequency") +
+  NULL
 
 keyword_freq_graph
     
 
 typeof(keywords_one_col$value)
-
-
-
-# Claris Shit:
-
-
-keywords_one_col <- keywords_one_col %>% 
-  mutate(wc=str_count(value, '\\s+')+1)
-
-
-keywords_one_col %>% summarise(count=n())
-
-
-keywords_flat <- transpose(keywords_split)
-
-
-test <- keywords_one_col %>% 
-  filter(value != "") %>% 
-  mutate(wc = wordcount(value)) %>% 
-  filter(wc <= 5) %>% 
-  mutate(count=count(value)) %>% 
-  
-test$wc <- lapply(keywords_one_col, wordcount)  
-
-  ggplot() +
-    geom_bar(aes(x = value, y=count), stat="identity") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
-
 ```
 
-```{r}
-
+```{r eval=F}
+#write manipulated data to csv
+write.csv(keywords_df, file="../data-out/extracted_keywords.csv")
 ```
 
 
