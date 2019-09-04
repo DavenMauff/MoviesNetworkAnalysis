@@ -22,6 +22,12 @@ movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
 
 ---
 
+***************** PRE-PROCESSING  *****************
+
+
+
+---
+
 Split Genres
 - Split all the genrese separated by "|" into 8 different columns.
 
@@ -70,18 +76,23 @@ movie_metadata$genre <- genres_df$V1
 
 ----
 
-HeatMap [ ]
+***************** QUESTIONS  *****************
+
+### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
+
+1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
+Take all profitable movies that had a budget greater than 1mil and gross greater than 1mil
 ```{r}
 revenue_data <- movie_metadata %>%
-  filter(movie_metadata$budget >= 100000 & movie_metadata$gross >= 100000) %>%
+  filter(movie_metadata$budget >= 1000000 & movie_metadata$gross >= 1000000) %>%
   mutate(ROI = (gross - budget)/budget)
 
 dim(revenue_data)
 ```
 
-
+Plot
 ```{r}
 revenue_data %>%
  filter(title_year > 2000) %>%
@@ -94,5 +105,48 @@ revenue_data %>%
  ylab("Genre of Movie") +
  ggtitle("Heat Map ")
 ```
+
+---------------
+
+2. Movie Budgets [ ]
+
+```{r}
+budget <- movie_metadata %>%
+  select(movie_title, budget) %>%
+  arrange(desc(budget)) %>%
+  head(15)
+```
+
+```{r}
+x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Budgets")+
+  xlab("")+
+  ylab("Budget (in Millions)") + 
+  coord_flip()
+```
+
+```{r}
+rev <- movie_metadata %>%
+  select(movie_title, gross) %>%
+  arrange(desc(gross)) %>%
+  head(15)
+```
+
+```{r}
+y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Revenues")+
+  xlab("")+
+  ylab("Revenue (in Millions)") + 
+  coord_flip() 
+
+ggarrange(x, y,
+          labels = c("A", "B"),
+          ncol = 1, nrow = 2)
+```
+
 
 

@@ -27,9 +27,8 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 
 ### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
 
-1. HeatMap [ ]
+1. HeatMap [X]
 > Genre VS Year that Movie is Released
-
 
 ```{r}
 revenue_data <- movie_metadata %>%
