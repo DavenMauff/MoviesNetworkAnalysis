@@ -23,7 +23,7 @@ metadata = read.csv("../movie_metadata.csv")
 
 ----
 
-### Method
+### Methodology
 
 ----
 

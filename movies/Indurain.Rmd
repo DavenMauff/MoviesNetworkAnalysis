@@ -22,23 +22,6 @@ library(DT)
 
 
 ## Tidying and updating the dataset:   
-
-```{r # remove duplicates if any}
-movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
-```
-
-
-```{r # removing na values}
-movie_metadata <- na.omit(movie_metadata)
-```
-
-
-```{r # removing blank fields}
-movie_metadata <- movie_metadata[which(!(movie_metadata$director_name == "" | movie_metadata$color == "" | movie_metadata$language == "" | movie_metadata$content_rating == "" 
-                       | movie_metadata$plot_keywords == "")), ]
-```
-
-
 ```{r # fixing movie names}
 movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
 ```
@@ -158,7 +141,7 @@ scatter_plot <- function(x, y, xlabel, ylabel, title,
                          text1, text2, text3,
                          alpha = NULL){
   if(is.null(alpha)) alpha <- 0.4
-  gp <- ggplot(data = mdata, mapping = aes(x = x, y = y,
+  gp <- ggplot(data = movie_metadata, mapping = aes(x = x, y = y,
                                           text = paste(text1, x,
                                                        text2, y,
                                                        text3, movie_title)))
@@ -182,7 +165,7 @@ scatter_plot <- function(x, y, xlabel, ylabel, title,
 facet_plot <- function(x, y, xlabel, ylabel, alpha = NULL){
    if(is.null(alpha)) alpha <- 1
   
-  fp <- ggplot(data = mdata, mapping = aes(x = x, y = y))
+  fp <- ggplot(data = movie_metadata, mapping = aes(x = x, y = y))
   fp + geom_point(aes(fill = genres), position = "jitter", 
                   show.legend = F, shape = 21,
                   stroke = 0.2, alpha = alpha) +
@@ -196,7 +179,7 @@ facet_plot <- function(x, y, xlabel, ylabel, alpha = NULL){
 hist_plot <- function(x, xlabel, bwidth, fill = NULL, color = NULL){
   if(is.null(fill)) fill <- "orange"
   if(is.null(color)) color <- "black"
-  hp <- ggplot(data = mdata, mapping = aes(x = x))
+  hp <- ggplot(data = movie_metadata, mapping = aes(x = x))
   gp <- hp + geom_histogram(binwidth = bwidth, fill = fill, 
                             color = color, 
                             size = 0.2,
@@ -232,7 +215,7 @@ facet_hist_plot <- function(x, xlabel, bwidth){
 # creating function for plotting histograms for budget and gross
 budg_gross_hist <- function(x){
   
-  bh <- ggplot(mdata, aes(x = x))
+  bh <- ggplot(movie_metadata, aes(x = x))
   bh + geom_histogram(binwidth = 0.05, 
                       fill = sample(brewer.pal(11, "Spectral"), 1),
                       color = "black", 
@@ -390,7 +373,6 @@ bar_plot(arr_votes[1:10,],
          "Bar chart for 10 most voted genres")
 ```
 
-- 6)))))
 
 5. Bar chart for 10 most FB liked genres [ ]
 > Genres VS Average Facebook Likes
@@ -409,7 +391,7 @@ bar_plot(arr_fb_likes[1:10,],
          "Bar chart for 10 most FB liked genres")
 ```
 
-- 7)))))
+
 
 6. Distribution of budget and gross [ ]
 
@@ -426,12 +408,13 @@ p2 <- budg_gross_hist(movie_metadata$gross) %>%
 subplot(p1, p2, widths = c(0.5, 0.5))
 ```
 
-- 8)))))
 
 7. Share of movies making profit or loss [ ]
 > Did profitable movies recieve more appreciation by the users?
 
 ```{r fig.height = 4, fig.width = 6, fig.align="center"}
+
+movie_metadata <- na.omit(movie_metadata)
 
 # Plotting donut chart for share of movies making profit or loss 
 movie_metadata %>%
@@ -447,12 +430,13 @@ movie_metadata %>%
          titlefont = list(family = "Times", size = 20, color = "grey"),
          xaxis = list(showgrid = T, zeroline = F, showticklabels = F),
          yaxis = list(showgrid = T, zeroline = F, showticklabels = F),
-         showlegend = F, 
+         showlegend = T, 
          margin = list(t = 50, b = 50))
+
+# Green is loss, Light Green is profit
+
 ```
 
-
-- 12)))))
 
 ends at image 16
 
@@ -490,7 +474,7 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 
 ```
 
-- 17))))))
+
 
 9. Scatter plot for User Votes vs IMDB Score [ ]
 > User Votes VS IMDB Score
@@ -507,10 +491,16 @@ scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score,
      alpha = 0.3)
 ```
 
-- 19))))))
+
 
 10. Box plot for User Votes vs IMDB Score
 > IMDB Score VS User Votes
+
+```{r echo=T}
+# breaking num_users_voted into 4 buckets 
+movie_metadata$vote_bucket <- cut(movie_metadata$num_voted_users, 
+                         c(0, 50000, 100000, 300000, 500000))
+```
 
 ```{r  fig.height = 4, fig.width = 6, fig.align="center"}
 # plotting a boxplot for votes vs imdb_score  
@@ -540,7 +530,6 @@ ggplotly(bp) %>%
                        y = -0.3)) 
 ```
 
-- 20)))))
 
 > Act 3: The Last Enquiry
 

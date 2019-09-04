@@ -53,18 +53,6 @@ revenue_data %>%
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
-
-
-revenue_data %>%
- filter(title_year > 2009) %>%  #Filter movies released after 1990
- group_by(year = title_year) %>%
- summarise(count = n()) %>% #Count of Movies released
- ggplot(aes(year)) +
- geom_tile(aes(fill=count),colour="white")+
- scale_fill_gradient(low="light blue",high = "dark blue") +
- xlab("Year of Movie release")+
- ylab("Month of Movie Release")+
- ggtitle("Heat Map")
 ```
 
 2. Movie Budgets [X]
@@ -130,7 +118,7 @@ score_votes_likes <- movie_metadata %>%
   summarise(count = n(),
             avg_score = round(mean(imdb_score), 1),
             avg_votes = mean(num_voted_users),
-            avg_facebook_likes = mean(total_facebook_likes),
+            avg_facebook_likes = mean(movie_facebook_likes),
             avg_reviews = mean(num_user_for_reviews)) %>%
   filter(count > 10)
 ```
@@ -152,7 +140,7 @@ IMDB rating systen started in 1990’s. Social media platforms like Facebook had
    annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
 ```
 
-6. Popularity over the years [ ]
+6. Popularity over the years [X]
 ```{r}
 #Creating the required subset of data 
 movies_pop <- movie_metadata %>%
