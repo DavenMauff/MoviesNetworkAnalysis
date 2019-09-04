@@ -99,9 +99,54 @@ ggplot(movie_metadata, aes(imdb_score)) +
 > Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
 > Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 
+```{r}
+movie_metadata %>%
+  filter(imdb_score >5 ) %>% #Filter to show the graph only for vote_average values greater than 5
+ ggplot(aes(x = imdb_score, y = (gross-budget))) + #ROI == gross - budget #LUCIA PLEASE FIX:)
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("ROI Vs avg_rating")+
+  xlab("rating ")+
+  ylab("") +
+  geom_smooth()
+```
+Return on investment vs runtime of films:
+
+```{r}
+#Plot for ROI Vs run time
+a <- ggplot(movie_metadata, aes(x = duration, y = (gross-budget))) +
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  ggtitle("ROI Vs Duration")+
+  xlab("Duration (Minutes)")+
+  ylab("") +
+  geom_vline(xintercept = c(80,125),colour = c("blue","blue"))
+  
+#Zoomed Plot 
+b <- ggplot(movie_metadata, aes(x = duration, y = (gross-budget))) +
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  ggtitle("Zoomed-in: 80 - 125 minutes duration")+
+  xlab("Duration (Minutes)")+
+  ylab("(ROI") +
+  coord_cartesian(xlim = c(80, 125))
+
+#To create two plots in the same window
+ggarrange(a, b,  
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+```
+
 3. Top 20 genres with the most movies [ ]
+
+```{r}
+
+movie_metadata %>%
+  filter()
+
+
+```
+
 > Genre VS Freq of movies
-> Look at Link 4 for more inspo
+> Look at Link 4 for more inspo (LOL) Need to choose way to graph... mmmmmm... probs line graph?
 
 -----
 
