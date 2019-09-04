@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr )
+pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally)
 knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
@@ -15,6 +15,12 @@ setwd(getwd())
 
 ```{r}
 movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
+```
+
+```{r}
+movie_metadata<- movie_metadata %>% 
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100)
 ```
 
 ## Questions
@@ -187,6 +193,23 @@ ggplot(movie_metadata, aes(imdb_score)) +
 > Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
 > Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 
+
+```{r}
+movie_metadata %>%
+  top_n(15, profit) %>%
+  ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
+  geom_point() + 
+  geom_hline(aes(yintercept = 600)) + 
+  geom_vline(aes(xintercept = 7.75)) + 
+  geom_text_repel(aes(label = movie_title), size = 4) +
+  xlab("Imdb score") + 
+  ylab("Gross money earned in million dollars") + 
+  ggtitle("Commercial success Vs Critical acclaim") +
+  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
 ```{r}
 movie_metadata %>%
   filter(imdb_score >5 ) %>% #Filter to show the graph only for vote_average values greater than 5
@@ -228,9 +251,6 @@ ggarrange(a, b,
 
 ```{r}
 
-movie_metadata %>%
-  filter()
-
 
 ```
 
@@ -245,13 +265,123 @@ Literally works on our data, however, this link does a lot of pre-processing tha
 1. Number of Movies Produced Per Year [ ]
 > Count of movies VS Year
 
+```{r}
+movie_metadata %>%
+  filter(title_year %in% c(2000:2016)) %>%
+  arrange(desc(profit)) %>%
+  top_n(15, profit) %>%
+  ggplot(aes(x=budget, y=profit)) +
+  geom_point() +
+  geom_smooth() + 
+  geom_text_repel(aes(label=movie_title)) +
+  labs(x = "Budget $million", y = "Profit $million", title = "Top 10 Profitable Movies") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+movie_metadata %>%
+  filter(budget > 100000) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>%
+  top_n(15, profit) %>%
+  ggplot(aes(x=budget/1000000, y = return_on_investment_perc)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Percent Return on Investment") + 
+  ggtitle("20 Most Profitable Movies based on its Return on Investment")
+```
+
+
 2. Most Successfull Directors [ ]
 > Table representation of Director and their average IMDb rating
+
+```{r}
+movie_metadata %>%
+  group_by(director_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
+```
+
+
 
 3. Relationship between number of FB likes and Imdb score [ ]
 > Imdb score VS movie FB likes
 
+```{r}
+movie_metadata %>%
+  plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
+```
+
+
 4. Correlation Heatmap [ ]
+
+```{r}
+# number of directors
+sum(uniqueN(movie_metadata$director_name))
+```
+
+
+```{r}
+# number of actors
+sum(uniqueN(movie_metadata[, c("actor_1_name", "actor_2_name", "actor_3_name")]))
+```
+
+Since all the names are so different for the whole dataset, there is no point to use names to predict score.
+
+Same with plot keywords, they are too diverse to be used in the prediction.
+
+And movie link is also a redundant variable.
+
+```{r}
+IMDB <- subset(movie_metadata, select = -c(director_name, actor_2_name, actor_1_name,
+                                 movie_title, actor_3_name, plot_keywords, 
+                                 movie_imdb_link))
+```
+
+For the purpose of data exploration, we added two variables based on existing variables: profit and return_on_investment_perc. In order to avoid multicollinearity, here we remove these two added variables.
+
+```{r}
+IMDB <- subset(IMDB, select = -c(profit, return_on_investment_perc))
+```
+
+First we plot the correlation heatmap for our data.
+
+```{r}
+ggcorr(IMDB, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
+  ggtitle("Correlation Heatmap") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Based on the heatmap, we can see some high correlations (greater than 0.7) between predictors.
+
+According to the highest correlation value 0.95, we find actor_1_facebook_likes is highly correlated with the cast_total_facebook_likes, and both actor2 and actor3 are also somehow correlated to the total. So we want to modify them into two variables: actor_1_facebook_likes and other_actors_facebook_likes.
+
+There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews. We want to keep num_voted_users and take the ratio of num_user_for_reviews and num_critic_for_reviews.
+
+```{r}
+# add up actor 2 and 3 facebook likes into other actors facebook likes
+IMDB$other_actors_facebook_likes <- IMDB$actor_2_facebook_likes + IMDB$actor_3_facebook_likes
+# use the ratio of critical reviews amount to total reviews amount
+IMDB$critic_review_ratio <- IMDB$num_critic_for_reviews / IMDB$num_user_for_reviews
+# delete columns
+IMDB <- subset(IMDB, select = -c(cast_total_facebook_likes, actor_2_facebook_likes, actor_3_facebook_likes, num_critic_for_reviews, num_user_for_reviews))
+```
+
+Now the correlation heatmap becomes like this.
+
+```{r}
+ggcorr(IMDB, label = TRUE, label_round = 2, label_size = 3, size = 2.5, hjust = .85) +
+  ggtitle("Correlation Heatmap") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+We don’t see any strong correlation (absolute value greater than 0.7) any more.
+
 
 5. Full-Grown Tree [ ]
 > Random Forest
