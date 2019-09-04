@@ -3,7 +3,7 @@ pacman::p_load("stringr","ggplot2", "tidyr", "ngram")
 options(scipen = 999)
 
 
-IMDB <- read.csv("../movie_metadata.csv")
+IMDB <- read.csv("../test.csv")
 
 
 
@@ -47,7 +47,7 @@ IMDB %>%
 
 
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
-keywords_matrix <- do.call(rbind, strsplit(IMDB$plot_keywords, '[|]'))
+keywords_matrix <- do.call(rbind, strsplit(IMDB$plot_keywords, "[|]"))
 keywords_df <- as.data.frame(keywords_matrix)
 
 names(keywords_df) <- c("one", "two", "three", "four", "five")
@@ -65,17 +65,6 @@ keyword_freq_graph <-
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
 keyword_freq_graph
-
-
-
-keywords_one_col %>% 
-  ggplot() +
-  geom_bar(aes(x = value)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  NULL
-
-typeof(keywords_one_col$value)
-
 
 
 # Claris Shit:
