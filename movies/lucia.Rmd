@@ -1,0 +1,98 @@
+---
+title: "Lucia"
+author: "Lucia"
+date: "04/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load("dplyr", "ggplot2","tidyr", "stringr","ggplot2", "tidyr", "ngram")
+knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
+
+---
+
+Read in MAIN csv file
+
+```{r}
+movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
+```
+
+---
+
+Split Genres
+- Split all the genrese separated by "|" into 8 different columns.
+
+```{r fig.width=11, fig.height=5}
+# Split on "|"
+genres_split <- str_split(movie_metadata$genres, pattern="[|]", n=2)
+
+# Create Matrix
+genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
+
+# Dataframe of genres
+genres_df <- as.data.frame(genres_matrix)
+
+```
+
+
+```{r}
+# Collapse all genres into one column
+genres_one_col <- gather(genres_df) %>% 
+  select(value)
+
+# Plot frequency of first column
+genres_one_col %>%
+  group_by(value) %>% 
+  tally() %>% 
+  filter(n >= 30) %>% 
+  ggplot() +
+  geom_bar(aes(x = value, y=n), stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("keyword") +
+  ylab("frequency") +
+  NULL
+```
+
+----
+
+Add genres to MAIN csv file and remove genres column
+
+```{r}
+# Take old genres column away
+movie_metadata <- subset(movie_metadata, select = -c(genres))
+
+# Take first column of genres_df and add it to MAIN df
+movie_metadata$genre <- genres_df$V1
+```
+
+----
+
+HeatMap [ ]
+> Genre VS Year that Movie is Released
+
+```{r}
+revenue_data <- movie_metadata %>%
+  filter(movie_metadata$budget >= 100000 & movie_metadata$gross >= 100000) %>%
+  mutate(ROI = (gross - budget)/budget)
+
+dim(revenue_data)
+```
+
+
+```{r}
+revenue_data %>%
+ filter(title_year > 2000) %>%
+ group_by(title_year, genre) %>%
+ summarise(count = n()) %>%
+ ggplot(aes(title_year, as.factor(genre))) +
+ geom_tile(aes(fill=count),colour="white") +
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie") +
+ ylab("Genre of Movie") +
+ ggtitle("Heat Map ")
+```
+
+

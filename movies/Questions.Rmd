@@ -30,9 +30,19 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
+
 ```{r}
-movie_metadata %>%
- filter(title_year > 2000) %>%  #Filter movies released after 2000
+revenue_data <- movie_metadata %>%
+  filter(movie_metadata$gross >= 10000000 & movie_metadata$gross >= 10000000) %>%
+  mutate(ROI = (gross - budget)/budget)
+
+dim(revenue_data)
+```
+
+
+```{r}
+revenue_data %>%
+ filter(title_year > 2013) %>%  #Filter movies released after 2000
  group_by(title_year, genres) %>%
  summarise(count = n()) %>% #Count of Movies released
  ggplot(aes(title_year, as.factor(genres)))+
@@ -41,9 +51,21 @@ movie_metadata %>%
  xlab("Year of Movie release")+
  ylab("Genre of Movie Release")+
  ggtitle("Heat Map")+
-theme(axis.title.y=element_blank(),
+  theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
+
+
+revenue_data %>%
+ filter(title_year > 2009) %>%  #Filter movies released after 1990
+ group_by(year = title_year) %>%
+ summarise(count = n()) %>% #Count of Movies released
+ ggplot(aes(year)) +
+ geom_tile(aes(fill=count),colour="white")+
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie release")+
+ ylab("Month of Movie Release")+
+ ggtitle("Heat Map")
 ```
 
 2. Movie Budgets [ ]
@@ -56,6 +78,7 @@ theme(axis.title.y=element_blank(),
 ```{r}
 
 ```
+
 4. 3D Plot [ ]
  IMDb Rating VS Budget VS Gross
 ```{r}
