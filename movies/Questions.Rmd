@@ -1,12 +1,20 @@
 ---
 title: "Questions"
-author: "Lucia"
+author: "Luciaaaa"
 date: "03/09/2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr )
 knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
+
+
+```{r}
+movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
 ```
 
 ## Questions
@@ -22,7 +30,27 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
+```{r}
+movie_metadata %>%
+ filter(title_year > 2000) %>%  #Filter movies released after 2000
+ group_by(title_year, genres) %>%
+ summarise(count = n()) %>% #Count of Movies released
+ ggplot(aes(title_year, as.factor(genres)))+
+ geom_tile(aes(fill=count),colour="white")+
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie release")+
+ ylab("Genre of Movie Release")+
+ ggtitle("Heat Map")+
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
 2. Movie Budgets [ ]
+
+```{r}
+
+```
 
 3. Movie Gross [ ]
 
