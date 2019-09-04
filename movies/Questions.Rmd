@@ -64,12 +64,45 @@ theme(axis.title.y=element_blank(),
 
 5. Vote counts over the years [ ]
 ```{r}
+#Performing operations on Movies Vote Count over the years
+ movies_vote1 <- movie_metadata %>%
+ select(title_year, num_voted_users) %>%
+ group_by(title_year) %>%
+ summarise(count = sum(num_voted_users)) 
 
+ names(movies_vote1) <- c("date","Number of voted users")
+
+ ggplot(movies_vote1, aes(x = date, y = num_voted_users/1000)) +
+ geom_bar( stat = "identity") +
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Vote count (in thousands)") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 160, size = 3, colour = "red",angle=90)
 ```
 
 6. Popularity over the years [ ]
 ```{r}
+#Creating the required subset of data 
+movies_pop <- movie_metadata %>%
+ select(title_year, movie_facebook_likes) %>%
+ filter(title_year > 1980) %>%
+ group_by(title_year) %>%
+ summarise(avg = mean(movie_facebook_likes)) 
 
+ names(movies_pop) <- c("date","popularity")
+
+ #generating the popularity Vs time plot
+ ggplot(movies_pop, aes(x = date, y = movie_facebook_likes)) +
+ geom_point() +
+ geom_smooth() + 
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Mean Popularity Score") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 80, size = 3, colour = "red",angle=90)
 ```
 
 7. Distribution of Imdb Ratings
@@ -167,6 +200,9 @@ Literally works on our data, however, this link does a lot of pre-processing tha
 5. Full-Grown Tree [ ]
 > Random Forest
 > K-Nearest Neighbour
+
+
+
 
 -----
 
