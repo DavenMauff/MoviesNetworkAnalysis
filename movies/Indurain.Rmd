@@ -1,0 +1,549 @@
+---
+title: "Questions"
+author: "Lucia"
+date: "03/09/2019"
+output: html_document
+---
+
+## Installed Libraries:
+
+```{r}
+library(tidyverse)
+library(plotly)
+library(RColorBrewer)
+library(stringr)
+library(DT)
+```
+
+## The dataset was imported through R:
+
+```{r # Load data:I imported the dataset through R}
+```
+
+
+## Tidying and updating the dataset:   
+
+```{r # remove duplicates if any}
+movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
+```
+
+
+```{r # removing na values}
+movie_metadata <- na.omit(movie_metadata)
+```
+
+
+```{r # removing blank fields}
+movie_metadata <- movie_metadata[which(!(movie_metadata$director_name == "" | movie_metadata$color == "" | movie_metadata$language == "" | movie_metadata$content_rating == "" 
+                       | movie_metadata$plot_keywords == "")), ]
+```
+
+
+```{r # fixing movie names}
+movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
+```
+
+
+```{r # fixing movie names}
+movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
+```
+
+
+```{r # extracting genres from sub genres}
+movie_metadata$sub_genres <- movie_metadata$genres 
+movie_metadata$genres <- NULL
+movie_metadata$genres <- factor(str_extract(movie_metadata$sub_genres, pattern = "^[a-zA-Z]*"))
+```
+
+
+```{r # creating a new feature called total_facebook_likes}
+movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes + 
+  movie_metadata$actor_3_facebook_likes + movie_metadata$actor_1_facebook_likes +
+  movie_metadata$cast_total_facebook_likes + movie_metadata$actor_2_facebook_likes
+```
+
+
+```{r # converting imdb_score to numeric feature}
+movie_metadata$imdb_score <- as.numeric(movie_metadata$imdb_score)
+```
+
+
+```{r # creating feature return_on_investment}
+movie_metadata$budget <- movie_metadata$budget/1000000
+movie_metadata$gross <- movie_metadata$gross/1000000
+movie_metadata$return_on_investment <- (movie_metadata$gross - movie_metadata$budget)/movie_metadata$budget
+movie_metadata$profit_loss <- ifelse(movie_metadata$return_on_investment > 0, 1, 0)  
+```
+
+
+## Checking how the new dataset looks and the new feature sets:
+
+```{r # checking dimensions}
+dimension <- dim(movie_metadata)
+cat(dimension[1], "Items\n", dimension[2], "Fields")
+cat("\n\n")
+cat("Updated feature set:\n")
+
+# checking categorical and quantitive features
+var_type <- split(names(movie_metadata), sapply(movie_metadata, function(x) paste(class(x), collapse = " ")))
+var_type  
+```
+
+
+## Structuring the dataset:
+
+```{r # Structure}  
+str(movie_metadata)  
+```  
+
+
+## Custom plot functions and plot styles for later uses:
+
+```{r, echo=T}  
+  
+# setting up plotly label, axis and text customizations
+f1 <- list(
+  family = "Old Standard TT, serif",
+  size = 14,
+  color = "grey"
+)
+f2 <- list(
+  family = "Old Standard TT, serif",
+  size = 10,
+  color = "black"
+)
+a <- list(
+  titlefont = f1,
+  showticklabels = T,
+  tickangle = -45,
+  tickfont = f2
+)
+
+m <- list(
+  l = 50,
+  r = 50,
+  b = 100,
+  t = 100,
+  pad = 4
+)
+
+# annotations for subplot
+a1 <- list(x = 0.5, y = 1.0,
+          showarrow = FALSE, 
+          text = "Distribution of bugdet", 
+          xanchor = "center", 
+          xref = "paper", 
+          yanchor = "bottom", 
+          yref = "paper", 
+          font = f1)
+  
+b1 <- list(x = 0.5, y = 1.0, 
+           showarrow = FALSE, 
+           text = "Distribution of gross", 
+           xanchor = "center", 
+           xref = "paper", 
+           yanchor = "bottom", 
+           yref = "paper",
+           font = f1)
+```
+
+
+## Here are some custom plot functions and plot styles for later use:
+
+```{r # Required graph setup}
+# creating a function called scatter_plot for
+# plotting scatter plots using ggplot and plotly
+
+scatter_plot <- function(x, y, xlabel, ylabel, title,
+                         text1, text2, text3,
+                         alpha = NULL){
+  if(is.null(alpha)) alpha <- 0.4
+  gp <- ggplot(data = mdata, mapping = aes(x = x, y = y,
+                                          text = paste(text1, x,
+                                                       text2, y,
+                                                       text3, movie_title)))
+  plot <- gp + geom_point(position = "jitter", 
+                          show.legend = F, shape = 21, 
+                          stroke = .2, alpha = alpha) + 
+    xlab(xlabel) +
+    ylab(ylabel) +
+    ggtitle(title) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          plot.title = element_text(size = 12, face = "bold", 
+                                    family = "Times", 
+                                    color = "darkgrey")) 
+  
+  ggplotly(plot, tooltip = "text") %>%
+    layout(m, xaxis = a, yaxis = a)
+}
+
+# creating function for plotting scatter plot using facet wrap
+facet_plot <- function(x, y, xlabel, ylabel, alpha = NULL){
+   if(is.null(alpha)) alpha <- 1
+  
+  fp <- ggplot(data = mdata, mapping = aes(x = x, y = y))
+  fp + geom_point(aes(fill = genres), position = "jitter", 
+                  show.legend = F, shape = 21,
+                  stroke = 0.2, alpha = alpha) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    facet_wrap(~genres, scales = "free") +
+    theme_minimal()
+}
+
+# creating a function for plotting a simple histogram
+hist_plot <- function(x, xlabel, bwidth, fill = NULL, color = NULL){
+  if(is.null(fill)) fill <- "orange"
+  if(is.null(color)) color <- "black"
+  hp <- ggplot(data = mdata, mapping = aes(x = x))
+  gp <- hp + geom_histogram(binwidth = bwidth, fill = fill, 
+                            color = color, 
+                            size = 0.2,
+                            alpha = 0.7,
+                            show.legend = F) +
+    xlab(xlabel) +
+    theme_minimal()
+  
+  ggplotly(gp) %>%
+    layout(margin = m, xaxis = a, yaxis = a)
+}
+
+# creating a function for plotting histogram using facet wrap
+facet_hist_plot <- function(x, xlabel, bwidth){
+  
+  hp <- ggplot(data = mdata, mapping = aes(x = x))
+  hp + geom_histogram(aes(fill = genres), binwidth = bwidth,
+                      show.legend = F, 
+                      color = "black", size = 0.2, 
+                      alpha = 0.8) +
+    xlab(xlabel) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 12, angle = 20),
+          axis.title = element_text(size = 14, 
+                                    family = "Times", 
+                                    color = "darkgrey",
+                                    face = "bold")) + 
+    facet_wrap(~ genres, scales = "free_y", ncol = 4)    
+  }
+
+
+# creating function for plotting histograms for budget and gross
+budg_gross_hist <- function(x){
+  
+  bh <- ggplot(mdata, aes(x = x))
+  bh + geom_histogram(binwidth = 0.05, 
+                      fill = sample(brewer.pal(11, "Spectral"), 1),
+                      color = "black", 
+                      size = 0.09,
+                      alpha = 0.7) + 
+    scale_x_log10() + 
+    theme_minimal()
+  
+  ggplotly() %>% 
+  layout(m, xaxis = a, yaxis = a) 
+}
+                           
+
+# creating a function for ploting bar graphs
+bar_plot <- function(data, x, y, info, xlabl, ylabl, title, 
+                      deci = NULL, suf = NULL){
+  if(is.null(suf)) suf <- ""
+  if(is.null(deci)) deci <- 0
+  b1 <- ggplot(data, aes(x = reorder(genres, x), 
+                               y = y, 
+                               text = paste("Genre:", genres,
+                                            info, 
+                                            round(y, deci), suf)))
+  
+  b1 + geom_bar(aes(fill = genres), stat = "identity", 
+           show.legend = F, color = "black", size = 0.2,
+           width = 0.7, alpha = 0.7) +
+  xlab(xlabl) +
+  ylab(ylabl) +
+  ggtitle(title) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 14, 
+                                  color = "grey", family = "Times")) +
+  scale_fill_brewer(palette = "Spectral")
+
+ggplotly(tooltip = "text") %>%
+  layout(margin = m, xaxis = a, yaxis = a)
+}
+
+
+# creating a function for plotting plotly line graph for title_year
+line_graph <- function(data, y, name){
+ 
+  scat_p1 <- plot_ly(data, x = ~title_year, y = ~ y, 
+             name = name, type = 'scatter', mode = 'lines',
+             line = list(color = sample(brewer.pal(11, "Spectral"), 1))) %>%
+  layout(xaxis = list(title = "Title Year", zeroline = F,
+                      showline = F, 
+                      showticklabels = T),
+         yaxis = list(title = "Average Score"),
+         title = "Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year", 
+         font = list(family = "Serif", color = "grey"),
+         legend = list(orientation = "h", size = 6,
+                       bgcolor = "#E2E2E2",
+                       bordercolor = "darkgrey",
+                       borderwidth = 1),
+         margin = m)
+  scat_p1
+  }
+  
+```  
+
+
+## This is where the diagrams begin: ##
+
+> Act 1: Early Exploration
+
+1. Genre wise share of movies for top 10 genres [ ]
+
+```{r fig.height = 4, fig.width = 6, fig.align = "center"}
+
+# setting up color palette
+colors <- c(brewer.pal(n = 11, name = "Spectral"))
+
+# Plotting a donut chart by chaining commands together 
+movie_metadata %>%
+  group_by(genres) %>%
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>%
+  head(10) %>%
+  plot_ly(labels = ~genres, values = ~count,
+          insidetextfont = list(color = 'Black'),
+          marker = list(colors = colors, 
+                        line = list(color = 'Black', width = .5)), 
+          opacity = 0.8) %>%
+  add_pie(hole = 0.6) %>%
+  layout(title = "Genre wise share of movies for top 10 genres", 
+         titlefont = list(family = "Times", size = 20, color = "grey"),
+         xaxis = list(showgrid = T, zeroline = F, showticklabels = F),
+         yaxis = list(showgrid = T, zeroline = F, showticklabels = F),
+         showlegend = F, 
+         margin = list(t = 50, b = 50))
+```
+
+
+2. Genre wise distribution of scores [ ]
+> All genres with Imdb rating distribution
+
+```{r fig.height = 10, fig.width = 10, fig.align="center"}  
+
+# genre wise distribution of scores using a custom plot function  
+facet_hist_plot(movie_metadata$imdb_score, 
+                movie_metadata$genres,
+                bwidth = 0.1, 
+                "IMDB Score")+
+  scale_x_continuous(breaks = seq(0, 9.3, 1)) 
+``` 
+
+- 3)))))
+
+3. Bar chart for 10 highest rated genres [ ]
+> Genres VS Average IMDB Score
+
+```{r, fig.height = 4, fig.width = 6, fig.align="center"}
+
+# creating a data frame containing avg score, avg votes and avg fb likes
+score_votes_likes <- movie_metadata %>% 
+  group_by(genres) %>%
+  summarise(count = n(),
+            avg_score = round(mean(imdb_score), 1),
+            avg_votes = mean(num_voted_users),
+            avg_facebook_likes = mean(total_facebook_likes),
+            avg_reviews = mean(num_user_for_reviews)) %>%
+  filter(count > 10)
+
+# arranging data frame by average score
+arr_score <- arrange(score_votes_likes, desc(avg_score))
+
+# plotting 10 highest rated genres 
+bar_plot(arr_score[1:10,],
+         arr_score[1:10,]$avg_score,
+         arr_score[1:10,]$avg_score,
+         "| Average Score:",
+         "Genres",
+         "Average IMDB Score",
+         "Bar chart for 10 highest rated genres",
+         deci = 1)
+```
+
+- 5)))))
+
+4. Bar chart for 10 most voted genres [ ]
+> Genres VS Average User Votes
+
+```{r fig.height = 4, fig.width = 6, fig.align="center"}
+# arranging data frame by avg votes
+arr_votes <- arrange(score_votes_likes, desc(avg_votes))
+
+# plotting bar chart for 10 most voted genres
+bar_plot(arr_votes[1:10,],
+         arr_votes[1:10,]$avg_votes,
+         arr_votes[1:10,]$avg_votes,
+         "| Average Votes:",
+         "Genres",
+         "Average User Votes",
+         "Bar chart for 10 most voted genres")
+```
+
+- 6)))))
+
+5. Bar chart for 10 most FB liked genres [ ]
+> Genres VS Average Facebook Likes
+
+```{r fig.height = 4, fig.width = 6, fig.align="center"}
+# arranging data frame by average fb likes
+arr_fb_likes <- arrange(score_votes_likes, desc(avg_facebook_likes))
+
+# plotting bar chart for top 10 genres by fb likes
+bar_plot(arr_fb_likes[1:10,],
+         arr_fb_likes[1:10,]$avg_facebook_likes,
+         arr_fb_likes[1:10,]$avg_facebook_likes,
+         "| Average FB Likes:",
+         "Genres",
+         "Average Facebook Likes",
+         "Bar chart for 10 most FB liked genres")
+```
+
+- 7)))))
+
+6. Distribution of budget and gross [ ]
+
+```{r  fig.height = 4, fig.width = 8, fig.align="center"}    
+options(scipen = 999)  
+# transformed budget histograms
+p1 <- budg_gross_hist(movie_metadata$budget) %>% 
+      layout(annotations = a1) %>%
+
+# transformed gross histograms
+p2 <- budg_gross_hist(movie_metadata$gross) %>%
+  layout(annotations = b1) %>%
+
+subplot(p1, p2, widths = c(0.5, 0.5))
+```
+
+- 8)))))
+
+7. Share of movies making profit or loss [ ]
+> Did profitable movies recieve more appreciation by the users?
+
+```{r fig.height = 4, fig.width = 6, fig.align="center"}
+
+# Plotting donut chart for share of movies making profit or loss 
+movie_metadata %>%
+  group_by(profit_loss) %>%
+  summarise(count = n()) %>% 
+  plot_ly(labels = ~factor(profit_loss), values = ~count,
+          insidetextfont = list(color = 'Black'),
+          marker = list(colors = sample(brewer.pal(11, "Spectral")), 
+                        line = list(color = 'Black', width = .5)), 
+          opacity = 0.8) %>%
+  add_pie(hole = 0.6) %>%
+  layout(title = "Share of movies making profit or loss", 
+         titlefont = list(family = "Times", size = 20, color = "grey"),
+         xaxis = list(showgrid = T, zeroline = F, showticklabels = F),
+         yaxis = list(showgrid = T, zeroline = F, showticklabels = F),
+         showlegend = F, 
+         margin = list(t = 50, b = 50))
+```
+
+
+- 12)))))
+
+ends at image 16
+
+> Act 2: Trends and Relationships
+
+8. Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year [ ]
+
+```{r fig.height = 6, fig.width = 10, fig.align="center"}
+# creating a data frame for average score, avg votes and, avg user reviews
+# by title year
+scat_year_score <- movie_metadata %>%
+  group_by(title_year) %>%
+  summarise(count = n(),
+            IMDB_Score = round(mean(imdb_score),1),
+            avg_votes = mean(num_voted_users),
+            avg_user_review = round(mean(num_user_for_reviews)))
+
+# plotting line graph for Avg score by title year 
+lp1 <- line_graph(scat_year_score, 
+                  scat_year_score$IMDB_Score, 
+                  "Average Score")
+
+# plotting line graph for Avg votes by title year
+lp2 <- line_graph(scat_year_score, 
+                  scat_year_score$avg_votes, 
+                  "Average Votes")
+
+# plotting line graph for Avg reviews by title year
+lp3 <- line_graph(scat_year_score,
+                  scat_year_score$avg_user_review,
+                  "Average User Review") 
+
+
+subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
+
+```
+
+- 17))))))
+
+9. Scatter plot for User Votes vs IMDB Score [ ]
+> User Votes VS IMDB Score
+
+```{r fig.height = 4, fig.width = 6, fig.align="center"}
+# scatter plot for user votes vs imdb score
+scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score, 
+     "User Votes",
+     "IMDB Score",
+     "Scatter plot for User Votes vs IMDB Score",
+     "User Votes:",
+     "<br>IMDB Score:",
+     "<br>Title:",
+     alpha = 0.3)
+```
+
+- 19))))))
+
+10. Box plot for User Votes vs IMDB Score
+> IMDB Score VS User Votes
+
+```{r  fig.height = 4, fig.width = 6, fig.align="center"}
+# plotting a boxplot for votes vs imdb_score  
+bp <- na.omit(movie_metadata) %>% 
+  ggplot(aes(x = vote_bucket, y = imdb_score)) +
+  geom_boxplot(aes(fill = vote_bucket), alpha = 0.7,
+               show.legend = F) +
+  stat_summary(fun.y = mean, geom = "point",
+               shape = 23) +
+  coord_flip() +
+  xlab("User Votes") +
+  ylab("IMDB Score") +
+  ggtitle("Box plot for User Votes vs IMDB Score") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, 
+                                  color = "darkgrey",
+                                  family = "Times"))
+ggplotly(bp) %>%
+  layout(margin = m, 
+        xaxis = a, 
+        yaxis = a,
+        legend = list(orientation = "h", size = 4,
+                       bgcolor = "#E2E2E2",
+                       bordercolor = "darkgrey",
+                       borderwidth = 1,
+                       x = 0,
+                       y = -0.3)) 
+```
+
+- 20)))))
+
+> Act 3: The Last Enquiry
+
+_____
