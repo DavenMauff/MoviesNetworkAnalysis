@@ -67,7 +67,7 @@ revenue_data %>%
  ggtitle("Heat Map")
 ```
 
-2. Movie Budgets [ ]
+2. Movie Budgets [X]
 
 ```{r}
 budget <- movie_metadata %>%
@@ -88,12 +88,12 @@ rev <- movie_metadata %>%
   arrange(desc(gross)) %>%
   head(15)
 
-y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
+y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Revenues")+
+  ggtitle("Movie Gross")+
   xlab("")+
-  ylab("Revenue (in Millions)") + 
+  ylab("Gross (in Millions)") + 
   coord_flip() 
 
 ggarrange(x, y,
@@ -109,27 +109,47 @@ ggarrange(x, y,
 4. 3D Plot [ ]
  IMDb Rating VS Budget VS Gross
 ```{r}
+plotly::plot_ly(revenue_data, z = ~imdb_score, x = ~budget/1000000, y = ~gross/1000000, 
+        color = ~(gross > budget), colors = c('#00FF00', '#FF0000'),
+        size = I(3)) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Budget(In Million Dollars'),
+                      yaxis = list(title = 'Revenue(In Million Dollars'),
+                      zaxis = list(title = 'IMDB Rating')),
+         title = "3D Plot: IMDB Rating vs Revenue vs Budget",
+         showlegend = FALSE)
 
 ```
 
 5. Vote counts over the years [ ]
+
+```{r}
+# creating a data frame containing avg score, avg votes and avg fb likes
+score_votes_likes <- movie_metadata %>% 
+  group_by(genres) %>%
+  summarise(count = n(),
+            avg_score = round(mean(imdb_score), 1),
+            avg_votes = mean(num_voted_users),
+            avg_facebook_likes = mean(total_facebook_likes),
+            avg_reviews = mean(num_user_for_reviews)) %>%
+  filter(count > 10)
+```
+
+IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s.
 ```{r}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
- select(title_year, num_voted_users) %>%
- group_by(title_year) %>%
- summarise(count = sum(num_voted_users)) 
+  select(title_year, num_voted_users) %>%
+  group_by(title_year) %>%
+  summarise(count = sum(num_voted_users)) 
 
- names(movies_vote1) <- c("date","Number of voted users")
-
- ggplot(movies_vote1, aes(x = date, y = num_voted_users/1000)) +
- geom_bar( stat = "identity") +
- geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
- ylab("Vote count (in thousands)") +
- xlab("Years") +
- annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90)+
- annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)+
- annotate("text", label = "Twitter",x = 2005, y = 160, size = 3, colour = "red",angle=90)
+ ggplot(movies_vote1, aes(x = title_year, y = count/1000)) +
+   geom_bar( stat = "identity") +
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Vote count (in thousands)") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
+   annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
 ```
 
 6. Popularity over the years [ ]
@@ -141,18 +161,15 @@ movies_pop <- movie_metadata %>%
  group_by(title_year) %>%
  summarise(avg = mean(movie_facebook_likes)) 
 
- names(movies_pop) <- c("date","popularity")
-
  #generating the popularity Vs time plot
- ggplot(movies_pop, aes(x = date, y = movie_facebook_likes)) +
- geom_point() +
- geom_smooth() + 
- geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
- ylab("Mean Popularity Score") +
- xlab("Years") +
- annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
- annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)+
- annotate("text", label = "Twitter",x = 2005, y = 80, size = 3, colour = "red",angle=90)
+ ggplot(movies_pop, aes(x = title_year, y = avg)) +
+   geom_point() +
+   geom_smooth() + 
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Mean Popularity Score") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+   annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
 ```
 
 7. Distribution of Imdb Ratings
@@ -193,6 +210,7 @@ movie_metadata %>%
   ylab("") +
   geom_smooth()
 ```
+
 Return on investment vs runtime of films:
 
 ```{r}

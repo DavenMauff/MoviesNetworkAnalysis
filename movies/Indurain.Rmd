@@ -212,7 +212,7 @@ hist_plot <- function(x, xlabel, bwidth, fill = NULL, color = NULL){
 # creating a function for plotting histogram using facet wrap
 facet_hist_plot <- function(x, xlabel, bwidth){
   
-  hp <- ggplot(data = mdata, mapping = aes(x = x))
+  hp <- ggplot(data = movie_metadata, mapping = aes(x = x))
   hp + geom_histogram(aes(fill = genres), binwidth = bwidth,
                       show.legend = F, 
                       color = "black", size = 0.2, 
@@ -337,12 +337,11 @@ movie_metadata %>%
 # genre wise distribution of scores using a custom plot function  
 facet_hist_plot(movie_metadata$imdb_score, 
                 movie_metadata$genres,
-                bwidth = 0.1, 
-                "IMDB Score")+
+                bwidth = 0.1)+
   scale_x_continuous(breaks = seq(0, 9.3, 1)) 
 ``` 
 
-- 3)))))
+
 
 3. Bar chart for 10 highest rated genres [ ]
 > Genres VS Average IMDB Score
@@ -373,7 +372,6 @@ bar_plot(arr_score[1:10,],
          deci = 1)
 ```
 
-- 5)))))
 
 4. Bar chart for 10 most voted genres [ ]
 > Genres VS Average User Votes

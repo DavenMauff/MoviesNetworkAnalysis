@@ -61,5 +61,5 @@ movie_metadata$imdb_score <- as.numeric(movie_metadata$imdb_score)
 
 
 ```{r Save Clean CSV File}
-write.csv(movie_metadata, file="data/movie_metadata_clean.csv")
+write.csv(movie_metadata, file="../data-out/movie_metadata_clean.csv")
 ```

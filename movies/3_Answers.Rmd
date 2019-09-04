@@ -44,45 +44,5 @@ revenue_data %>%
 
 ---------------
 
-2. Movie Budgets [ ]
-
-```{r}
-budget <- movie_metadata %>%
-  select(movie_title, budget) %>%
-  arrange(desc(budget)) %>%
-  head(15)
-```
-
-```{r}
-x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
-  geom_bar( stat = "identity")+ 
-  theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Budgets")+
-  xlab("")+
-  ylab("Budget (in Millions)") + 
-  coord_flip()
-```
-
-```{r}
-rev <- movie_metadata %>%
-  select(movie_title, gross) %>%
-  arrange(desc(gross)) %>%
-  head(15)
-```
-
-```{r}
-y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
-  geom_bar( stat = "identity")+ 
-  theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Revenues")+
-  xlab("")+
-  ylab("Revenue (in Millions)") + 
-  coord_flip() 
-
-ggarrange(x, y,
-          labels = c("A", "B"),
-          ncol = 1, nrow = 2)
-```
-
 
 

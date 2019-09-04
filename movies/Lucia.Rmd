@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr, ggpubr)
+```
+
 ---
 
 ```{r Read in CSV file}
@@ -27,7 +32,6 @@ genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
 
 # Dataframe of genres
 genres_df <- as.data.frame(genres_matrix)
-
 ```
 
 
@@ -60,3 +64,15 @@ movie_metadata$genre <- genres_df$V1
 ```
 
 ----
+
+
+
+
+
+
+
+
+
+
+
+
