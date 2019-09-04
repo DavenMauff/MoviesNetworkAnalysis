@@ -5,11 +5,7 @@ date: "03/09/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-`
+## Installed Libraries:
 
 ```{r}
 library(tidyverse)
@@ -19,78 +15,13 @@ library(stringr)
 library(DT)
 ```
 
+## The dataset was imported through R:
 
-## Questions
-
-Here is a list of questions we could play around with. Each title has "[ ]" on the side. If the question has been completed successfully, add an "X" inbetween the "[ ]", like "[X]". These questions have been arranged to URL links. Hopefully the source codes helps...
-
-Also, read through ALLLLLL of the links. Let's start somewhere simple and work ourselves up. 
-
------
-
-### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
-
-1. HeatMap [ ]
-> Genre VS Year that Movie is Released
-
-2. Movie Budgets [ ]
-
-3. Movie Gross [ ]
-
-4. 3D Plot [ ]
-> IMDb Rating VS Budget VS Gross
-
-5. Vote counts over the years [ ]
-
-6. Popularity over the years [ ]
-
-7. Distribution of Imdb Ratings
-> Movie Count VS Imdb Ratings
-
------
-
-### Link 2: https://rpubs.com/jasmine36/234304
-
-1. Most Successfull Directors [ ]
-> Director vs FB likes
-> Director VS Gross
-> Director VS Imdb
-> Average Profit VS Number of Films (Points being Director)
-
-
-2. Commercial Success VS Critical Acclaim [ ]
-> Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
-> Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
-
-3. Top 20 genres with the most movies [ ]
-> Genre VS Freq of movies
-> Look at Link 4 for more inspo
-
------
-
-### Link 3: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
-Literally works on our data, however, this link does a lot of pre-processing that we might need to take a look at. For example, they use the first word in the genre column as the genre of the movie. 
-
-1. Number of Movies Produced Per Year [ ]
-> Count of movies VS Year
-
-2. Most Successfull Directors [ ]
-> Table representation of Director and their average IMDb rating
-
-3. Relationship between number of FB likes and Imdb score [ ]
-> Imdb score VS movie FB likes
-
-4. Correlation Heatmap [ ]
-
-5. Full-Grown Tree [ ]
-> Random Forest
-> K-Nearest Neighbour
-
------
-
-```{r # Load data:I import the dataset}
+```{r # Load data:I imported the dataset through R}
 ```
 
+
+## Tidying and updating the dataset:   
 
 ```{r # remove duplicates if any}
 movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
@@ -107,13 +38,16 @@ movie_metadata <- movie_metadata[which(!(movie_metadata$director_name == "" | mo
                        | movie_metadata$plot_keywords == "")), ]
 ```
 
-```{r # fixing movie names}
-movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
-```
 
 ```{r # fixing movie names}
 movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
 ```
+
+
+```{r # fixing movie names}
+movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
+```
+
 
 ```{r # extracting genres from sub genres}
 movie_metadata$sub_genres <- movie_metadata$genres 
@@ -121,15 +55,18 @@ movie_metadata$genres <- NULL
 movie_metadata$genres <- factor(str_extract(movie_metadata$sub_genres, pattern = "^[a-zA-Z]*"))
 ```
 
+
 ```{r # creating a new feature called total_facebook_likes}
 movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes + 
   movie_metadata$actor_3_facebook_likes + movie_metadata$actor_1_facebook_likes +
   movie_metadata$cast_total_facebook_likes + movie_metadata$actor_2_facebook_likes
 ```
 
+
 ```{r # converting imdb_score to numeric feature}
 movie_metadata$imdb_score <- as.numeric(movie_metadata$imdb_score)
 ```
+
 
 ```{r # creating feature return_on_investment}
 movie_metadata$budget <- movie_metadata$budget/1000000
@@ -137,6 +74,9 @@ movie_metadata$gross <- movie_metadata$gross/1000000
 movie_metadata$return_on_investment <- (movie_metadata$gross - movie_metadata$budget)/movie_metadata$budget
 movie_metadata$profit_loss <- ifelse(movie_metadata$return_on_investment > 0, 1, 0)  
 ```
+
+
+## Checking how the new dataset looks and the new feature sets:
 
 ```{r # checking dimensions}
 dimension <- dim(movie_metadata)
@@ -148,9 +88,17 @@ cat("Updated feature set:\n")
 var_type <- split(names(movie_metadata), sapply(movie_metadata, function(x) paste(class(x), collapse = " ")))
 var_type  
 ```
+
+
+## Structuring the dataset:
+
 ```{r # Structure}  
 str(movie_metadata)  
 ```  
+
+
+## Custom plot functions and plot styles for later uses:
+
 ```{r, echo=T}  
   
 # setting up plotly label, axis and text customizations
@@ -199,6 +147,8 @@ b1 <- list(x = 0.5, y = 1.0,
            font = f1)
 ```
 
+
+## Here are some custom plot functions and plot styles for later use:
 
 ```{r # Required graph setup}
 # creating a function called scatter_plot for
@@ -258,9 +208,7 @@ hist_plot <- function(x, xlabel, bwidth, fill = NULL, color = NULL){
   ggplotly(gp) %>%
     layout(margin = m, xaxis = a, yaxis = a)
 }
-```
 
-```{r}
 # creating a function for plotting histogram using facet wrap
 facet_hist_plot <- function(x, xlabel, bwidth){
   
@@ -349,7 +297,7 @@ line_graph <- function(data, y, name){
 ```  
 
 
-> link 4
+## This is where the diagrams begin: ##
 
 > Act 1: Early Exploration
 
@@ -380,7 +328,6 @@ movie_metadata %>%
          margin = list(t = 50, b = 50))
 ```
 
-- 1))))
 
 2. Genre wise distribution of scores [ ]
 > All genres with Imdb rating distribution
@@ -600,23 +547,3 @@ ggplotly(bp) %>%
 > Act 3: The Last Enquiry
 
 _____
-
-
-### Other Analysis Questions
-
-1. Rating VS Budget [ ]
-
-2. Rating VS Gross [ ]
-
-3. Budget VS Gross [ ]
-
-4. Most Successful/Unsuccessful Movies
-> Based on their ratings
-
-5. Highest Rated Actor
-> Movie VS Imdb Score
-> Most Popular Actor: Based on FB likes
-
------
-
-
