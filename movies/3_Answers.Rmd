@@ -12,71 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
 
----
-
-Read in MAIN csv file
-
-```{r}
-movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
-```
-
----
-
-***************** PRE-PROCESSING  *****************
-
-
-
----
-
-Split Genres
-- Split all the genrese separated by "|" into 8 different columns.
-
-```{r fig.width=11, fig.height=5}
-# Split on "|"
-genres_split <- str_split(movie_metadata$genres, pattern="[|]", n=2)
-
-# Create Matrix
-genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
-
-# Dataframe of genres
-genres_df <- as.data.frame(genres_matrix)
-
-```
-
-
-```{r}
-# Collapse all genres into one column
-genres_one_col <- gather(genres_df) %>% 
-  select(value)
-
-# Plot frequency of first column
-genres_one_col %>%
-  group_by(value) %>% 
-  tally() %>% 
-  filter(n >= 30) %>% 
-  ggplot() +
-  geom_bar(aes(x = value, y=n), stat="identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  xlab("keyword") +
-  ylab("frequency") +
-  NULL
-```
-
-----
-
-Add genres to MAIN csv file and remove genres column
-
-```{r}
-# Take old genres column away
-movie_metadata <- subset(movie_metadata, select = -c(genres))
-
-# Take first column of genres_df and add it to MAIN df
-movie_metadata$genre <- genres_df$V1
-```
-
-----
-
-***************** QUESTIONS  *****************
+***************** ANSWERS  *****************
 
 ### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
 
