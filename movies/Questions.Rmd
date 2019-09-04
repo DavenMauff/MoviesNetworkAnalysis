@@ -1,12 +1,20 @@
 ---
 title: "Questions"
-author: "Lucia"
+author: "Luciaaaa"
 date: "03/09/2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr )
 knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
+
+
+```{r}
+movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
 ```
 
 ## Questions
@@ -22,19 +30,59 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
+```{r}
+movie_metadata %>%
+ filter(title_year > 2000) %>%  #Filter movies released after 2000
+ group_by(title_year, genres) %>%
+ summarise(count = n()) %>% #Count of Movies released
+ ggplot(aes(title_year, as.factor(genres)))+
+ geom_tile(aes(fill=count),colour="white")+
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie release")+
+ ylab("Genre of Movie Release")+
+ ggtitle("Heat Map")+
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
 2. Movie Budgets [ ]
 
-3. Movie Gross [ ]
+```{r}
 
+```
+
+3. Movie Gross [ ]
+```{r}
+
+```
 4. 3D Plot [ ]
-> IMDb Rating VS Budget VS Gross
+ IMDb Rating VS Budget VS Gross
+```{r}
+
+```
 
 5. Vote counts over the years [ ]
+```{r}
+
+```
 
 6. Popularity over the years [ ]
+```{r}
+
+```
 
 7. Distribution of Imdb Ratings
-> Movie Count VS Imdb Ratings
+ Movie Count VS Imdb Ratings
+```{r}
+ggplot(movie_metadata, aes(imdb_score)) +
+ geom_histogram(bins = 50) +
+ geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+ ylab("Movie Count") +
+ xlab("IMDB Rating") +
+ ggtitle("Histogram for IMDB ratings") +
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+```
 
 -----
 
