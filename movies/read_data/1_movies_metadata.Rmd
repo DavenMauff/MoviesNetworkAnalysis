@@ -103,7 +103,6 @@ for (i in metadata_filtered$production_companies) {
 dfs <- lapply(temp_list, data.frame, stringsAsFactors = FALSE)
 
 production_companies_df <- rbindlist(dfs, fill = T)
-production_companies_df$new_df <- 1:nrow()
 
 
 print(production_companies_df)

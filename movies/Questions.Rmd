@@ -1,12 +1,20 @@
 ---
 title: "Questions"
-author: "Lucia"
+author: "Luciaaaa"
 date: "03/09/2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr )
 knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
+
+
+```{r}
+movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
 ```
 
 ## Questions
@@ -22,19 +30,120 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
+```{r}
+movie_metadata %>%
+ filter(title_year > 2000) %>%  #Filter movies released after 2000
+ group_by(title_year, genres) %>%
+ summarise(count = n()) %>% #Count of Movies released
+ ggplot(aes(title_year, as.factor(genres)))+
+ geom_tile(aes(fill=count),colour="white")+
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie release")+
+ ylab("Genre of Movie Release")+
+ ggtitle("Heat Map")+
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
 2. Movie Budgets [ ]
 
-3. Movie Gross [ ]
+```{r}
+budget <- movie_metadata %>%
+  select(movie_title, budget) %>%
+  arrange(desc(budget)) %>%
+  head(15)
 
+x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Budgets")+
+  xlab("")+
+  ylab("Budget (in Millions)") + 
+  coord_flip()
+
+rev <- movie_metadata %>%
+  select(movie_title, gross) %>%
+  arrange(desc(gross)) %>%
+  head(15)
+
+y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Revenues")+
+  xlab("")+
+  ylab("Revenue (in Millions)") + 
+  coord_flip() 
+
+ggarrange(x, y,
+          labels = c("A", "B"),
+          ncol = 1, nrow = 2)
+```
+
+3. Movie Gross [ ]
+```{r}
+
+```
 4. 3D Plot [ ]
-> IMDb Rating VS Budget VS Gross
+ IMDb Rating VS Budget VS Gross
+```{r}
+
+```
 
 5. Vote counts over the years [ ]
+```{r}
+#Performing operations on Movies Vote Count over the years
+ movies_vote1 <- movie_metadata %>%
+ select(title_year, num_voted_users) %>%
+ group_by(title_year) %>%
+ summarise(count = sum(num_voted_users)) 
+
+ names(movies_vote1) <- c("date","Number of voted users")
+
+ ggplot(movies_vote1, aes(x = date, y = num_voted_users/1000)) +
+ geom_bar( stat = "identity") +
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Vote count (in thousands)") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 160, size = 3, colour = "red",angle=90)
+```
 
 6. Popularity over the years [ ]
+```{r}
+#Creating the required subset of data 
+movies_pop <- movie_metadata %>%
+ select(title_year, movie_facebook_likes) %>%
+ filter(title_year > 1980) %>%
+ group_by(title_year) %>%
+ summarise(avg = mean(movie_facebook_likes)) 
+
+ names(movies_pop) <- c("date","popularity")
+
+ #generating the popularity Vs time plot
+ ggplot(movies_pop, aes(x = date, y = movie_facebook_likes)) +
+ geom_point() +
+ geom_smooth() + 
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Mean Popularity Score") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 80, size = 3, colour = "red",angle=90)
+```
 
 7. Distribution of Imdb Ratings
-> Movie Count VS Imdb Ratings
+ Movie Count VS Imdb Ratings
+```{r}
+ggplot(movie_metadata, aes(imdb_score)) +
+ geom_histogram(bins = 50) +
+ geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+ ylab("Movie Count") +
+ xlab("IMDB Rating") +
+ ggtitle("Histogram for IMDB ratings") +
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+```
 
 -----
 
@@ -51,9 +160,54 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 > Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
 > Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 
+```{r}
+movie_metadata %>%
+  filter(imdb_score >5 ) %>% #Filter to show the graph only for vote_average values greater than 5
+ ggplot(aes(x = imdb_score, y = (gross-budget))) + #ROI == gross - budget #LUCIA PLEASE FIX:)
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("ROI Vs avg_rating")+
+  xlab("rating ")+
+  ylab("") +
+  geom_smooth()
+```
+Return on investment vs runtime of films:
+
+```{r}
+#Plot for ROI Vs run time
+a <- ggplot(movie_metadata, aes(x = duration, y = (gross-budget))) +
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  ggtitle("ROI Vs Duration")+
+  xlab("Duration (Minutes)")+
+  ylab("") +
+  geom_vline(xintercept = c(80,125),colour = c("blue","blue"))
+  
+#Zoomed Plot 
+b <- ggplot(movie_metadata, aes(x = duration, y = (gross-budget))) +
+  geom_point(alpha = 0.5, col = "darkgreen") + 
+  ggtitle("Zoomed-in: 80 - 125 minutes duration")+
+  xlab("Duration (Minutes)")+
+  ylab("(ROI") +
+  coord_cartesian(xlim = c(80, 125))
+
+#To create two plots in the same window
+ggarrange(a, b,  
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+```
+
 3. Top 20 genres with the most movies [ ]
+
+```{r}
+
+movie_metadata %>%
+  filter()
+
+
+```
+
 > Genre VS Freq of movies
-> Look at Link 4 for more inspo
+> Look at Link 4 for more inspo (LOL) Need to choose way to graph... mmmmmm... probs line graph?
 
 -----
 
@@ -74,6 +228,9 @@ Literally works on our data, however, this link does a lot of pre-processing tha
 5. Full-Grown Tree [ ]
 > Random Forest
 > K-Nearest Neighbour
+
+
+
 
 -----
 

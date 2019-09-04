@@ -1,0 +1,106 @@
+
+```{r}
+pacman::p_load(stringr,ggplot2, tidyr, ngram, dplyr, igraph, ggraph, visNetwork, tidygraph, graphlayouts,ggpubr, ggrepel, ggridges, viridis)
+setwd(getwd())
+options(scipen = 999)
+```
+
+```{r}
+#read in data
+imdb = read.csv("../data-raw/movie_metadata.csv", sep=";")
+keywords = read.csv("../data-out/extracted_keywords.csv")
+```
+
+```{r}
+# REMEMBER TO REMOVE THESE
+colSums(sapply(imdb, is.na))
+```
+
+```{r}
+# Make nodes the actor
+# Make the edges if they are in a movie together
+```
+
+```{r}
+#extract the actors
+actors <- imdb %>%
+  select(actor_1_name, actor_2_name, actor_3_name) 
+head(actors, 5)
+```
+
+```{r}
+#make the nodelist
+actor_nodes <- actors %>% 
+  gather() %>% 
+  select(value) %>% 
+  distinct(value)
+
+head(actor_nodes, 5)
+```
+
+```{r}
+#make the edgelist for actor_1 and actor_2
+temp_edges_1_2 <- actors %>% 
+  select(actor_1_name, actor_2_name) %>% 
+  na.omit() %>% 
+  rename(from = actor_1_name) %>% 
+  rename(to = actor_2_name)
+
+temp_edges_1_2[temp_edges_1_2==""] <- NA
+
+temp_edges_1_2 <- temp_edges_1_2 %>% 
+  na.omit()
+
+head(temp_edges_1_2, 5)
+```
+```{r}
+# edgelist for actor_1 and actor_3
+temp_edges_1_3 <- actors %>% 
+  select(actor_1_name, actor_3_name) %>% 
+  na.omit() %>% 
+  rename(from = actor_1_name) %>% 
+  rename(to = actor_3_name)
+
+temp_edges_1_3[temp_edges_1_3==""] <- NA
+
+#remove both values if there is even one NA present, eg Tom Hardy -> NA
+temp_edges_1_3 <- temp_edges_1_3%>% 
+  na.omit()
+
+head(temp_edges_1_3, 5)
+```
+
+```{r}
+# edgelist for actor_2 and actor_3
+temp_edges_2_3 <- actors %>% 
+  select(actor_2_name, actor_3_name) %>% 
+  na.omit() %>% 
+  rename(from = actor_2_name) %>% 
+  rename(to = actor_3_name)
+
+temp_edges_2_3[temp_edges_2_3==""] <- NA
+
+temp_edges_2_3 <- temp_edges_2_3 %>% 
+  na.omit()
+
+head(temp_edges_2_3, 5)
+```
+
+```{r}
+#Combine the three sets of edges
+actor_edges <- data.frame(from = "", to = "")
+
+actor_edges <- do.call("rbind", list(temp_edges_1_2, temp_edges_1_3, temp_edges_2_3))
+
+head(actor_edges)
+```
+
+```{r}
+#create the graph
+actors_in_same_movies <- graph_from_data_frame(actor_edges)
+```
+
+```{r}
+ggraph(actors_in_same_movies)
+```
+
