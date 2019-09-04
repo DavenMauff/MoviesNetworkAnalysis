@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally)
+pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret)
 knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
@@ -382,11 +382,85 @@ ggcorr(IMDB, label = TRUE, label_round = 2, label_size = 3, size = 2.5, hjust = 
 
 We don’t see any strong correlation (absolute value greater than 0.7) any more.
 
-
 5. Full-Grown Tree [ ]
-> Random Forest
-> K-Nearest Neighbour
 
+Our goal is to build a model, which can help us predict if a movie is good or bad. So we don’t really want an exact score to be predicted, we only want to know how good or how bad is the movie. Therefore, we bin the score into 4 buckets: less than 4, 4~6, 6~8 and 8~10, which represents bad, OK, good and excellent respectively.
+
+```{r}
+IMDB$binned_score <- cut(IMDB$imdb_score, breaks = c(0,4,6,8,10))
+```
+
+> Organise the dataset
+
+We want to reorder the columns to make the dataset easier to be understood. And we also renamed the columns to make the names shorter.
+
+```{r}
+IMDB <- IMDB[,c(9,4,5,14,12,2,3,13,1,6,10,7,8,11,15)]
+colnames(IMDB) <- c("budget", "gross", "user_vote", "critic_review_ratio",
+                    "movie_fb", "director_fb", "actor1_fb", "other_actors_fb",
+                    "duration", "face_number", "year", "country", "content",
+                    "imdb_score", "binned_score")
+```
+
+> Split Data
+
+Here we split data into training, validation and test sets with the ratio of 6:2:2.
+
+```{r}
+
+IMDB <- IMDB[!is.na(IMDB$imdb_score), ]
+
+colSums(sapply(IMDB, is.na))
+
+set.seed(45)
+train.index <- sample(row.names(IMDB), dim(IMDB)[1]*0.6)
+valid.index <- sample(setdiff(row.names(IMDB), train.index), dim(IMDB)[1]*0.2)
+test.index <- setdiff(row.names(IMDB), union(train.index, valid.index))
+train <- IMDB[train.index, ]
+valid <- IMDB[valid.index, ]
+test <- IMDB[test.index, ]
+
+train <-na.omit(train$imdb_score)
+
+test <- na.omit(test)
+```
+
+> Implement Algorithm
+
+> Classification Tree
+* Full-grown Tree
+
+```{r}
+# Full grown tree
+class.tree <- rpart(data = train, binned_score ~ . -imdb_score, method = "class")
+
+## plot tree
+prp(class.tree, type = 1, extra = 1, under = TRUE, split.font = 2, varlen = 0) 
+```
+If (user_vote >= 551000) then class = (8,10].
+If (83000 <= user_vote < 551000) then class = (6,8].
+If (user_vote < 83000) and (duration >= 106) then class = (6,8].
+If (user_vote < 83000) and (duration < 106) and (gross < 7900000) then class = (6,8].
+If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb < 4500) then class = (4,6].
+If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year < 2000) then class = (6,8].
+If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio < 1.2) then class = (4,6].
+If (user_vote < 41000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio >= 1.2) then class = (4,6].
+If (41000 <= user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio >= 1.2) then class = (6,8].
+
+From these rules, we can conclude that movies with a lot of votes in imdb website tend to have a higher score, which really makes sense because popular movies will have a lot of fans to vote high scores for them.
+On the contrary, if a movie has fewer votes, it can still be a good movie if its duration is longer (rule #3).
+It is surprise to see that movies make less profit are good, but ok if they make more profit (rule #4).
+
+> Best-pruned Tree
+
+```{r}
+# cross-validation procedure
+# argument cp sets the smallest value for the complexity parameter.
+set.seed(51)
+cv.ct <- rpart(binned_score ~ . -imdb_score, data = train, method = "class", 
+               cp = 0.00001, minsplit = 5, xval = 5)
+printcp(cv.ct)
+```
 
 
 
