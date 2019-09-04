@@ -49,4 +49,14 @@ genres_one_col %>%
   NULL
 ```
 
+Add genres to MAIN csv file and remove genres column
+
+```{r}
+# Take old genres column away
+movie_metadata <- subset(movie_metadata, select = -c(genres))
+
+# Take first column of genres_df and add it to MAIN df
+movie_metadata$genre <- genres_df$V1
+```
+
 ----

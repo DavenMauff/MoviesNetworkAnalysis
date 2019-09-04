@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ***************** PRE-PROCESSING  *****************
 
----
-
 ```{r Read in CSV file}
 movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
@@ -62,20 +60,6 @@ movie_metadata$imdb_score <- as.numeric(movie_metadata$imdb_score)
 ```
 
 
-Add genres to MAIN csv file and remove genres column
-
-```{r}
-# Take old genres column away
-movie_metadata <- subset(movie_metadata, select = -c(genres))
-
-# Take first column of genres_df and add it to MAIN df
-movie_metadata$genre <- genres_df$V1
-```
-
-----
-
 ```{r Save Clean CSV File}
-
 write.csv(movie_metadata, file="data/movie_metadata_clean.csv")
-
 ```
