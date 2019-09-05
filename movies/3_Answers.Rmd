@@ -1,0 +1,189 @@
+---
+title: "Lucia"
+author: "Lucia"
+date: "04/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load("dplyr", "ggplot2","tidyr", "stringr","ggplot2", "tidyr", "ngram")
+knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
+
+***************** ANSWERS  *****************
+
+### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
+
+1. HeatMap [ ]
+> Genre VS Year that Movie is Released
+
+---
+
+```{r Read in CSV file}
+movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
+```
+
+Split Genres
+- Split all the genrese separated by "|" into 8 different columns.
+
+```{r fig.width=11, fig.height=5}
+# Split on "|"
+genres_split <- str_split(movie_metadata$genres, pattern="[|]", n=2)
+
+# Create Matrix
+genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
+
+# Dataframe of genres
+genres_df <- as.data.frame(genres_matrix)
+```
+
+
+```{r}
+# Collapse all genres into one column
+genres_one_col <- gather(genres_df) %>% 
+  select(value)
+
+# Plot frequency of first column
+genres_one_col %>%
+  group_by(value) %>% 
+  tally() %>% 
+  filter(n >= 30) %>% 
+  ggplot() +
+  geom_bar(aes(x = value, y=n), stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("Genre") +
+  ylab("Frequency") +
+  NULL
+```
+
+Add genres to MAIN csv file and remove genres column
+
+```{r}
+# Take old genres column away
+movie_metadata <- subset(movie_metadata, select = -c(genres))
+
+# Take first column of genres_df and add it to MAIN df
+movie_metadata$genre <- genres_df$V1
+```
+
+----
+
+Take all profitable movies that had a budget greater than 1mil and gross greater than 1mil
+```{r}
+revenue_data <- movie_metadata %>%
+  filter(movie_metadata$budget >= 1000000 & movie_metadata$gross >= 1000000) %>%
+  mutate(ROI = (gross - budget)/budget)
+
+dim(revenue_data)
+```
+
+Plot
+```{r}
+revenue_data %>%
+ filter(title_year > 1990) %>%
+ group_by(title_year, genre) %>%
+ summarise(count = n()) %>%
+ ggplot(aes(title_year, as.factor(genre))) +
+ geom_tile(aes(fill=count),colour="white") +
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie") +
+ ylab("Genre of Movie") +
+ ggtitle("Heat Map ") +
+  theme(panel.background = element_blank())
+```
+
+---------------
+
+Movie Budgets [X]
+
+```{r}
+budget <- movie_metadata %>%
+  select(movie_title, budget) %>%
+  arrange(desc(budget)) %>%
+  head(15)
+
+x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Budgets")+
+  xlab("")+
+  ylab("Budget (in Millions)") + 
+  coord_flip()
+
+rev <- movie_metadata %>%
+  select(movie_title, gross) %>%
+  arrange(desc(gross)) %>%
+  head(15)
+
+y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Gross")+
+  xlab("")+
+  ylab("Gross (in Millions)") + 
+  coord_flip() 
+
+ggarrange(x, y,
+          labels = c("A", "B"),
+          ncol = 1, nrow = 2)
+```
+
+----------------
+
+
+IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s.
+```{r}
+#Performing operations on Movies Vote Count over the years
+ movies_vote1 <- movie_metadata %>%
+  select(title_year, num_voted_users) %>%
+  group_by(title_year) %>%
+  summarise(count = sum(num_voted_users)) 
+
+ ggplot(movies_vote1, aes(x = title_year, y = count/1000)) +
+   geom_bar( stat = "identity") +
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Vote count (in thousands)") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
+   annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+```
+
+
+__________________
+
+Popularity over the years [X]
+```{r}
+#Creating the required subset of data 
+movies_pop <- movie_metadata %>%
+ select(title_year, movie_facebook_likes) %>%
+ filter(title_year > 1980) %>%
+ group_by(title_year) %>%
+ summarise(avg = mean(movie_facebook_likes)) 
+
+ #generating the popularity Vs time plot
+ ggplot(movies_pop, aes(x = title_year, y = avg)) +
+   geom_point() +
+   geom_smooth() + 
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Mean Popularity Score") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+   annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
+```
+
+
+-------------------
+
+Distribution of Imdb Ratings
+Movie Count VS Imdb Ratings
+```{r}
+ggplot(movie_metadata, aes(imdb_score)) +
+ geom_histogram(bins = 50) +
+ geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+ ylab("Movie Count") +
+ xlab("IMDB Rating") +
+ ggtitle("Histogram for IMDB ratings") +
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+```

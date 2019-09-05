@@ -1,0 +1,65 @@
+---
+title: "Pre-Processing"
+author: "Lucia"
+date: "04/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***************** PRE-PROCESSING  *****************
+
+```{r Read in CSV file}
+movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
+```
+
+---
+
+```{r # remove duplicates if any}
+movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
+```
+
+
+```{r # removing na values}
+movie_metadata <- na.omit(movie_metadata)
+```
+
+
+```{r # removing blank fields}
+movie_metadata <- movie_metadata[which(!(movie_metadata$director_name == "" | 
+                                           movie_metadata$color == "" | 
+                                           movie_metadata$language == "" | 
+                                           movie_metadata$content_rating == "" | 
+                                           movie_metadata$plot_keywords == "")), ]
+```
+
+
+```{r # fixing movie names}
+movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)
+```
+
+
+```{r # extracting genres from sub genres}
+movie_metadata$sub_genres <- movie_metadata$genres 
+movie_metadata$genres <- NULL
+movie_metadata$genres <- factor(str_extract(movie_metadata$sub_genres, pattern = "^[a-zA-Z]*"))
+```
+
+
+```{r # creating a new feature called total_facebook_likes}
+movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes + 
+  movie_metadata$actor_3_facebook_likes + movie_metadata$actor_1_facebook_likes +
+  movie_metadata$cast_total_facebook_likes + movie_metadata$actor_2_facebook_likes
+```
+
+
+```{r # converting imdb_score to numeric feature}
+movie_metadata$imdb_score <- as.numeric(movie_metadata$imdb_score)
+```
+
+
+```{r Save Clean CSV File}
+write.csv(movie_metadata, file="../data-out/movie_metadata_clean.csv")
+```
