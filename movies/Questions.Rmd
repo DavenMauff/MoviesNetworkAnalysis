@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr)
+pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr, ggthemes, corrplot)
 knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
@@ -536,22 +536,24 @@ As expected, there is not much correlation since most critically acclaimed movie
 > Imdb score VS movie FB likes
 
 ```{r}
-movie_metadata %>%
+IMDB %>%
   plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
 ```
-
+We divide this scatter plot by content-rating. Movie with extremely high Facebook likes tend to have higher imdb score. But the score for movie with low Facebook likes vary in a very wide range.
 
 4. Correlation Heatmap [ ]
 
+We have 1660 directors, and 3621 actors in this data.
+
 ```{r}
 # number of directors
-sum(uniqueN(movie_metadata$director_name))
+sum(uniqueN(IMDB$director_name))
 ```
 
 
 ```{r}
 # number of actors
-sum(uniqueN(movie_metadata[, c("actor_1_name", "actor_2_name", "actor_3_name")]))
+sum(uniqueN(IMDB[, c("actor_1_name", "actor_2_name", "actor_3_name")]))
 ```
 
 Since all the names are so different for the whole dataset, there is no point to use names to predict score.
@@ -561,10 +563,12 @@ Same with plot keywords, they are too diverse to be used in the prediction.
 And movie link is also a redundant variable.
 
 ```{r}
-IMDB <- subset(movie_metadata, select = -c(director_name, actor_2_name, actor_1_name,
+IMDB <- subset(IMDB, select = -c(director_name, actor_2_name, actor_1_name,
                                  movie_title, actor_3_name, plot_keywords, 
                                  movie_imdb_link))
 ```
+
+> Remove Linear Dependent Variables
 
 For the purpose of data exploration, we added two variables based on existing variables: profit and return_on_investment_perc. In order to avoid multicollinearity, here we remove these two added variables.
 
@@ -636,9 +640,13 @@ IMDB <- IMDB[!is.na(IMDB$imdb_score), ]
 colSums(sapply(IMDB, is.na))
 
 set.seed(45)
-train.index <- sample(row.names(IMDB), dim(IMDB)[1]*0.6)
+
+
+train.index <- sample(row.names(IMDB), dim(IMDB)[1]*0.8)
 valid.index <- sample(setdiff(row.names(IMDB), train.index), dim(IMDB)[1]*0.2)
 test.index <- setdiff(row.names(IMDB), union(train.index, valid.index))
+
+
 train <- IMDB[train.index, ]
 valid <- IMDB[valid.index, ]
 test <- IMDB[test.index, ]
@@ -684,7 +692,6 @@ cv.ct <- rpart(binned_score ~ . -imdb_score, data = train, method = "class",
                cp = 0.00001, minsplit = 5, xval = 5)
 printcp(cv.ct)
 ```
-
 
 
 -----
