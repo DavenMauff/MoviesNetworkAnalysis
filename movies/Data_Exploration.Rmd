@@ -1,0 +1,50 @@
+---
+title: "Data_Exploration"
+author: "Indurain"
+date: "05/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Social network analysis (SNA) is a process of quantitative and qualitative analysis (Techopedia.com, 2019). When comparing data that can be measured and counted, it is easily tabulated and inferences can thus be created. However, qualitative data is conceptual and descriptive. SNA is assistive in mapping the flow of relationships and producing a visual representation on relationship change. Moreover, SNA is assistive when analyzing not only simple entities, but complex entities too. SNA consists of nodes and ties, examining humans and their relationships. 
+
+In this project, data cleaning has been performed. Thereafter basic analysis was completed on the movie dataset. Observations have been completed such as return on investment and success measures of genres, directors and actors.
+
+
+## Headings
+
+Variable Name            | Description
+-------------------------|----------------------------------------------
+color                    | Specifies whether a movie is black and white or color
+director_name            | Contains name of the director of a movie
+num_critic_for_reviews   | Contains number of critic reviews per movie
+duration                 | Contains duration of a movie in minutes
+director_facebook_likes  | Contains number of facebook likes for a director
+actor_3_facebook_likes   | Contains number of facebook likes for actor 3
+actor_2_name             | Contains name of 2nd leading actor of a movie
+actor_1_facebook_likes   | Contains number of facebook likes for actor 1 
+gross                    | Contains the amount a movie grossed in USD
+genres                   | Contains the sub-genres to which a movie belongs
+actor_1_name             | Contains name of the actor in lead role
+movie_title              | Title of the Movie
+num_voted_users          | Contains number of users votes for a movie
+cast_total_facebook_likes| Contains number of facebook likes for the entire cast of a movie
+actor_3_name             | Contains the name of the 3rd leading actor of a movie
+facenumber_in_poster     | Contains number of actors faces on a movie poster
+plot_keywords            | Contains key plot words associated with a movie
+movie_imdb_link          | Contains the link to the imdb movie page
+num_user_for_reviews     | Contains the number of user generated reviews per movie
+language                 | Contains the language of a movie
+country                  | Contains the name of the country in which a movie was made
+content_rating           | Contains maturity rating of a movie
+budget                   | Contains the amount of money spent in production per movie
+title_year               | Contains the year in which a film was released
+actor_2_facebook_likes   | Contains number of facebook likes for actor 2
+imdb_score               | Contains user generated rating per movie
+aspect_ratio             | Contains the size of the aspect ratio of a movie
+movie_facebook_likes     | Number of likes of the Actor_1 on his/her Facebook Page
