@@ -39,6 +39,8 @@ We have split our Exploratory Data Analysis into four main parts:
 | 3 	| Exploring the Data <br>- We conduct basic analysis on the dataset.  <br>- We explore genres. <br>- We explore movie popularity. <br>- We look at profit, gross, and return of interests with movies. <br>- We conduct more advanced analysis on the dataset.               	|
 | 4 	| Network Analysis <br>- We measure the network (centrality, degree distribution, number of components, average degree) <br>- We use network measures to highlight certain nodes (actors) and see which measures of an actor will increase ratings and budgets.  	|                                                                                                                                  |
 
+-----
+
 ## Admin
 
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
@@ -53,6 +55,8 @@ movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
 In the next section we can introduce our dataset and look its content. 
+
+-----
 
 ## Introducing The Dataset
 
@@ -92,9 +96,18 @@ aspect_ratio             | Contains the size of the aspect ratio of a movie
 movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 
-Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries.
+Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `X` number of actors/actresses. Around `X%` of the movies are from the USA, `X%` from UK, and `X%` from other countries.
 
+-----
 
+## Pre-Processing Data
 
+When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment. Which genre would you guess is the most successful? Which actors do you think are the most popular? 
 
+-----
 
+## Analysing Data
+
+-----
+
+## Network Analysis
