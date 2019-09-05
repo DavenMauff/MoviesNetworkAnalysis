@@ -82,7 +82,7 @@ dim(revenue_data)
 Plot
 ```{r}
 revenue_data %>%
- filter(title_year > 2000) %>%
+ filter(title_year > 1990) %>%
  group_by(title_year, genre) %>%
  summarise(count = n()) %>%
  ggplot(aes(title_year, as.factor(genre))) +

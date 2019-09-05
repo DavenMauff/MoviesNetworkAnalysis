@@ -438,8 +438,6 @@ movie_metadata %>%
 ```
 
 
-ends at image 16
-
 > Act 2: Trends and Relationships
 
 8. Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year [ ]
