@@ -1,18 +1,23 @@
 ---
-title: "Questions"
+title: "link4"
 author: "Lucia"
-date: "03/09/2019"
+date: "05/09/2019"
 output: html_document
 ---
 
-## Installed Libraries:
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr, ggthemes, corrplot, tidyverse, plotly, RColorBrewer, stringr, DT)
+knitr::opts_chunk$set(echo = TRUE)
+setwd(getwd())
+```
 
 ```{r}
-library(tidyverse)
-library(plotly)
-library(RColorBrewer)
-library(stringr)
-library(DT)
+movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
 ## The dataset was imported through R:
