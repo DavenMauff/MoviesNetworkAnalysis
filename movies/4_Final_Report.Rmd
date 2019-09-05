@@ -1,36 +1,100 @@
 ---
-title: "Movies"
-output: html_document
+title: "An Exploratory Data and Network Analysis of Movies"
+author: Clarice, Daven, Lucia, Christopher and Indurain
+date: July 31, 2016
+output:
+  prettydoc::html_pretty:
+    theme: tactile
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF)
+Resize Code ChunK Font Size
+```{css, echo=FALSE}
+code {
+  font-size:0.8em;
+}
+
+table {
+  font-size:0.9em;
+}
+
+p {
+  font-size:0.9em;
+}
 ```
 
+## Introduction
+
+In this report, we will be analysing a dataset from [Kaggle](https://www.google.com), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results 
+
+We have split our Exploratory Data Analysis into four main parts:
+
+|  Section 	|                                                                                                                                                                                                                                                 	|
+|---	|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| 1 	| Introducing the Data <br> - We first try to understand the data and look at its content.  |
+| 2 	| Pre-Processing <br>- We look at what needs to be altered or removed from the dataset. <br>- We try clean any dirty text. <br>- We try to minimise the dataset's missing values.                                                                                    	|
+| 3 	| Exploring the Data <br>- We conduct basic analysis on the dataset.  <br>- We explore genres. <br>- We explore movie popularity. <br>- We look at profit, gross, and return of interests with movies. <br>- We conduct more advanced analysis on the dataset.               	|
+| 4 	| Network Analysis <br>- We measure the network (centrality, degree distribution, number of components, average degree) <br>- We use network measures to highlight certain nodes (actors) and see which measures of an actor will increase ratings and budgets.  	|                                                                                                                                  |
+
+## Admin
+
+Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
+
 ```{r}
-metadata = read.csv("../movie_metadata.csv")
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats)
 ```
 
-# An Analysis on Movies
+We import the dataset like this:
+```{r}
+movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
+```
 
-----
+In the next section we can introduce our dataset and look its content. 
 
-### Introduction
+## Introducing The Dataset
 
-----
+This section of the report is quite essential for our analysis. We cannot make any interesting inferences from the dataset if we do not know what is contained within it. In this section we will try to understand exactly what we are dealing with. Thereafter, we can begin to draw interesting results. We have already read in our dataset called `movie_metadata`, so we can see the following:
 
-### Methodology
+The dataset contains 28 unique columns/variables, each of which are described in the table below:
 
-----
+Variable Name            | Description
+-------------------------|----------------------------------------------
+color                    | Specifies whether a movie is black and white or color
+director_name            | Contains name of the director of a movie
+num_critic_for_reviews   | Contains number of critic reviews per movie
+duration                 | Contains duration of a movie in minutes
+director_facebook_likes  | Contains number of facebook likes for a director
+actor_3_facebook_likes   | Contains number of facebook likes for actor 3
+actor_2_name             | Contains name of 2nd leading actor of a movie
+actor_1_facebook_likes   | Contains number of facebook likes for actor 1 
+gross                    | Contains the amount a movie grossed in USD
+genres                   | Contains the sub-genres to which a movie belongs
+actor_1_name             | Contains name of the actor in lead role
+movie_title              | Title of the Movie
+num_voted_users          | Contains number of users votes for a movie
+cast_total_facebook_likes| Contains number of facebook likes for the entire cast of a movie
+actor_3_name             | Contains the name of the 3rd leading actor of a movie
+facenumber_in_poster     | Contains number of actors faces on a movie poster
+plot_keywords            | Contains key plot words associated with a movie
+movie_imdb_link          | Contains the link to the imdb movie page
+num_user_for_reviews     | Contains the number of user generated reviews per movie
+language                 | Contains the language of a movie
+country                  | Contains the name of the country in which a movie was made
+content_rating           | Contains maturity rating of a movie
+budget                   | Contains the amount of money spent in production per movie
+title_year               | Contains the year in which a film was released
+actor_2_facebook_likes   | Contains number of facebook likes for actor 2
+imdb_score               | Contains user generated rating per movie
+aspect_ratio             | Contains the size of the aspect ratio of a movie
+movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
-### Content (Layout)
 
-----
+Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries.
 
-### Conclusion
+
+
 
 

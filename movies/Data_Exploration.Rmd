@@ -47,4 +47,4 @@ title_year               | Contains the year in which a film was released
 actor_2_facebook_likes   | Contains number of facebook likes for actor 2
 imdb_score               | Contains user generated rating per movie
 aspect_ratio             | Contains the size of the aspect ratio of a movie
-movie_facebook_likes     | Number of likes of the Actor_1 on his/her Facebook Page
+movie_facebook_likes     | Number of likes of the movie on its Facebook Page
