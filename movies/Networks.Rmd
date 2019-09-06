@@ -1,6 +1,6 @@
 
 ```{r}
-pacman::p_load(stringr,ggplot2, tidyr, ngram, dplyr, igraph, ggraph, visNetwork, tidygraph, graphlayouts,ggpubr, ggrepel, ggridges, viridis)
+pacman::p_load(stringr,ggplot2, tidyr, ngram, dplyr, igraph, ggraph, visNetwork, tidygraph, graphlayouts,ggpubr, ggrepel, ggridges, viridis, network, reshape, tidytext, CINNA)
 setwd(getwd())
 options(scipen = 999)
 ```
@@ -43,25 +43,27 @@ head(actor_nodes, 5)
 temp_edges_1_2 <- actors %>% 
   select(actor_1_name, actor_2_name) %>% 
   na.omit() %>% 
-  rename(from = actor_1_name) %>% 
-  rename(to = actor_2_name)
+  dplyr::rename(from = actor_1_name, to = actor_2_name) 
 
 temp_edges_1_2[temp_edges_1_2==""] <- NA
+temp_edges_1_2[temp_edges_1_2==" "] <- NA
 
 temp_edges_1_2 <- temp_edges_1_2 %>% 
   na.omit()
 
 head(temp_edges_1_2, 5)
 ```
+
 ```{r}
 # edgelist for actor_1 and actor_3
 temp_edges_1_3 <- actors %>% 
   select(actor_1_name, actor_3_name) %>% 
   na.omit() %>% 
-  rename(from = actor_1_name) %>% 
-  rename(to = actor_3_name)
+  dplyr::rename(from = actor_1_name) %>% 
+  dplyr::rename(to = actor_3_name)
 
 temp_edges_1_3[temp_edges_1_3==""] <- NA
+temp_edges_1_3[temp_edges_1_3==" "] <- NA
 
 #remove both values if there is even one NA present, eg Tom Hardy -> NA
 temp_edges_1_3 <- temp_edges_1_3%>% 
@@ -75,10 +77,11 @@ head(temp_edges_1_3, 5)
 temp_edges_2_3 <- actors %>% 
   select(actor_2_name, actor_3_name) %>% 
   na.omit() %>% 
-  rename(from = actor_2_name) %>% 
-  rename(to = actor_3_name)
+  dplyr::rename(from = actor_2_name) %>% 
+  dplyr::rename(to = actor_3_name)
 
 temp_edges_2_3[temp_edges_2_3==""] <- NA
+temp_edges_2_3[temp_edges_2_3==" "] <- NA
 
 temp_edges_2_3 <- temp_edges_2_3 %>% 
   na.omit()
@@ -92,15 +95,260 @@ actor_edges <- data.frame(from = "", to = "")
 
 actor_edges <- do.call("rbind", list(temp_edges_1_2, temp_edges_1_3, temp_edges_2_3))
 
+temp_edges_1_2 = NULL
+temp_edges_1_3 = NULL
+temp_edges_2_3 = NULL
+
 head(actor_edges)
 ```
 
 ```{r}
 #create the graph
-actors_in_same_movies <- graph_from_data_frame(actor_edges)
+actors_in_same_movies <- graph_from_data_frame(actor_edges, directed = F)
+```
+
+```{r eval=F}
+network(actor_edges, vertex.attr = actor_nodes, matrix.type = "edgelist", ignore.eval = FALSE, directed = F) %>% 
+  plot()
 ```
 
 ```{r}
-ggraph(actors_in_same_movies)
+#write to graphml for Gephi purposes
+write.graph(actors_in_same_movies, "../data-out/graphs/actors_in_same_movies.graphml", format=c("graphml"))
+```
+
+```{r}
+#Weight edges instead of duplicate edges
+casted_actors <- actor_edges %>% 
+  mutate(val = 1) %>% 
+  select(from, to, val) %>% 
+  cast_sparse(row = from, column = to, value = val)
+
+spread_graph <- graph_from_incidence_matrix(casted_actors)
+```
+
+```{r}
+projected <- bipartite.projection(spread_graph, which = "true") 
+```
+
+
+##Network measures
+
+Eigenvector centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. Google's PageRank and the Katz centrality are variants of the eigenvector centrality. (Stolen from wiki)
+```{r}
+#Global Centrality
+#Eigen
+e_values <- projected %>% 
+  as_adjacency_matrix(type="both") %>% 
+  eigen()
+
+e_values['values'] %>% 
+  as.data.frame() %>% 
+  ggplot()+
+  geom_density(aes(values)) +
+  xlab("Eigen value") 
+```
+
+
+In a connected graph, the normalized closeness centrality (or closeness) of a node is the average length of the shortest path between the node and all other nodes in the graph. Thus the more central a node is, the closer it is to all other nodes. (stolen from Wiki)
+
+(I assume the higher the number, the closer and more central it is)
+```{r fig.width=3, fig.height=2}
+#Global Centrality
+#Closeness
+close_cent <- projected %>% 
+  closeness()
+#avg centrality (but all the disconnected triads are still here)
+#mean(close_cent) #0.0000001146718
+#0.0000852827 for filtered
+
+
+close_cent %>% 
+  as.data.frame() %>% 
+  dplyr::rename(closeness = '.') %>% 
+  ggplot()+
+  geom_density(aes(closeness)) +
+  xlab("Centrality (Closeness)")
+
+#So the closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component.
+```
+
+Interpretively, the Bonacich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations). (stolen from Wiki)
+```{r fig.width=4}
+#Boncich power centralities
+power_cent <- projected %>% power_centrality(exponent = 0.9)
+
+max(power_cent) #10.49827
+
+power_cent %>% 
+  as.data.frame() %>% 
+  dplyr::rename(power = '.') %>% 
+  mutate(power = as.numeric(power)) %>% 
+  ggplot() +
+  geom_density(aes(x=power))
+```
+
+```{r fig.height=4}
+#Page Rank
+page_ranks <- projected %>% 
+  page_rank()
+
+max(page_ranks$vector) #0.002890236
+
+page_ranks$vector %>% 
+  as.data.frame() %>% 
+  dplyr::rename(page_r = '.') %>% 
+  mutate(page_r = as.numeric(page_r)) %>% 
+  ggplot() +
+  geom_density(aes(x=page_r)) +
+  xlab("Page Rank")
+```
+
+
+##Community Detection
+
+```{r}
+#Global Community detection
+community_comms <- as_tbl_graph(projected) %>% 
+  activate(nodes) %>% 
+  mutate(global_comm = group_louvain(weights = weight)) %>% 
+  as.data.frame()
+
+projected <- projected %>% 
+  set_vertex_attr("comm", value = community_comms$global_comm)
+```
+
+```{r}
+#Check distributions of global comms
+node_comms <- projected %>%
+  as_tbl_graph() %>% 
+  as.data.frame()
+
+#For some reason the first row is ""
+node_comms <- node_comms[-1,]
+
+node_comms %>% 
+  ggplot() +
+  geom_bar(aes(x=comm)) +
+  scale_y_log10()
+```
+
+```{r}
+#Filter out those small and irrevalant global comms
+node_comms %>% 
+  filter(comm < 52) %>% 
+  ggplot() +
+  geom_bar(aes(x=comm))+
+  scale_y_log10()+
+  NULL
+  
+```
+
+```{r}
+node_comms_filtered <- node_comms %>% 
+  filter(comm<51) 
+
+
+#projected <- set_vertex_attr(projected, name = "g_comm", value = node_comms)
+projected <- set_vertex_attr(projected, name = "Label", value = projected$name)
+
+head(projected)
+
+length(V(projected))
+
+write.graph(projected, "../data-out/graphs/filtered_actor_comms.graphml", format=c("graphml"))
+```
+
+```{r}
+top_comms_nodes <- node_comms %>% 
+  add_count(comm) %>%
+  arrange(name, desc(n)) %>% 
+  group_by(comm) %>% 
+  #select(-name) %>% 
+  distinct %>% 
+  top_n(5) %>% 
+  ungroup() %>% 
+  arrange(n) %>% 
+  filter(n > 100) %>% 
+  arrange(desc(n)) %>% 
+  na.omit()
+top_comms_nodes
+```
+
+```{r}
+filtered_actor_edges <- subgraph(projected, top_comms_nodes$name)
+```
+
+
+```{r}
+write.graph(filtered_actor_edges, "../data-out/graphs/filtered_actor_edges.graphml", format=c("graphml"))
+```
+
+##Analysis of Global Comm 1
+
+```{r}
+g_comm_1_nodes <-  top_comms_nodes %>% 
+  filter(comm == 1) 
+
+g_comm_1_graph <- subgraph(projected, g_comm_1_nodes$name) 
+```
+
+```{r fig.width=4}
+#Global Centrality
+#Eigen
+e_values_1 <- g_comm_1_graph %>% 
+  as_adjacency_matrix(type="both") %>% 
+  eigen()
+
+e_values_1['values'] %>% 
+  as.data.frame() %>% 
+  ggplot()+
+  geom_density(aes(values)) +
+  xlab("Eigen value")
+```
+
+```{r fig.width=8, fig.height=6}
+#Comm Centrality
+#Closeness
+close_cent <- filtered_actor_edges %>% 
+  closeness()
+#avg centrality (but all the disconnected triads are still here)
+mean(close_cent)
+#0.0000852827 for filtered
+#0.0000001146718 for original
+
+#filtered graph would have higher closeness as we are looking at one community
+
+close_cent %>% 
+  as.data.frame() %>% 
+  dplyr::rename(closeness = '.') %>% 
+  ggplot()+
+  geom_density(aes(closeness))
+```
+
+```{r fig.width=4}
+#Boncich power centralities
+power_cent <- filtered_actor_edges %>% power_centrality(exponent = 0.9)
+
+max(power_cent) #10.49827
+
+power_cent %>% 
+  as.data.frame() %>% 
+  dplyr::rename(power = '.') %>% 
+  mutate(power = as.numeric(power)) %>% 
+  ggplot() +
+  geom_density(aes(x=power))
+```
+
+
+
+```{r}
+spread(top_comms_nodes, key = comm, n)
+```
+
+
+```{r}
+#write to graphml for Gephi purposes
+write.graph(projected, "../data-out/graphs/actors_in_same_weighted.graphml", format=c("graphml"))
 ```
 
