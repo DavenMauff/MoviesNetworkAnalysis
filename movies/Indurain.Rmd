@@ -17,10 +17,6 @@ library(DT)
 
 ## The dataset was imported through R:
 
-```{r # Load data:I imported the dataset through R}
-```
-
-
 ## Tidying and updating the dataset:   
 ```{r # fixing movie names}
 movie_metadata$imdb_score <- gsub("Â", "", movie_metadata$imdb_score)

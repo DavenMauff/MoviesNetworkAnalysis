@@ -1,5 +1,5 @@
 ---
-title: "Questions"
+title: "link2"
 author: "Luciaaaa"
 date: "03/09/2019"
 output: html_document
@@ -12,170 +12,95 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
 
-
 ```{r}
-movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
+movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
-## Questions
-
-Here is a list of questions we could play around with. Each title has "[ ]" on the side. If the question has been completed successfully, add an "X" inbetween the "[ ]", like "[X]". These questions have been arranged to URL links. Hopefully the source codes helps...
-
-Also, read through ALLLLLL of the links. Let's start somewhere simple and work ourselves up. 
-
------
-
-### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
-
-1. HeatMap [X]
-> Genre VS Year that Movie is Released
-
 ```{r}
-revenue_data <- movie_metadata %>%
-  filter(movie_metadata$gross >= 10000000 & movie_metadata$gross >= 10000000) %>%
-  mutate(ROI = (gross - budget)/budget)
-
-dim(revenue_data)
+movie_metadata<- movie_metadata %>% 
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100)
 ```
-
-
-```{r}
-revenue_data %>%
- filter(title_year > 2013) %>%  #Filter movies released after 2000
- group_by(title_year, genres) %>%
- summarise(count = n()) %>% #Count of Movies released
- ggplot(aes(title_year, as.factor(genres)))+
- geom_tile(aes(fill=count),colour="white")+
- scale_fill_gradient(low="light blue",high = "dark blue") +
- xlab("Year of Movie release")+
- ylab("Genre of Movie Release")+
- ggtitle("Heat Map")+
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-
-revenue_data %>%
- filter(title_year > 2009) %>%  #Filter movies released after 1990
- group_by(year = title_year) %>%
- summarise(count = n()) %>% #Count of Movies released
- ggplot(aes(year)) +
- geom_tile(aes(fill=count),colour="white")+
- scale_fill_gradient(low="light blue",high = "dark blue") +
- xlab("Year of Movie release")+
- ylab("Month of Movie Release")+
- ggtitle("Heat Map")
-```
-
-2. Movie Budgets [ ]
-
-```{r}
-budget <- movie_metadata %>%
-  select(movie_title, budget) %>%
-  arrange(desc(budget)) %>%
-  head(15)
-
-x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
-  geom_bar( stat = "identity")+ 
-  theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Budgets")+
-  xlab("")+
-  ylab("Budget (in Millions)") + 
-  coord_flip()
-
-rev <- movie_metadata %>%
-  select(movie_title, gross) %>%
-  arrange(desc(gross)) %>%
-  head(15)
-
-y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
-  geom_bar( stat = "identity")+ 
-  theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Revenues")+
-  xlab("")+
-  ylab("Revenue (in Millions)") + 
-  coord_flip() 
-
-ggarrange(x, y,
-          labels = c("A", "B"),
-          ncol = 1, nrow = 2)
-```
-
-3. Movie Gross [ ]
-```{r}
-
-```
-
-4. 3D Plot [ ]
- IMDb Rating VS Budget VS Gross
-```{r}
-
-```
-
-5. Vote counts over the years [ ]
-```{r}
-#Performing operations on Movies Vote Count over the years
- movies_vote1 <- movie_metadata %>%
- select(title_year, num_voted_users) %>%
- group_by(title_year) %>%
- summarise(count = sum(num_voted_users)) 
-
- names(movies_vote1) <- c("date","Number of voted users")
-
- ggplot(movies_vote1, aes(x = date, y = num_voted_users/1000)) +
- geom_bar( stat = "identity") +
- geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
- ylab("Vote count (in thousands)") +
- xlab("Years") +
- annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90)+
- annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)+
- annotate("text", label = "Twitter",x = 2005, y = 160, size = 3, colour = "red",angle=90)
-```
-
-6. Popularity over the years [ ]
-```{r}
-#Creating the required subset of data 
-movies_pop <- movie_metadata %>%
- select(title_year, movie_facebook_likes) %>%
- filter(title_year > 1980) %>%
- group_by(title_year) %>%
- summarise(avg = mean(movie_facebook_likes)) 
-
- names(movies_pop) <- c("date","popularity")
-
- #generating the popularity Vs time plot
- ggplot(movies_pop, aes(x = date, y = movie_facebook_likes)) +
- geom_point() +
- geom_smooth() + 
- geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
- ylab("Mean Popularity Score") +
- xlab("Years") +
- annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
- annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)+
- annotate("text", label = "Twitter",x = 2005, y = 80, size = 3, colour = "red",angle=90)
-```
-
-7. Distribution of Imdb Ratings
- Movie Count VS Imdb Ratings
-```{r}
-ggplot(movie_metadata, aes(imdb_score)) +
- geom_histogram(bins = 50) +
- geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
- ylab("Movie Count") +
- xlab("IMDB Rating") +
- ggtitle("Histogram for IMDB ratings") +
-  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
-```
-
------
 
 ### Link 2: https://rpubs.com/jasmine36/234304
+
+Problem Statement Since there is no universal way to claim the goodness of a movie, one could rely on the parameters like critic ratings, profit earned, viewers likes and ratings etc.
+
+Implementation Since the data has information about the year of its release, budget, gross earnings, director name of the movie etc, I would be working on these aspects to analyze the success of movies and directors over the years.
+
+Summary Several trends have been seen between the budget, profit earned, and it’s Return on Investment. Analysis has also been done to figure out the most successful directors and the most favorite genres among directors and producers.
+
+-----
 
 1. Most Successfull Directors [ ]
 > Director vs FB likes
 > Director VS Gross
 > Director VS Imdb
 > Average Profit VS Number of Films (Points being Director)
+
+
+```{r}
+#Top 20 most successful directors
+movie_metadata %>%
+        group_by(director_name) %>%
+  mutate(profit = gross - budget)%>%
+select(director_name, budget, gross, profit) %>%
+na.omit() %>% 
+summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
+mutate(avg_per_film = profit/films) %>%
+arrange(desc(avg_per_film)) %>% 
+top_n(20, avg_per_film) %>%
+ggplot( aes(x = films, y = avg_per_film/1000000)) + 
+geom_point(size = 1, color = "blue") + 
+geom_text_repel(aes(label = director_name), size = 3, color = "blue") + 
+xlab("Number of Films") + ylab("Avg Profit $millions") + 
+ggtitle("Most Successful Directors")
+```
+These are the top 20 most successful directors based on the average profit earned by the movies they directed.
+
+There’s an obvious downward trend between average profit and number of films. This could be because as one makes more movies, one could have more hits and misses, therefore the average goes down. It could also be due to film makers having a more diverse range of movies which could include smaller and/or high budget movies"
+
+
+2. Top 20 movies based on its Profit
+
+```{r}
+#Top 20 movies based on its Profit
+movie_metadata %>% 
+  filter(title_year %in% c(2000:2016)) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=profit/1000000)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Profit $million") + 
+  ggtitle("20 Most Profitable Movies")
+```
+
+2. Top 20 movies based on its Return on Investment
+```{r}
+#Top 20 movies based on its Return on Investment
+movie_metadata %>% 
+  filter(budget >100000) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Percent Return on Investment") + 
+  ggtitle("20 Most Profitable Movies based on its Return on Investment")
+```
+
+These are the top 20 movies based on its Percentage Return on Investment. ((profit/budget)*100).
+Since profit earned by a movie does not give a clear picture about its monetary success over the years (1916 to 2016), this analyses, over the absolute value of the Return on Investment(ROI) across its Budget, would provide better results.
+As hypothesized, the ROI is high for Low Budget Films and decreases as the budget of the movie increases.
 
 
 2. Commercial Success VS Critical Acclaim [ ]
@@ -193,6 +118,43 @@ movie_metadata %>%
   ylab("") +
   geom_smooth()
 ```
+
+
+```{r}
+movie_metadata %>%
+  top_n(15, profit) %>%
+  ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
+  geom_point() + 
+  geom_hline(aes(yintercept = 600)) + 
+  geom_vline(aes(xintercept = 7.75)) + 
+  geom_text_repel(aes(label = movie_title), size = 4) +
+  xlab("Imdb score") + 
+  ylab("Gross money earned in million dollars") + 
+  ggtitle("Commercial success Vs Critical acclaim") +
+  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+This is an analysis on the Commercial Success acclaimed by the movie (Gross earnings and profit earned) vs its IMDB Score.
+
+As expected, there is not much correlation since most critically acclaimed movies do not do much well commercially.
+
+Top 20 genres with the most movies
+```{r}
+genre = movie_metadata['genres']
+genre = data.frame(table(genre))
+genre = genre[order(genre$Freq,decreasing=TRUE),]
+
+# Top 20 genres with the most movies
+ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) + 
+  geom_bar(stat = "identity", fill="blue") + 
+  geom_text(aes(label=Freq),hjust=1.2, size=3.5)+
+  xlab("Genre") + 
+  ylab("Number of Movies") + 
+  ggtitle("Top 20 genres with the most movies") + 
+  coord_flip()
+```
+
+
 Return on investment vs runtime of films:
 
 ```{r}
@@ -220,90 +182,25 @@ ggarrange(a, b,
 
 3. Top 20 genres with the most movies [ ]
 
-```{r}
+>Summarizing the problem statement
 
-movie_metadata %>%
-  filter()
+Analyses on the monetary success and the likeability of movies were done to gather insights about the success of several movies.
 
+>Summarizing the implementation
 
-```
+The data was scraped and manipulated accordingly for the analysis. The data was then reviewed graphically to determine what is the general trend in the movie industry, using scatter plots, line chart and bar charts.
+
+>Summarizing the Analyses
+
+There’s a linear trend between the profit earned and the budget of the movie.
+
+There’s inverse relation between the Return on Investment and the Budget of a movie.
+
+There is not much correlation between the profit earned and the imdb rating of the movie indicating that most critically acclaimed movies do not do much well commercially.
+
+‘Drama’, ‘Romance’ and ‘Comedy’ are the most favorite genres among directors and producers.
+
 
 > Genre VS Freq of movies
 > Look at Link 4 for more inspo (LOL) Need to choose way to graph... mmmmmm... probs line graph?
-
------
-
-### Link 3: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
-Literally works on our data, however, this link does a lot of pre-processing that we might need to take a look at. For example, they use the first word in the genre column as the genre of the movie. 
-
-1. Number of Movies Produced Per Year [ ]
-> Count of movies VS Year
-
-2. Most Successfull Directors [ ]
-> Table representation of Director and their average IMDb rating
-
-3. Relationship between number of FB likes and Imdb score [ ]
-> Imdb score VS movie FB likes
-
-4. Correlation Heatmap [ ]
-
-5. Full-Grown Tree [ ]
-> Random Forest
-> K-Nearest Neighbour
-
-
-
-
------
-
-#### Link 4: https://www.kaggle.com/karrrimba/understanding-movies-through-data
-Literally works on our data. A lot of code to look trough. 
-
-1. Genre wise share of movies for top 10 genres [ ]
-
-2. Genre wise distribution of scores [ ]
-> All genres with Imdb rating distribution
-
-3. Bar chart for 10 highest rated genres [ ]
-> Genres VS Average IMDB Score
-
-4. Bar chart for 10 most voted genres [ ]
-> Genres VS Average User Votes
-
-5. Bar chart for 10 most FB liked genres [ ]
-> Genres VS Average Facebook Likes
-
-6. Distribution of budget and gross [ ]
-
-7. Share of movies making profit or loss [ ]
-> Did profitable movies recieve more appreciation by the users?
-
-8. Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year [ ]
-
-9. Scatter plot for User Votes vs IMDB Score [ ]
-> User Votes VS IMDB Score
-
-10. Box plot for User Votes vs IMDB Score
-> IMDB Score VS User Votes
-
-_____
-
-
-### Other Analysis Questions
-
-1. Rating VS Budget [ ]
-
-2. Rating VS Gross [ ]
-
-3. Budget VS Gross [ ]
-
-4. Most Successful/Unsuccessful Movies
-> Based on their ratings
-
-5. Highest Rated Actor
-> Movie VS Imdb Score
-> Most Popular Actor: Based on FB likes
-
------
-
 
