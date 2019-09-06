@@ -164,7 +164,7 @@ ggplot(movie_metadata, aes(imdb_score)) +
  ylab("Movie Count") +
  xlab("IMDB Rating") +
  ggtitle("Histogram for IMDB ratings") +
-  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 100, colour = "yellow",angle=90)
 ```
 
 -----

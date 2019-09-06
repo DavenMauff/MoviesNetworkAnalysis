@@ -3,9 +3,12 @@ title: "An Exploratory Data and Network Analysis of Movies"
 author: Clarice, Daven, Lucia, Christopher and Indurain
 date: September 6, 2019
 output:
-  prettydoc::html_pretty:
-    theme: tactile
-    highlight: github
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
 
 ---
 
@@ -13,23 +16,19 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{css, echo=FALSE}
-code {
-  font-size:0.8em;
+#content {
+    background: #fcfcfc;
+    height: 100%;
+    margin-left: 300px;
+    max-width: 100% !important; 
+    min-height: 100%;
 }
 
-table {
-  font-size:0.9em;
-}
-
-p {
-  font-size:0.9em;
-}
-
-#container {
-    background: white;
-    min-height: 595px;
+img.image-thumb {
+    width: 800px !important;
+    border: 1px solid #CCC;
+    padding: 2px;
 }
 ```
 
@@ -54,8 +53,8 @@ We have split our Exploratory Data Analysis into four main parts:
 
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
-```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable, corrplot, ggpubr)
+```{r message=FALSE, warning=FALSE}
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable, corrplot, ggpubr, ngram, syuzhet, tm, wordcloud, sentimentr, reshape2, rlist, gplots, plsgenomics, ggrepel, GGally, rmdformats)
 ```
 
 We import the dataset like this:
@@ -146,7 +145,7 @@ colSums(sapply(movie_metadata, is.na))
 ```
 
 To help visualise this, have a look at the following heatmap of the missing values:
-```{r fig.align="center"}
+```{r }
 # Visualise Missing Values
 missing.values <- aggr(movie_metadata, sortVars = T, prop = T, sortCombs = T, cex.lab = 1.5, cex.axis = .6, cex.numbers = 5, combined = F, gap = -.2)
 ```
@@ -284,7 +283,7 @@ We can start by performing basic analyis on our data. Thereafter, we delve a bit
 
 Let's first have a look at the number of movies that are produced over the years.
 
-```{r fig.align="center"}
+```{r }
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
@@ -300,7 +299,7 @@ movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
 
 Let's have a look at the movie counts now:
 
-```{r fig.align="center"}
+```{r }
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
@@ -361,7 +360,7 @@ Now we can delve into more specific things regarding movies, like `genres`.
 
 #### Top Genres
 
-```{r fig.align="center"}
+```{r }
 genre = movie_metadata['genres']
 genre = data.frame(table(genre))
 genre = genre[order(genre$Freq,decreasing=TRUE),]
@@ -399,7 +398,7 @@ genres_df <- as.data.frame(genres_matrix)
 
 `genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of all the genres. 
 
-```{r fig.align="center"}
+```{r }
 # Collapse all genres into one column
 genres_one_col <- gather(genres_df) %>% 
   select(value)
@@ -430,7 +429,7 @@ movie_metadata$genre <- genres_df$V1
 
 How does this distribution look like over the years? Lets have a look at the frequency of genres between the period of 1980 and 2016.
 
-```{r fig.align="center"}
+```{r }
 movie_metadata %>%
  group_by(title_year, genre) %>%
  summarise(count = n()) %>%
@@ -482,7 +481,7 @@ movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes +
 movie_metadata <- movie_metadata[!is.na(movie_metadata$total_facebook_likes), ]
 ```
 
-```{r, fig.height = 4, fig.width = 6, fig.align="center"}
+```{r, fig.height = 4, fig.width = 6, }
 # creating a data frame containing avg score, avg votes and avg fb likes
 score_votes_likes <- movie_metadata %>% 
   group_by(genre) %>%
@@ -496,14 +495,15 @@ score_votes_likes <- movie_metadata %>%
 # arranging data frame by average score
 arr_score <- arrange(score_votes_likes, desc(avg_facebook_likes))
 
-score_votes_likes
+as.data.frame(score_votes_likes)
+
 ```
 
 ##### Genres VS IMDB Scores
 
 Observing the graphs below, various genres consist of an array of different ratings. However, niche genres are more consistent  with their ratings, including musical; thriller; romance and western.
 
-```{r fig.height = 10, fig.width = 10, fig.align="center"}  
+```{r fig.height = 10, fig.width = 10, }  
 # genre wise distribution of scores using a custom plot function  
 facet_hist_plot(movie_metadata$imdb_score, 
                 "Genre",
@@ -513,7 +513,7 @@ facet_hist_plot(movie_metadata$imdb_score,
 
 
 
-```{r include=FALSE, fig.align="center"}
+```{r include=FALSE, }
 # creating a function for ploting bar graphs
 bar_plot <- function(data, x, y, info, xlabl, ylabl, title, 
                       deci = NULL, suf = NULL){
@@ -543,7 +543,7 @@ ggplotly(tooltip = "text") %>%
 ```
 
 
-```{r fig.align="center"}
+```{r }
 # plotting 10 highest rated genres 
 bar_plot(arr_score[1:10,],
          arr_score[1:10,]$avg_score,
@@ -561,7 +561,7 @@ The graph above allows us to see that a less produced category, bibliography, po
 
 Let's now have a look at the Facebook likes. 
 
-```{r fig.align="center"}
+```{r }
 
 # plotting 10 highest rated genres 
 bar_plot(arr_score[1:10,],
@@ -580,19 +580,19 @@ Biography also produces the highest likes on facebook. From this information, sh
 
 IMDB ratings VS Movie Count
 
-```{r fig.align="center"}
+```{r }
 ggplot(movie_metadata, aes(imdb_score)) +
  geom_histogram(bins = 50) +
  geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
  ylab("Movie Count") +
  xlab("IMDB Rating") +
  ggtitle("IMDB Ratings for Movies") +
-  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
+  ggplot2::annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
 It is evident from the histogram that the majority of movies are rated between 6-8 out of 10. If a movie has a lower rating, it is clearly very unpopular or very bad. If a movie has a higher rating, it is evidently fantastic.
 
 Popularity over the years
-```{r message=FALSE, fig.align="center"}
+```{r message=FALSE, }
 #Creating the required subset of data 
 movies_pop <- movie_metadata %>%
  select(title_year, movie_facebook_likes) %>%
@@ -607,9 +607,11 @@ movies_pop <- movie_metadata %>%
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Mean Popularity Score") +
    xlab("Years") +
-   annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
-   annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
+   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
 ```
+<br>
+
 A spike in popularity in 2004 is obvious owing to the fact that there is a clear rise in popularity score.The creation of facebook and the effect of social media influenced this. 
 
 Facebook Likes VS IMDB Score
@@ -644,8 +646,8 @@ The IMDB rating systen started in 1990’s. Social media platforms like Facebook
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Vote count (in thousands)") +
    xlab("Years") +
-   annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
-   annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
+   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
 ```
 
 Vote Counts VS IMDB score
@@ -657,7 +659,7 @@ movie_metadata$vote_bucket <- cut(movie_metadata$num_voted_users,
 ```
 
 
-```{r  fig.height = 4, fig.width = 6, fig.align="center"}
+```{r  fig.height = 4, fig.width = 6, }
 # plotting a boxplot for votes vs imdb_score  
 bp <- na.omit(movie_metadata) %>% 
   ggplot(aes(x = vote_bucket, y = imdb_score)) +
@@ -715,7 +717,7 @@ scatter_plot <- function(x, y, xlabel, ylabel, title,
 ```
 
 
-```{r fig.height = 4, fig.width = 6, fig.align="center"}
+```{r fig.height = 4, fig.width = 6, }
 # scatter plot for user votes vs imdb score
 scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score, 
      "User Votes",
@@ -752,7 +754,7 @@ line_graph <- function(data, y, name){
 
 
 Each line represents an average, for the imdb score, votes and user review. 
-```{r fig.height = 6, fig.width = 10, fig.align="center"}
+```{r fig.height = 6, fig.width = 10, }
 
 
 # creating a data frame for average score, avg votes and, avg user reviews
@@ -787,7 +789,7 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 
 ### Profit | Gross | Return of Interest
 
-```{r}
+```{r }
 budget <- movie_metadata %>%
   select(movie_title, budget) %>%
   arrange(desc(budget)) %>%
@@ -820,7 +822,7 @@ ggarrange(x, y,
 ```
 
 Most Successful Directors based on Profit
-```{r}
+```{r }
 #Top 20 most successful directors
 movie_metadata %>%
         group_by(director_name) %>%
@@ -840,7 +842,7 @@ ggtitle("Most Successful Directors")
 
 Top 20 movies based on its Profit
 
-```{r}
+```{r }
 #Top 20 movies based on its Profit
 movie_metadata %>% 
   filter(title_year %in% c(2000:2016)) %>%
@@ -858,7 +860,7 @@ movie_metadata %>%
 ```
 
 Top 20 movies based on its Return on Investment
-```{r}
+```{r }
 #Top 20 movies based on its Return on Investment
 movie_metadata %>% 
   filter(budget >100000) %>%
@@ -877,8 +879,8 @@ movie_metadata %>%
 
 ### Further Analysis
 
-Commercial success Vs Critical acclaim
-```{r}
+#### Commercial success Vs Critical acclaim
+```{r }
 movie_metadata %>%
   top_n(15, profit) %>%
   ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
@@ -889,13 +891,13 @@ movie_metadata %>%
   xlab("Imdb score") + 
   ylab("Gross money earned in million dollars") + 
   ggtitle("Commercial success Vs Critical acclaim") +
-  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
+  ggplot2::annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Correlation Heatmap
+#### Correlation Heatmap
 
-```{r}
+```{r }
 ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
   ggtitle("Correlation Heatmap") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -907,6 +909,290 @@ According to the highest correlation value 0.95, we find actor_1_facebook_likes 
 
 There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews.
 
+#### Sentiment Analysis
+
+```{r}
+options(scipen = 999)
+```
+
+```{r}
+IMDB <- read.csv("../data/real_deal.csv")
+
+#Removing Duplicates
+IMDB <- IMDB[!duplicated(IMDB), ]
+
+#Removing White-Spaces and Special Characters
+IMDB$movie_title <- gsub("Â", "", as.character(factor(IMDB$movie_title)))
+IMDB$movie_title <- str_trim(IMDB$movie_title, side = "right")
+
+IMDB <- subset(IMDB, select = -c(genres))
+
+colSums(sapply(IMDB, is.na))
+```
+
+```{r }
+#Plotting Facebook likes against IMDB score
+ggplot(data = IMDB, aes(x = imdb_score, y = movie_facebook_likes)) +
+  geom_point() +
+  stat_smooth(method="lm")
+```
+
+```{r }
+#Plotting Aspect Ratio against Facebook likes
+IMDB %>% 
+  filter(aspect_ratio==1.85 | aspect_ratio==2.35) %>%
+  mutate(aspect_ratio=as.character((aspect_ratio))) %>%
+  ggplot() +
+  geom_point(aes(x=aspect_ratio, y=movie_facebook_likes))
+```
+
+```{r}
+#Constructing Top 20
+keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
+
+keywords_matrix <- do.call(rbind, strsplit(as.character(IMDB$plot_keywords), "[|]"))
+
+keywords_df <- as.data.frame(keywords_matrix)
+
+names(keywords_df) <- c("one", "two", "three", "four", "five")
+
+keywords_one_col <- gather(keywords_df) %>% 
+  select(value)
+
+keywords_one_col_freq <- keywords_one_col %>%
+  group_by(value) %>%
+  tally()
+
+top_20 <- keywords_one_col_freq %>%
+  select(value, n) %>%
+  top_n(20)
+
+
+movies_with_keywords <- data.frame()
+IMDB_keyword_movie <- data.frame()
+```
+
+
+```{r }
+keywords_one_col %>%
+  group_by(value) %>% 
+  tally() %>% 
+  filter(n > 30) %>% 
+  ggplot() +
+  geom_bar(aes(x = value, y=n), stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+top_20
+```
+
+
+```{r}
+#Placing Top 20 Words Against Movie Success
+
+IMDB_true_false <- IMDB 
+for (keyword in top_20$value) {
+  IMDB_true_false <- cbind(IMDB_true_false, ifelse(str_detect(IMDB$plot_keywords, keyword), "TRUE", "FALSE"))
+}
+
+for (i in 1:20) {
+  reference <- 27
+  names(IMDB_true_false)[reference + i] <- top_20$value[i]  
+}
+
+truey <- data.frame()
+for (keyword in top_20$value) {
+  truey <- rbind(truey, IMDB_true_false %>%
+                            filter(get(keyword) == TRUE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
+    distinct(movie_title, .keep_all = T)
+}
+
+
+
+falsy <- data.frame()
+for (keyword in top_20$value) {
+  falsy <- rbind(falsy, IMDB_true_false %>%
+                            filter(get(keyword) == FALSE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
+    distinct(movie_title, .keep_all = T)
+}
+```
+
+```{r}
+truey <- truey %>%
+  mutate(tri = "Top 20 Word")
+
+falsy <- falsy %>%
+  mutate(tri = "NOT Top 20 Word")
+
+truey_falsy <- full_join(falsy, truey, by = c("movie_title", "gross", "imdb_score", "movie_facebook_likes", "plot_keywords"))
+
+truey_falsy <- truey_falsy %>%
+  mutate(tri = coalesce(tri.y, tri.x)) %>%
+  select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords, tri)
+
+truey_falsy <-  truey_falsy %>%
+  group_by(tri) %>%
+  na.omit() %>%
+  mutate(avg = mean(gross))
+
+truey_falsy_graph <- summarise(truey_falsy, avg = mean(gross))
+```
+
+```{r}
+truey_falsy_graph %>%
+  ggplot() +
+  geom_bar(aes(x = tri, y=avg, fill=tri), stat="identity", position="stack") +
+  theme(axis.text.x = element_blank()) 
+```
+
+
+```{r}
+#Sentiment
+
+keywords_from_split <- data.frame(lapply(keywords_split, "length<-", max(lengths(keywords_split))))
+
+#Creating a list of titles and years seperatored by "|"
+titles <-  IMDB %>%
+  select(movie_title)
+years <- IMDB %>%
+  select(title_year)
+
+titles_years_list <- list()
+
+for (x in 1:4998) {
+  seperator="|"
+  titles_years_list <- c(titles_years_list, paste(titles$movie_title[x], years$title_year[x], sep="|"))
+}
+
+#Renaming columns to movie names
+movie_name_list <- IMDB$movie_title
+names(keywords_from_split) <- titles_years_list
+
+#Adding column to the begining
+key_names <- c('key_word_1', 'key_word_2', 'key_word_3', 'key_word_4', 'key_word_5')
+keywords_from_split <- cbind(test_keys = key_names, keywords_from_split)
+
+#Moving columns to rows
+keywords_from_split <- melt(keywords_from_split, id = "test_keys")
+
+#Creating new column for year
+keywords_from_split_matrix <- do.call(rbind, strsplit(as.character(keywords_from_split$variable), "[|]"))
+keywords_from_split <- cbind(keywords_from_split, keywords_from_split_matrix)
+names(keywords_from_split) <- c("Key #", "Combined", "Keyword", "Title", "Year")
+keywords_from_split = keywords_from_split %>%
+  select(`Key #`, Title, Year, Keyword)
+
+#Replacing blank cells within keywords to NA's
+keywords_from_split$Keyword[keywords_from_split$Keyword == ""] <- NA
+#Removing rows containing NA's
+keywords_from_split <- na.omit(keywords_from_split)
+
+#All unique years
+all_years <- keywords_from_split %>% select(Year)
+all_years <- distinct(all_years)
+all_years <- na.omit(all_years)
+all_years <- all_years %>%
+  filter(Year != "NA")
+
+#Function for sentiment per year
+yearly_sentiment <- function(year, df) {
+  amount <- nrow(df %>%
+    select(Year) %>%
+    filter(Year == year))
+  df <- df %>%
+    filter(Year == year)
+  sentiments <- get_nrc_sentiment(as.character(df[4]))
+  for (i in 1:length(sentiments)) {
+    sentiments[i] <- sentiments[i]/amount
+  }
+  year_sentiment <- cbind(year, sentiments)
+  return (year_sentiment)
+}
+
+sentiments <- data.frame()
+
+#For-loop to capture all years
+for (i in all_years$Year) {
+  sentiments <- rbind(sentiments,yearly_sentiment(i, keywords_from_split))
+}
+
+#Making years integers
+sentiments$year <- strtoi(sentiments$year)
+
+#Sort by year
+sentiments <- sentiments[with(sentiments, order(year)), ]
+#sentiments <- sentiments[order(year), ]
+
+#Heatmap for sentiments
+rnames <- sentiments[,1]
+mat_sentiments <- data.matrix(sentiments[,2:ncol(sentiments)])
+rownames(mat_sentiments) <- rnames
+mat_sentiments <- t(mat_sentiments)
+
+df_sentiment <-  as.data.frame(mat_sentiments)
+names_emotions <- c("anger", "anticipation", "disgust","fear","joy","sadness","surprise","trust","negative","positive")
+
+sentiments_graph <- cbind(names_emotions, df_sentiment)
+```
+
+
+```{r}
+#Run if there is a problem with heatmap
+dev.off()
+
+#Heatmap
+heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none")
+```
+
+
+```{r}
+#Filtering sentiments graph
+sentiments_graph_filter <- sentiments %>%
+  filter(year >= 2000)
+
+#Other graphs
+# Showing trends between sentiment from the 2000's 
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anger)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anticipation)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = disgust)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = fear)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = joy)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = sadness)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = surprise)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = trust)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = negative)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+```
+
+
 -----
 
 ## Network Analysis
+
+
+
+
+
+
+
+
+
