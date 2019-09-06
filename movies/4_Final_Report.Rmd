@@ -574,7 +574,7 @@ bar_plot(arr_score[1:10,],
          deci = 1)
 ```
 
-Bibliography also produces the highest likes on facebook. From this information, should directors strive to create more bibliography's? This will be determined when looking at the ROI. 
+Biography also produces the highest likes on facebook. From this information, should directors strive to create more biography's? This will be determined when looking at the ROI. 
 
 ### Popularity Analysis
 
@@ -620,6 +620,8 @@ movie_metadata %>%
 It is evident that as a movie has higher ratings, the number of likes on facebook increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
 
 Top 20 directors with highest average IMDB score
+
+When examinning the directors with the highest IMDB scores, the highest average rating is 8.4. This means that movies with higher ratings are either excellent and/or fluke occurences. 
 ```{r}
 movie_metadata %>%
   group_by(director_name) %>%
@@ -629,7 +631,7 @@ movie_metadata %>%
   formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
 
-IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s.
+The IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s. Facebook influenced the number of rates per movie far higher than that of IMDB.
 ```{r}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
@@ -724,7 +726,7 @@ scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score,
      "<br>Title:",
      alpha = 0.3)
 ```
-
+From the above scatter plot, it is evident that the majority of movie ratings are close to the 7.5 point. 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 # creating a function for plotting plotly line graph for title_year
@@ -780,7 +782,7 @@ lp3 <- line_graph(scat_year_score,
 subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 
 ```
-
+Each line represents an average, for the imdb score, votes and user review. 
 
 
 -----
