@@ -5,6 +5,8 @@ date: September 6, 2019
 output:
   prettydoc::html_pretty:
     theme: tactile
+    highlight: github
+
 ---
 
 ```{r setup, include=FALSE}
@@ -55,7 +57,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer)
 ```
 
 We import the dataset like this:
@@ -105,7 +107,7 @@ aspect_ratio             | Contains the size of the aspect ratio of a movie
 movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 
-Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `X` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
+Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `6255` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
 
 The structure of the dataset can also be used to understand our data. We can run the following code chunk to see its structure.
 
@@ -146,7 +148,7 @@ colSums(sapply(movie_metadata, is.na))
 ```
 
 To help visualise this, have a look at the following heatmap of the missing values:
-```{r}
+```{r fig.align="center"}
 # Visualise Missing Values
 missing.values <- aggr(movie_metadata, sortVars = T, prop = T, sortCombs = T, cex.lab = 1.5, cex.axis = .6, cex.numbers = 5, combined = F, gap = -.2)
 ```
@@ -284,7 +286,7 @@ We can start by performing basic analyis on our data. Thereafter, we delve a bit
 
 Let's first have a look at the number of movies that are produced over the years.
 
-```{r}
+```{r fig.align="center"}
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
@@ -299,16 +301,85 @@ movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
 
 Let's have a look at the movie counts now:
 
-```{r}
+```{r fig.align="center"}
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### Genre Analysis
+### Movie Genre Analysis
 
-Now we can delve into more specific things regarding movies, like `genres`. As you can see, movies have multiple genres that its associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely the most accurate description.
+```{r include=FALSE}
+  
+# setting up plotly label, axis and text customizations
+f1 <- list(
+  family = "Old Standard TT, serif",
+  size = 14,
+  color = "grey"
+)
+f2 <- list(
+  family = "Old Standard TT, serif",
+  size = 10,
+  color = "black"
+)
+a <- list(
+  titlefont = f1,
+  showticklabels = T,
+  tickangle = -45,
+  tickfont = f2
+)
+
+m <- list(
+  l = 50,
+  r = 50,
+  b = 100,
+  t = 100,
+  pad = 4
+)
+
+# annotations for subplot
+a1 <- list(x = 0.5, y = 1.0,
+          showarrow = FALSE, 
+          text = "Distribution of bugdet", 
+          xanchor = "center", 
+          xref = "paper", 
+          yanchor = "bottom", 
+          yref = "paper", 
+          font = f1)
+  
+b1 <- list(x = 0.5, y = 1.0, 
+           showarrow = FALSE, 
+           text = "Distribution of gross", 
+           xanchor = "center", 
+           xref = "paper", 
+           yanchor = "bottom", 
+           yref = "paper",
+           font = f1)
+```
+
+Now we can delve into more specific things regarding movies, like `genres`. 
+
+#### Top Genres
+
+```{r fig.align="center"}
+genre = movie_metadata['genres']
+genre = data.frame(table(genre))
+genre = genre[order(genre$Freq,decreasing=TRUE),]
+
+# Top 20 genres with the most movies
+ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) + 
+  geom_bar(stat = "identity", fill="blue") + 
+  geom_text(aes(label=Freq),hjust=1.2, size=3.5)+
+  xlab("Genre") + 
+  ylab("Number of Movies") + 
+  ggtitle("Top 20 genres with the most movies") + 
+  coord_flip()
+```
+
+#### Split Genres
+
+As you can see, movies have multiple genres that its associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely the most accurate description.
 
 ```{r}
 head(movie_metadata$genres)
@@ -329,7 +400,7 @@ genres_df <- as.data.frame(genres_matrix)
 
 `genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of all the genres. 
 
-```{r}
+```{r fig.align="center"}
 # Collapse all genres into one column
 genres_one_col <- gather(genres_df) %>% 
   select(value)
@@ -356,12 +427,157 @@ movie_metadata <- subset(movie_metadata, select = -c(genres))
 movie_metadata$genre <- genres_df$V1
 ```
 
+How does this distribution look like over the years? Lets have a look at the frequency of genres between the period of 1980 and 2016.
 
+```{r fig.align="center"}
+movie_metadata %>%
+ group_by(title_year, genre) %>%
+ summarise(count = n()) %>%
+ ggplot(aes(title_year, as.factor(genre))) +
+ geom_tile(aes(fill=count),colour="white") +
+ scale_fill_gradient(low="light blue",high = "dark blue") +
+ xlab("Year of Movie") +
+ ylab("Genre of Movie") +
+ ggtitle("Heat Map of Movie Genres Produced Over the Years") +
+  theme(panel.background = element_blank())
+```
 
+#### Which Genres are Popular?
 
+In our dataset we have Facebook Likes and IMDB scores associated with a movie. This can help give us an indication of how popular each genre is. 
+
+```{r include=FALSE}
+# creating a function for plotting histogram using facet wrap
+facet_hist_plot <- function(x, xlabel, bwidth){
+  
+  hp <- ggplot(data = movie_metadata, mapping = aes(x = x))
+  hp + geom_histogram(aes(fill = genre), binwidth = bwidth,
+                      show.legend = F, 
+                      color = "black", size = 0.2, 
+                      alpha = 0.8) +
+    xlab(xlabel) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 12, angle = 20),
+          axis.title = element_text(size = 14, 
+                                    family = "Times", 
+                                    color = "darkgrey",
+                                    face = "bold")) + 
+    facet_wrap(~ genre, scales = "free_y", ncol = 4)    
+  }
+```
 
 ```{r}
+# Add column for total facebook likes
+movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes + 
+  movie_metadata$actor_3_facebook_likes + movie_metadata$actor_1_facebook_likes +
+  movie_metadata$cast_total_facebook_likes + movie_metadata$actor_2_facebook_likes + 
+  movie_metadata$movie_facebook_likes
+```
 
+```{r include=FALSE}
+movie_metadata <- movie_metadata[!is.na(movie_metadata$total_facebook_likes), ]
+```
+
+```{r, fig.height = 4, fig.width = 6, fig.align="center"}
+# creating a data frame containing avg score, avg votes and avg fb likes
+score_votes_likes <- movie_metadata %>% 
+  group_by(genre) %>%
+  summarise(count = n(),
+            avg_score = round(mean(imdb_score), 1),
+            avg_votes = mean(num_voted_users),
+            avg_facebook_likes = mean(total_facebook_likes),
+            avg_reviews = mean(num_user_for_reviews)) %>%
+  filter(count > 10)
+
+# arranging data frame by average score
+arr_score <- arrange(score_votes_likes, desc(avg_facebook_likes))
+
+score_votes_likes
+```
+
+##### Genres VS IMDB Scores
+
+```{r fig.height = 10, fig.width = 10, fig.align="center"}  
+# genre wise distribution of scores using a custom plot function  
+facet_hist_plot(movie_metadata$imdb_score, 
+                "Genre",
+                bwidth = 0.1)+
+  scale_x_continuous(breaks = seq(0, 9.3, 1)) 
+``` 
+
+
+```{r include=FALSE, fig.align="center"}
+# creating a function for ploting bar graphs
+bar_plot <- function(data, x, y, info, xlabl, ylabl, title, 
+                      deci = NULL, suf = NULL){
+  if(is.null(suf)) suf <- ""
+  if(is.null(deci)) deci <- 0
+  b1 <- ggplot(data, aes(x = reorder(genre, x), 
+                               y = y, 
+                               text = paste("Genre:", genre,
+                                            info, 
+                                            round(y, deci), suf)))
+  
+  b1 + geom_bar(aes(fill = genre), stat = "identity", 
+           show.legend = F, color = "black", size = 0.2,
+           width = 0.7, alpha = 0.7) +
+  xlab(xlabl) +
+  ylab(ylabl) +
+  ggtitle(title) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 14, 
+                                  color = "grey", family = "Times")) +
+  scale_fill_brewer(palette = "Spectral")
+
+ggplotly(tooltip = "text") %>%
+  layout(margin = m, xaxis = a, yaxis = a)
+}
+```
+
+
+```{r fig.align="center"}
+# plotting 10 highest rated genres 
+bar_plot(arr_score[1:10,],
+         arr_score[1:10,]$avg_score,
+         arr_score[1:10,]$avg_score,
+         "| Average Score:",
+         "Genres",
+         "Average IMDB Score",
+         "Top 10 IMDB Scores Per Genre",
+         deci = 1)
+```
+
+##### Genres VS Facebook Likes
+
+Let's now have a look at the Facebook likes. 
+
+```{r fig.align="center"}
+
+# plotting 10 highest rated genres 
+bar_plot(arr_score[1:10,],
+         arr_score[1:10,]$avg_facebook_likes,
+         arr_score[1:10,]$avg_facebook_likes,
+         "| Average Score:",
+         "Genres",
+         "Average Facebook Likes",
+         "Top 10 Facebook Likes Per Genre",
+         deci = 1)
+```
+
+### Popularity Analysis
+
+IMDB ratings VS Movie Count
+
+```{r}
+ggplot(movie_metadata, aes(imdb_score)) +
+ geom_histogram(bins = 50) +
+ geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+ ylab("Movie Count") +
+ xlab("IMDB Rating") +
+ ggtitle("IMDB Ratings Per Movie") +
+  annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
 
 
