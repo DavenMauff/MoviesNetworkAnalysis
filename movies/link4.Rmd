@@ -372,6 +372,20 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 > User Votes VS IMDB Score
 
 ```{r fig.height = 4, fig.width = 6, fig.align="center"}
+# creating function for plotting scatter plot using facet wrap
+facet_plot <- function(x, y, xlabel, ylabel, alpha = NULL){
+   if(is.null(alpha)) alpha <- 1
+  
+  fp <- ggplot(data = movie_metadata, mapping = aes(x = x, y = y))
+  fp + geom_point(aes(fill = genres), position = "jitter", 
+                  show.legend = F, shape = 21,
+                  stroke = 0.2, alpha = alpha) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    facet_wrap(~genres, scales = "free") +
+    theme_minimal()
+}
+
 # scatter plot for user votes vs imdb score
 scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score, 
      "User Votes",
