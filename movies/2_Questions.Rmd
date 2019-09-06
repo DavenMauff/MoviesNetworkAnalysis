@@ -14,7 +14,7 @@ setwd(getwd())
 
 
 ```{r}
-movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
+movie_metadata <- read.csv("../data-raw/movies_metadata.csv", sep=";")
 ```
 
 ## Questions
@@ -32,7 +32,7 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 
 ```{r}
 revenue_data <- movie_metadata %>%
-  filter(movie_metadata$gross >= 10000000 & movie_metadata$gross >= 10000000) %>%
+  filter(movies_metadata$gross >= 10000000 & movies_metadata$gross >= 10000000) %>%
   mutate(ROI = (gross - budget)/budget)
 
 dim(revenue_data)
