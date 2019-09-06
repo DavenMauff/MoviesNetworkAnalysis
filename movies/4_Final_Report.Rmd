@@ -26,6 +26,11 @@ table {
 p {
   font-size:0.9em;
 }
+
+#container {
+    background: white;
+    min-height: 595px;
+}
 ```
 
 ## Introduction
@@ -642,6 +647,14 @@ IMDB rating systen started in 1990’s. Social media platforms like Facebook had
 ```
 
 Vote Counts VS IMDB score
+
+```{r echo=T}
+# breaking num_users_voted into 4 buckets 
+movie_metadata$vote_bucket <- cut(movie_metadata$num_voted_users, 
+                         c(0, 50000, 100000, 300000, 500000))
+```
+
+
 ```{r  fig.height = 4, fig.width = 6, fig.align="center"}
 # plotting a boxplot for votes vs imdb_score  
 bp <- na.omit(movie_metadata) %>% 
@@ -669,6 +682,106 @@ ggplotly(bp) %>%
                        x = 0,
                        y = -0.3)) 
 ```
+
+```{r warning=FALSE, include=FALSE, fig.height = 4, fig.width = 6,}
+# creating a function called scatter_plot for
+# plotting scatter plots using ggplot and plotly
+
+scatter_plot <- function(x, y, xlabel, ylabel, title,
+                         text1, text2, text3,
+                         alpha = NULL){
+  if(is.null(alpha)) alpha <- 0.4
+  gp <- ggplot(data = movie_metadata, mapping = aes(x = x, y = y,
+                                          text = paste(text1, x,
+                                                       text2, y,
+                                                       text3, movie_title)))
+  plot <- gp + geom_point(position = "jitter", 
+                          show.legend = F, shape = 21, 
+                          stroke = .2, alpha = alpha) + 
+    xlab(xlabel) +
+    ylab(ylabel) +
+    ggtitle(title) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          plot.title = element_text(size = 12, face = "bold", 
+                                    family = "Times", 
+                                    color = "darkgrey")) 
+  
+  ggplotly(plot, tooltip = "text") %>%
+    layout(m, xaxis = a, yaxis = a)
+}
+```
+
+
+```{r fig.height = 4, fig.width = 6, fig.align="center"}
+# scatter plot for user votes vs imdb score
+scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score, 
+     "User Votes",
+     "IMDB Score",
+     "Scatter plot for User Votes vs IMDB Score",
+     "User Votes:",
+     "<br>IMDB Score:",
+     "<br>Title:",
+     alpha = 0.3)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# creating a function for plotting plotly line graph for title_year
+line_graph <- function(data, y, name){
+ 
+  scat_p1 <- plot_ly(data, x = ~title_year, y = ~ y, 
+             name = name, type = 'scatter', mode = 'lines',
+             line = list(color = sample(brewer.pal(11, "Spectral"), 1))) %>%
+  layout(xaxis = list(title = "Title Year", zeroline = F,
+                      showline = F, 
+                      showticklabels = T),
+         yaxis = list(title = "Average Score"),
+         title = "Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year", 
+         font = list(family = "Serif", color = "grey"),
+         legend = list(orientation = "h", size = 6,
+                       bgcolor = "#E2E2E2",
+                       bordercolor = "darkgrey",
+                       borderwidth = 1),
+         margin = m)
+  scat_p1
+}
+```
+
+
+```{r fig.height = 6, fig.width = 10, fig.align="center"}
+
+
+# creating a data frame for average score, avg votes and, avg user reviews
+# by title year
+scat_year_score <- movie_metadata %>%
+  group_by(title_year) %>%
+  summarise(count = n(),
+            IMDB_Score = round(mean(imdb_score),1),
+            avg_votes = mean(num_voted_users),
+            avg_user_review = round(mean(num_user_for_reviews)))
+
+# plotting line graph for Avg score by title year 
+lp1 <- line_graph(scat_year_score, 
+                  scat_year_score$IMDB_Score, 
+                  "Average Score")
+
+# plotting line graph for Avg votes by title year
+lp2 <- line_graph(scat_year_score, 
+                  scat_year_score$avg_votes, 
+                  "Average Votes")
+
+# plotting line graph for Avg reviews by title year
+lp3 <- line_graph(scat_year_score,
+                  scat_year_score$avg_user_review,
+                  "Average User Review") 
+
+
+subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
+
+```
+
+
 
 -----
 
