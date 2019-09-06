@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Resize Code ChunK Font Size
+
 ```{css, echo=FALSE}
 code {
   font-size:0.8em;
@@ -28,7 +28,16 @@ p {
 
 ## Introduction
 
-In this report, we will be analysing a dataset from [Kaggle](https://www.google.com), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results 
+In this report, we will be analysing a dataset from [Kaggle](https://www.google.com), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results.
+
+### What?
+> 
+
+### Why?
+>
+
+### How?
+>
 
 We have split our Exploratory Data Analysis into four main parts:
 
@@ -46,7 +55,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM)
 ```
 
 We import the dataset like this:
@@ -98,15 +107,181 @@ movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `X` number of actors/actresses. Around `X%` of the movies are from the USA, `X%` from UK, and `X%` from other countries.
 
+The structure of the dataset can also be used to understand our data. We can run the following code chunk to see its structure.
+
+```{r}
+# Get structure of dataset
+str(movie_metadata)
+```
+
+In the next section we can start preparing the dataset for analyis by removing or simplifying some of the data.
+
 -----
 
 ## Pre-Processing Data
 
-When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment. Which genre would you guess is the most successful? Which actors do you think are the most popular? 
+In this part of the report we attempt to look for various things that may have a negative or insignificant impact on the inferences we make on the dataset. Once we have sufficiently cleaned and prepared the dataset, we can commence with drawing various conclusions from the graphs we generate. 
+
+
+### Duplicate Rows
+
+In `movie_metadata`, we have some duplicate rows, so we want to remove the 45 duplicated rows and keep the unique ones. 
+
+```{r}
+# find duplicated rows
+sum(duplicated(movie_metadata))
+```
+
+```{r Remove Duplicates}
+# Remove duplicated rows
+movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
+```
+
+### Missing Values
+
+Let's have a look at the number of NA values in our dataset:
+```{r}
+# Find NA values
+colSums(sapply(movie_metadata, is.na))
+```
+
+To help visualise this, have a look at the following heatmap of the missing values:
+```{r}
+# Visualise Missing Values
+missing.values <- aggr(movie_metadata, sortVars = T, prop = T, sortCombs = T, cex.lab = 1.5, cex.axis = .6, cex.numbers = 5, combined = F, gap = -.2)
+```
+
+#### Gross and Budget
+
+Since `gross` and `budget` have too many missing values (874 and 488), and we want to keep these two variables for the following analysis, we can only delete rows with null values for gross and budget because imputation will not do a good job here.
+
+```{r}
+# Find NA values for gross and budget
+movie_metadata <- movie_metadata[!is.na(movie_metadata$gross), ]
+movie_metadata <- movie_metadata[!is.na(movie_metadata$budget), ]
+dim(movie_metadata)
+```
+
+The difference in observations have decreased by `4998 - 3857 = 1141` which is luckily only `22.8%` of the previous total observations.
+Let’s have a look at how many complete cases we have.
+
+#### Content Rating
+
+```{r}
+# Look at all the different types of content ratings
+table(movie_metadata$content_rating)
+```
+
+According to the history of naming these different content ratings, we find `M = GP = PG, X = NC-17`. We want to replace `M` and `GP` with `PG`, replace `X` with `NC-17`, because these two are what we use nowadays.
+
+```{r}
+movie_metadata$content_rating[movie_metadata$content_rating == 'M']   <- 'PG' 
+movie_metadata$content_rating[movie_metadata$content_rating == 'GP']  <- 'PG' 
+movie_metadata$content_rating[movie_metadata$content_rating == 'X']   <- 'NC-17'
+```
+
+We want to replace `Approved`, `Not Rated`, `Passed`, `Unrated` with the most common rating `R`.
+
+```{r}
+movie_metadata$content_rating[movie_metadata$content_rating == 'Approved']  <- 'R' 
+movie_metadata$content_rating[movie_metadata$content_rating == 'Not Rated'] <- 'R' 
+movie_metadata$content_rating[movie_metadata$content_rating == 'Passed']    <- 'R' 
+movie_metadata$content_rating[movie_metadata$content_rating == 'Unrated']   <- 'R' 
+movie_metadata$content_rating <- factor(movie_metadata$content_rating)
+table(movie_metadata$content_rating)
+```
+
+Blanks should be taken as missing value. Since these missing values cannot be replaced with reasonable data, we delete these rows.
+
+```{r}
+# Remove rows with blank content ratings
+movie_metadata <- movie_metadata[!(movie_metadata$content_rating %in% ""),]
+```
+
+### Delete (Some) Rows
+
+```{r}
+colSums(sapply(movie_metadata, is.na))
+```
+
+We remove `aspect_ratio` because 1 it has a lot of missing values and 2 we will not be looking into the impact that it has on other data (we assume that it doesn't). 
+
+```{r}
+# Remove aspect_ratio column
+movie_metadata <- subset(movie_metadata, select = -c(aspect_ratio))
+```
+
+### Add a Column
+
+#### Gross and Budget
+
+We have gross and budget information. So let’s add two colums: profit and percentage return on investment for further analysis.
+
+```{r}
+# add profit and return of investment column
+movie_metadata <- movie_metadata %>% 
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100)
+```
+
+### Remove (Some) Columns
+
+#### Colour
+
+Next, we take a look at the influence of `colour` vs `black and white`. 
+
+```{r}
+# Get colour display types of movies
+table(movie_metadata$color)
+```
+
+Since `3.4%`of the data is in black and white, we can remove the `color` column it. 
+
+```{r}
+# delete colour
+movie_metadata <- subset(movie_metadata, select = -c(color))
+```
+
+#### Language
+
+Let's have a look at the different languages contained within the dataset.
+
+```{r}
+# Look at different languages
+table(movie_metadata$language)
+```
+
+Almost `95%` movies are in English, which means this variable is nearly constant. Let’s remove it.
+
+#### Country
+
+Next, we can look at the different types of countries.
+
+```{r}
+table(movie_metadata$country)
+```
+
+Around 79% movies are from USA, 8% from UK, 13% from other countries. So we group other countries together to make this categorical variable with less levels: `USA`, `UK`, `Others`.
+
+```{r}
+levels(movie_metadata$country) <- c(levels(movie_metadata$country), "Others")
+movie_metadata$country[(movie_metadata$country != 'USA')&(movie_metadata$country != 'UK')] <- 'Others' 
+movie_metadata$country <- factor(movie_metadata$country)
+table(movie_metadata$country)
+```
+
+Now that we've cleaned up our dataset, we can now continue to explore our data even further! In the next section we will be looking at genres, movie popularity, gross, profit, and many more other aspects pertinent to our data. 
 
 -----
 
 ## Analysing Data
+
+When inspecting a dataset of movies from over the past few years, various interesting inferences are uncovered. A movie may have a high rating yet low return on investment. Which genre is the most successful? Which actors are the most popular? 
+
+
+
+
+
 
 -----
 

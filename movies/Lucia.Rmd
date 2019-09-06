@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr, ggpubr)
+pacman::p_load(dplyr, ggplot2, tidyr, ggpubr, ggplot2)
 ```
 
 ---
@@ -19,6 +19,23 @@ pacman::p_load(dplyr, ggplot2, tidyr, ggpubr)
 ```{r Read in CSV file}
 movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
+
+
+```{r fig.width=8}
+movie_metadata %>%
+  filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
+  na.omit() %>% 
+ ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
+  geom_jitter(alpha = 0.5, col = "darkgreen") + 
+  theme(axis.text.x=element_text(angle = 90, hjust = 1))+
+  ggtitle("Gross vs Content Rating")+
+  xlab("Gross (millions)")+
+  ylab("Rating") +
+  geom_smooth() +
+  coord_flip()
+```
+
+
 
 Split Genres
 - Split all the genrese separated by "|" into 8 different columns.
