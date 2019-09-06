@@ -937,6 +937,8 @@ IMDB <- subset(IMDB, select = -c(genres))
 colSums(sapply(IMDB, is.na))
 ```
 
+We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
+
 ```{r }
 #Plotting Facebook likes against IMDB score
 ggplot(data = IMDB, aes(x = imdb_score, y = movie_facebook_likes)) +
@@ -944,7 +946,6 @@ ggplot(data = IMDB, aes(x = imdb_score, y = movie_facebook_likes)) +
   stat_smooth(method="lm")
 ```
 
-From the above graph, it is evident that films with lower IMDB ratings can still have many facebooks likes. However, the majority of the facebook likes lie within the 6-8 region. 
 
 ```{r }
 #Plotting Aspect Ratio against Facebook likes
