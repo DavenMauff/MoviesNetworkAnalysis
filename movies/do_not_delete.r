@@ -2,7 +2,7 @@
 pacman::p_load("stringr","ggplot2", "tidyr", "ngram", "dplyr", "syuzhet", "plotly", "tm", "wordcloud", "sentimentr", "reshape2", "rlist", "gplots", "plsgenomics")
 options(scipen = 999)
 
-IMDB <- read.csv("../test.csv")
+IMDB <- read.csv("../data/real_deal.csv")
 
 #Removing Duplicates
 IMDB <- IMDB[!duplicated(IMDB), ]
@@ -51,12 +51,6 @@ top_20 <- keywords_one_col_freq %>%
 
 movies_with_keywords <- data.frame()
 IMDB_keyword_movie <- data.frame()
-
-for (keyword in top_20$value) {
-  IMDB_keyword_movie[keyword] <- ifelse(str_detect(IMDB$plot_keywords, keyword), "TRUE", "FALSE")
-  movies_with_keywords["movie_title"] <- data.frame(IMDB_keyword_movie$movie_title[IMDB_keyword_movie[keyword] == TRUE])
-  movies_with_keywords["keywords"] <- data.frame(IMDB_keyword_movie$plot_keywords[IMDB_keyword_movie[keyword] == TRUE])
-}
 
 keywords_one_col %>%
   group_by(value) %>% 
