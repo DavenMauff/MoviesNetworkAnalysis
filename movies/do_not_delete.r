@@ -15,10 +15,12 @@ IMDB <- subset(IMDB, select = -c(genres))
 
 colSums(sapply(IMDB, is.na))
 
+#Plotting Facebook likes against IMDB score
 ggplot(data = IMDB, aes(x = imdb_score, y = movie_facebook_likes)) +
   geom_point() +
   stat_smooth(method="lm")
 
+#Plotting Aspect Ratio against Facebook likes
 IMDB %>% 
   filter(aspect_ratio==1.85 | aspect_ratio==2.35) %>%
   mutate(aspect_ratio=as.character((aspect_ratio))) %>%
@@ -29,7 +31,99 @@ IMDB %>%
 
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
 
-###### Sentiment ########
+keywords_matrix <- do.call(rbind, strsplit(as.character(IMDB$plot_keywords), "[|]"))
+
+keywords_df <- as.data.frame(keywords_matrix)
+
+names(keywords_df) <- c("one", "two", "three", "four", "five")
+
+keywords_one_col <- gather(keywords_df) %>% 
+  select(value)
+
+keywords_one_col_freq <- keywords_one_col %>%
+  group_by(value) %>%
+  tally()
+
+top_20 <- keywords_one_col_freq %>%
+  select(value, n) %>%
+  top_n(20)
+
+
+movies_with_keywords <- data.frame()
+IMDB_keyword_movie <- data.frame()
+
+for (keyword in top_20$value) {
+  IMDB_keyword_movie[keyword] <- ifelse(str_detect(IMDB$plot_keywords, keyword), "TRUE", "FALSE")
+  movies_with_keywords["movie_title"] <- data.frame(IMDB_keyword_movie$movie_title[IMDB_keyword_movie[keyword] == TRUE])
+  movies_with_keywords["keywords"] <- data.frame(IMDB_keyword_movie$plot_keywords[IMDB_keyword_movie[keyword] == TRUE])
+}
+
+keywords_one_col %>%
+  group_by(value) %>% 
+  tally() %>% 
+  filter(n > 30) %>% 
+  ggplot() +
+  geom_bar(aes(x = value, y=n), stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+top_20
+
+###### Placing Top 20 Words Against Movie Success#############################################################################################
+
+IMDB_true_false <- IMDB 
+for (keyword in top_20$value) {
+  IMDB_true_false <- cbind(IMDB_true_false, ifelse(str_detect(IMDB$plot_keywords, keyword), "TRUE", "FALSE"))
+}
+
+for (i in 1:20) {
+  reference <- 27
+  names(IMDB_true_false)[reference + i] <- top_20$value[i]  
+}
+
+truey <- data.frame()
+for (keyword in top_20$value) {
+  truey <- rbind(truey, IMDB_true_false %>%
+                            filter(get(keyword) == TRUE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
+    distinct(movie_title, .keep_all = T)
+}
+
+
+
+falsy <- data.frame()
+for (keyword in top_20$value) {
+  falsy <- rbind(falsy, IMDB_true_false %>%
+                            filter(get(keyword) == FALSE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
+    distinct(movie_title, .keep_all = T)
+}
+
+truey <- truey %>%
+  mutate(tri = "Top 20 Word")
+
+falsy <- falsy %>%
+  mutate(tri = "NOT Top 20 Word")
+
+truey_falsy <- full_join(falsy, truey, by = c("movie_title", "gross", "imdb_score", "movie_facebook_likes", "plot_keywords"))
+
+truey_falsy <- truey_falsy %>%
+  mutate(tri = coalesce(tri.y, tri.x)) %>%
+  select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords, tri)
+
+truey_falsy <-  truey_falsy %>%
+  group_by(tri) %>%
+  na.omit() %>%
+  mutate(avg = mean(gross))
+
+truey_falsy_graph <- summarise(truey_falsy, avg = mean(gross))
+
+truey_falsy_graph %>%
+  ggplot() +
+  geom_bar(aes(x = tri, y=avg, fill=tri), stat="identity", position="stack") +
+  theme(axis.text.x = element_blank()) 
+
+
+
+
+###### Sentiment ############################################################################################################################
 
 keywords_from_split <- data.frame(lapply(keywords_split, "length<-", max(lengths(keywords_split))))
 
@@ -112,91 +206,55 @@ mat_sentiments <- data.matrix(sentiments[,2:ncol(sentiments)])
 rownames(mat_sentiments) <- rnames
 mat_sentiments <- t(mat_sentiments)
 
-#heatmap.2(mat_sentiments, Rowv = F, Colv = F, scale="row", col=colorRampPalette(c("white","darkblue")))
 df_sentiment <-  as.data.frame(mat_sentiments)
 names_emotions <- c("anger", "anticipation", "disgust","fear","joy","sadness","surprise","trust","negative","positive")
 
 sentiments_graph <- cbind(names_emotions, df_sentiment)
 
-sentiments %>%
-  summarise(count = ) %>% 
-  ggplot(aes(names_emotions, as.factor(year)))+
-  geom_tile(aes(fill=count),colour="white")+
-  scale_fill_gradient(low="light blue",high = "dark blue") +
-  xlab("Year of Movie release")+
-  ylab("Genre of Movie Release")+
-  ggtitle("Heat Map")+
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-#heatmap.2(mat_sentiments, Colv = F, Rowv = F)
-#heatmap(mat_sentiments, Colv = F, Rowv = F)
-
+#Run if there is a problem with heatmap
 dev.off()
 
+#Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none")
 
-#Preparing results for heatmap
-sentiments <- data.frame(t(sentiments[-1]))
-colnames(sentiments) <- sentiments[, 1]
+#Filtering sentiments graph
+sentiments_graph_filter <- sentiments %>%
+  filter(year >= 2000)
 
-#########################
+#Other graphs
+# Showing trends between sentiment from the 2000's 
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anger)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anticipation)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = disgust)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = fear)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = joy)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = sadness)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = surprise)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = trust)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = negative)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
 
-keywords_matrix <- do.call(rbind, strsplit(as.character(IMDB$plot_keywords), "[|]"))
 
-keywords_df <- as.data.frame(keywords_matrix)
-
-names(keywords_df) <- c("one", "two", "three", "four", "five")
-
-keywords_one_col <- gather(keywords_df) %>% 
-  select(value)
-
-keywords_one_col_freq <- keywords_one_col %>%
-  group_by(value) %>%
-  tally()
-
-top_20 <- keywords_one_col_freq %>%
-  select(value, n) %>%
-  top_n(20)
-
-
-movies_with_keywords <- data.frame()
-
-for (keyword in top_20$value) {
-  IMDB_keyword_movie[keyword] <- ifelse(str_detect(IMDB$plot_keywords, keyword), "TRUE", "FALSE")
-  movies_with_keywords["movie_title"] <- data.frame(IMDB_keyword_movie$movie_title[IMDB_keyword_movie[keyword] == TRUE])
-  movies_with_keywords["keywords"] <- data.frame(IMDB_keyword_movie$plot_keywords[IMDB_keyword_movie[keyword] == TRUE])
-}
-
-
-#movies_with_keywords["movie_title"] <- ifelse(IMDB_keyword_movie$movie_title[IMDB_keyword_movie["love"] == TRUE],IMDB_keyword_movie$movie_title, "")
-
-#movies_with_keywords["love"] <- cbind(data.frame(IMDB_keyword_movie$movie_title[IMDB_keyword_movie['love'] == TRUE]))
-
-
-keyword_freq_graph <- 
-  keywords_one_col %>%
-  group_by(value) %>% 
-  tally() %>% 
-  filter(n > 30) %>% 
-  ggplot() +
-  geom_bar(aes(x = value, y=n), stat="identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
-
-keyword_freq_graph
-
-emotions <- get_nrc_sentiment(as.character("aleun"))
-print(top_20[1])
-emotions <- get_sentiment(as.character(top_20[1]))
-emotions <- get_sentiment("friends")
-for (i in top_20$value) {
-  print(as.character(i))
-  print(get_nrc_sentiment(i))
-}
-get_nrc_sentiment(as.character(top_20[1]))
-
-top_20
-
+##############################################################################################################################################
 
 
