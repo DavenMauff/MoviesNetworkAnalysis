@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r setup, include=FALSE}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr, ggthemes, corrplot)
+pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr, ggthemes, corrplot, magrittr, plotly)
 knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
@@ -195,3 +195,32 @@ ggplot(movie_metadata, aes(imdb_score)) +
  ggtitle("Histogram for IMDB ratings") +
   annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
+
+3D Plot
+
+```{r}
+revenue_data<- movie_metadata%>%
+  filter(movie_metadata$budget >= 1000000 & movie_metadata$revenue >= 1000000) %>%
+  mutate(ROI = (revenue - budget)/budget)
+
+```
+
+```{r}
+movie_metadata<- movie_metadata %>% 
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100)
+```
+
+```{r}
+plot_ly(revenue_data, z = ~vote_average, x = ~budget/1000000, y = ~revenue/1000000, 
+        color = ~(revenue > budget), colors = c('#00FF00', '#FF0000'),
+        size = I(3)) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Budget(In Million Dollars'),
+                      yaxis = list(title = 'Revenue(In Million Dollars'),
+                      zaxis = list(title = 'IMDB Rating')),
+         title = "3D Plot: IMDB Rating vs Revenue vs Budget",
+         showlegend = FALSE)
+```
+
+
