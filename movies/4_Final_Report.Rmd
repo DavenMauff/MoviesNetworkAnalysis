@@ -30,16 +30,9 @@ p {
 
 ## Introduction
 
-In this report, we will be analysing a dataset from [Kaggle](https://www.google.com), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results.
+In this report, we will be analysing a dataset from [Kaggle](https://www.kaggle.com/rounakbanik/the-movies-dataset#links.csv), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results.
+When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment. Which genre would you guess is the most successful? Which actors do you think are the most popular? 
 
-### What?
-> 
-
-### Why?
->
-
-### How?
->
 
 We have split our Exploratory Data Analysis into four main parts:
 
@@ -77,7 +70,7 @@ The dataset contains 28 unique columns/variables, each of which are described in
 
 Variable Name            | Description
 -------------------------|----------------------------------------------
-color                    | Specifies whether a movie is black and white or color
+color                    | Specifies whether a movie is in black and white or color
 director_name            | Contains name of the director of a movie
 num_critic_for_reviews   | Contains number of critic reviews per movie
 duration                 | Contains duration of a movie in minutes
@@ -418,6 +411,8 @@ genres_one_col %>%
   ylab("Frequency") +
   NULL
 ```
+It is evident that the Drama and Comedy genre are the most popular to be produced. However, this does not mean that they are the most profitable, returning successful ROI’s. This will further be explored.
+
 
 Previously we assumed that the first genre is the most applicable, therefore, we choose the first column as the genre for the movie and append it to the dataframe. 
 ```{r}
