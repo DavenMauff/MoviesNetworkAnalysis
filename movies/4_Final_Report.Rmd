@@ -1,7 +1,7 @@
 ---
 title: "An Exploratory Data and Network Analysis of Movies"
 author: Clarice, Daven, Lucia, Christopher and Indurain
-date: July 31, 2016
+date: September 6, 2019
 output:
   prettydoc::html_pretty:
     theme: tactile
@@ -55,7 +55,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr)
 ```
 
 We import the dataset like this:
@@ -105,7 +105,7 @@ aspect_ratio             | Contains the size of the aspect ratio of a movie
 movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 
-Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `X` number of actors/actresses. Around `X%` of the movies are from the USA, `X%` from UK, and `X%` from other countries.
+Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `X` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
 
 The structure of the dataset can also be used to understand our data. We can run the following code chunk to see its structure.
 
@@ -261,7 +261,7 @@ Next, we can look at the different types of countries.
 table(movie_metadata$country)
 ```
 
-Around 79% movies are from USA, 8% from UK, 13% from other countries. So we group other countries together to make this categorical variable with less levels: `USA`, `UK`, `Others`.
+Around `79%` movies are from USA, `8%` from UK, `13%` from other countries. So we group other countries together to make this categorical variable with less levels: `USA`, `UK`, `Others`.
 
 ```{r}
 levels(movie_metadata$country) <- c(levels(movie_metadata$country), "Others")
@@ -276,11 +276,93 @@ Now that we've cleaned up our dataset, we can now continue to explore our data e
 
 ## Analysing Data
 
-When inspecting a dataset of movies from over the past few years, various interesting inferences are uncovered. A movie may have a high rating yet low return on investment. Which genre is the most successful? Which actors are the most popular? 
+When inspecting a dataset of movies over the past few years, various interesting inferences can be uncovered. A movie may have a high rating yet low return on investment. Which genre is the most successful? Which actors are the most popular? These are some of the questions we aim to answer in this section.
+
+We can start by performing basic analyis on our data. Thereafter, we delve a bit deeper into more specific parts of the dataset, in hopes of uncovering interesting observations.
+
+### Basic Analysis
+
+Let's first have a look at the number of movies that are produced over the years.
+
+```{r}
+ggplot(movie_metadata, aes(title_year)) +
+  geom_bar() +
+  labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
+
+```{r}
+movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
+```
+
+Let's have a look at the movie counts now:
+
+```{r}
+ggplot(movie_metadata, aes(title_year)) +
+  geom_bar() +
+  labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Genre Analysis
+
+Now we can delve into more specific things regarding movies, like `genres`. As you can see, movies have multiple genres that its associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely the most accurate description.
+
+```{r}
+head(movie_metadata$genres)
+```
+
+Let's split the genres separated by "|" into 8 different columns.
+
+```{r fig.height=5, fig.width=11, message=FALSE, warning=FALSE}
+# Split on "|"
+genres_split <- str_split(movie_metadata$genres, pattern="[|]", n=2)
+
+# Create Matrix
+genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
+
+# Dataframe of genres
+genres_df <- as.data.frame(genres_matrix)
+```
+
+`genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of all the genres. 
+
+```{r}
+# Collapse all genres into one column
+genres_one_col <- gather(genres_df) %>% 
+  select(value)
+
+# Plot frequency of first column
+genres_one_col %>%
+  group_by(value) %>% 
+  tally() %>% 
+  filter(n >= 30) %>% 
+  ggplot() +
+  geom_bar(aes(x = value, y=n), stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("Genre") +
+  ylab("Frequency") +
+  NULL
+```
+
+Previously we assumed that the first genre is the most applicable, therefore, we choose the first column as the genre for the movie and append it to the dataframe. 
+```{r}
+# Take old genres column away
+movie_metadata <- subset(movie_metadata, select = -c(genres))
+
+# Take first column of genres_df and add it to MAIN df
+movie_metadata$genre <- genres_df$V1
+```
 
 
 
 
+
+```{r}
+
+```
 
 
 -----
