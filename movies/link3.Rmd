@@ -293,7 +293,7 @@ As expected, there is not much correlation since most critically acclaimed movie
 > Imdb score VS movie FB likes
 
 ```{r}
-IMDB %>%
+movie_metadata %>%
   plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
 ```
 We divide this scatter plot by content-rating. Movie with extremely high Facebook likes tend to have higher imdb score. But the score for movie with low Facebook likes vary in a very wide range.

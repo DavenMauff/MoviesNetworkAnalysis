@@ -57,7 +57,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable)
 ```
 
 We import the dataset like this:
@@ -107,7 +107,7 @@ aspect_ratio             | Contains the size of the aspect ratio of a movie
 movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 
-Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `6255` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
+Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `5390` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
 
 The structure of the dataset can also be used to understand our data. We can run the following code chunk to see its structure.
 
@@ -290,7 +290,8 @@ Let's first have a look at the number of movies that are produced over the years
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept=c(1980), linetype="dotted")
 ```
 
 From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
@@ -570,17 +571,53 @@ bar_plot(arr_score[1:10,],
 
 IMDB ratings VS Movie Count
 
-```{r}
+```{r fig.align="center"}
 ggplot(movie_metadata, aes(imdb_score)) +
  geom_histogram(bins = 50) +
  geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
  ylab("Movie Count") +
  xlab("IMDB Rating") +
- ggtitle("IMDB Ratings Per Movie") +
+ ggtitle("IMDB Ratings for Movies") +
   annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
 
+Popularity over the years
+```{r message=FALSE, fig.align="center"}
+#Creating the required subset of data 
+movies_pop <- movie_metadata %>%
+ select(title_year, movie_facebook_likes) %>%
+ filter(title_year > 1980) %>%
+ group_by(title_year) %>%
+ summarise(avg = mean(movie_facebook_likes)) 
 
+#Generating the popularity Vs time plot
+ ggplot(movies_pop, aes(x = title_year, y = avg)) +
+   geom_point() +
+   geom_smooth() + 
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Mean Popularity Score") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+   annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
+```
+
+
+Facebook Likes VS IMDB Score
+```{r}
+movie_metadata %>%
+  plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
+```
+
+
+Top 20 directors with highest average IMDB score
+```{r}
+movie_metadata %>%
+  group_by(director_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
+```
 -----
 
 ## Network Analysis
