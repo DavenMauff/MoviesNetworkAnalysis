@@ -55,7 +55,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable, corrplot)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable, corrplot, ggpubr)
 ```
 
 We import the dataset like this:
@@ -781,6 +781,127 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 
 ```
 
+### Profit | Gross | Return of Interest
+
+```{r}
+budget <- movie_metadata %>%
+  select(movie_title, budget) %>%
+  arrange(desc(budget)) %>%
+  head(15)
+
+x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Budgets")+
+  xlab("")+
+  ylab("Budget (in Millions)") + 
+  coord_flip()
+
+rev <- movie_metadata %>%
+  select(movie_title, gross) %>%
+  arrange(desc(gross)) %>%
+  head(15)
+
+y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
+  geom_bar( stat = "identity")+ 
+  theme(axis.text.x=element_text(hjust=1))+
+  ggtitle("Movie Gross")+
+  xlab("")+
+  ylab("Gross (in Millions)") + 
+  coord_flip() 
+
+ggarrange(x, y,
+          labels = c("A", "B"),
+          ncol = 1, nrow = 2)
+```
+
+Most Successful Directors based on Profit
+```{r}
+#Top 20 most successful directors
+movie_metadata %>%
+        group_by(director_name) %>%
+  mutate(profit = gross - budget)%>%
+select(director_name, budget, gross, profit) %>%
+na.omit() %>% 
+summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
+mutate(avg_per_film = profit/films) %>%
+arrange(desc(avg_per_film)) %>% 
+top_n(20, avg_per_film) %>%
+ggplot( aes(x = films, y = avg_per_film/1000000)) + 
+geom_point(size = 1, color = "blue") + 
+geom_text_repel(aes(label = director_name), size = 3, color = "blue") + 
+xlab("Number of Films") + ylab("Avg Profit $millions") + 
+ggtitle("Most Successful Directors")
+```
+
+Top 20 movies based on its Profit
+
+```{r}
+#Top 20 movies based on its Profit
+movie_metadata %>% 
+  filter(title_year %in% c(2000:2016)) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=profit/1000000)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Profit $million") + 
+  ggtitle("20 Most Profitable Movies")
+```
+
+Top 20 movies based on its Return on Investment
+```{r}
+#Top 20 movies based on its Return on Investment
+movie_metadata %>% 
+  filter(budget >100000) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Percent Return on Investment") + 
+  ggtitle("20 Most Profitable Movies based on its Return on Investment")
+```
+
+### Further Analysis
+
+Commercial success Vs Critical acclaim
+```{r}
+movie_metadata %>%
+  top_n(15, profit) %>%
+  ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
+  geom_point() + 
+  geom_hline(aes(yintercept = 600)) + 
+  geom_vline(aes(xintercept = 7.75)) + 
+  geom_text_repel(aes(label = movie_title), size = 4) +
+  xlab("Imdb score") + 
+  ylab("Gross money earned in million dollars") + 
+  ggtitle("Commercial success Vs Critical acclaim") +
+  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Correlation Heatmap
+
+```{r}
+ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
+  ggtitle("Correlation Heatmap") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Based on the heatmap, we can see some high correlations (greater than 0.7) between predictors.
+
+According to the highest correlation value 0.95, we find actor_1_facebook_likes is highly correlated with the cast_total_facebook_likes, and both actor2 and actor3 are also somehow correlated to the total. So we want to modify them into two variables: actor_1_facebook_likes and other_actors_facebook_likes.
+
+There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews.
 
 
 -----
