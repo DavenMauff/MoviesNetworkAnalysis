@@ -7,20 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(pacman)
-pacman::p_load(dplyr, ggplot2, tidyr, ggrepel, formattable, ggcorrplot, GGally, rpart.plot, rpart, VIM, caret, stringr, ggthemes, corrplot)
+pacman::p_load(dplyr, ggplot2, tidyr, ggarrange )
 knitr::opts_chunk$set(echo = TRUE)
 setwd(getwd())
 ```
 
 
 ```{r}
-movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
-```
-
-```{r}
-movie_metadata<- movie_metadata %>% 
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100)
+movie_metadata <- read.csv("../movie_metadata.csv", sep=";")
 ```
 
 ## Questions
@@ -33,21 +27,12 @@ Also, read through ALLLLLL of the links. Let's start somewhere simple and work o
 
 ### Link 1: https://rstudio-pubs-static.s3.amazonaws.com/384914_7bee8325659440ab9db1b3de36c37343.html
 
-1. HeatMap [X]
+1. HeatMap [ ]
 > Genre VS Year that Movie is Released
 
 ```{r}
-revenue_data <- movie_metadata %>%
-  filter(movie_metadata$gross >= 10000000 & movie_metadata$gross >= 10000000) %>%
-  mutate(ROI = (gross - budget)/budget)
-
-dim(revenue_data)
-```
-
-
-```{r}
-revenue_data %>%
- filter(title_year > 2013) %>%  #Filter movies released after 2000
+movie_metadata %>%
+ filter(title_year > 2000) %>%  #Filter movies released after 2000
  group_by(title_year, genres) %>%
  summarise(count = n()) %>% #Count of Movies released
  ggplot(aes(title_year, as.factor(genres)))+
@@ -56,12 +41,12 @@ revenue_data %>%
  xlab("Year of Movie release")+
  ylab("Genre of Movie Release")+
  ggtitle("Heat Map")+
-  theme(axis.title.y=element_blank(),
+theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
 ```
 
-2. Movie Budgets [X]
+2. Movie Budgets [ ]
 
 ```{r}
 budget <- movie_metadata %>%
@@ -82,71 +67,50 @@ rev <- movie_metadata %>%
   arrange(desc(gross)) %>%
   head(15)
 
-y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
+y <- ggplot(rev, aes(x = (reorder(title, -desc(revenue))), y = gross/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Gross")+
+  ggtitle("Movie Revenues")+
   xlab("")+
-  ylab("Gross (in Millions)") + 
+  ylab("Revenue (in Millions)") + 
   coord_flip() 
 
-ggarrange(x, y,
-          labels = c("A", "B"),
-          ncol = 1, nrow = 2)
+#ggarrange(x, y,
+          #labels = c("A", "B"),
+          #ncol = 1, nrow = 2)
 ```
 
 3. Movie Gross [ ]
 ```{r}
 
 ```
-
 4. 3D Plot [ ]
  IMDb Rating VS Budget VS Gross
 ```{r}
-plotly::plot_ly(revenue_data, z = ~imdb_score, x = ~budget/1000000, y = ~gross/1000000, 
-        color = ~(gross > budget), colors = c('#00FF00', '#FF0000'),
-        size = I(3)) %>%
-  add_markers() %>%
-  layout(scene = list(xaxis = list(title = 'Budget(In Million Dollars'),
-                      yaxis = list(title = 'Revenue(In Million Dollars'),
-                      zaxis = list(title = 'IMDB Rating')),
-         title = "3D Plot: IMDB Rating vs Revenue vs Budget",
-         showlegend = FALSE)
 
 ```
 
 5. Vote counts over the years [ ]
-
-```{r}
-# creating a data frame containing avg score, avg votes and avg fb likes
-score_votes_likes <- movie_metadata %>% 
-  group_by(genres) %>%
-  summarise(count = n(),
-            avg_score = round(mean(imdb_score), 1),
-            avg_votes = mean(num_voted_users),
-            avg_facebook_likes = mean(movie_facebook_likes),
-            avg_reviews = mean(num_user_for_reviews)) %>%
-  filter(count > 10)
-```
-
-IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s.
 ```{r}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
-  select(title_year, num_voted_users) %>%
-  group_by(title_year) %>%
-  summarise(count = sum(num_voted_users)) 
+ select(title_year, num_voted_users) %>%
+ group_by(title_year) %>%
+ summarise(count = sum(num_voted_users)) 
 
- ggplot(movies_vote1, aes(x = title_year, y = count/1000)) +
-   geom_bar( stat = "identity") +
-   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
-   ylab("Vote count (in thousands)") +
-   xlab("Years") +
-   annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
-   annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+ names(movies_vote1) <- c("date","Number of voted users")
+
+ ggplot(movies_vote1, aes(x = date, y = num_voted_users/1000)) +
+ geom_bar( stat = "identity") +
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Vote count (in thousands)") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 160, size = 3, colour = "red",angle=90)
 ```
 
-6. Popularity over the years [X]
+6. Popularity over the years [ ]
 ```{r}
 #Creating the required subset of data 
 movies_pop <- movie_metadata %>%
@@ -155,15 +119,18 @@ movies_pop <- movie_metadata %>%
  group_by(title_year) %>%
  summarise(avg = mean(movie_facebook_likes)) 
 
+ names(movies_pop) <- c("date","popularity")
+
  #generating the popularity Vs time plot
- ggplot(movies_pop, aes(x = title_year, y = avg)) +
-   geom_point() +
-   geom_smooth() + 
-   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
-   ylab("Mean Popularity Score") +
-   xlab("Years") +
-   annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
-   annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
+ ggplot(movies_pop, aes(x = date, y = movie_facebook_likes)) +
+ geom_point() +
+ geom_smooth() + 
+ geom_vline(xintercept = c(1990,2004,2006),colour = c("orange","blue","red")) +
+ ylab("Mean Popularity Score") +
+ xlab("Years") +
+ annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
+ annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)+
+ annotate("text", label = "Twitter",x = 2005, y = 80, size = 3, colour = "red",angle=90)
 ```
 
 7. Distribution of Imdb Ratings
@@ -193,23 +160,6 @@ ggplot(movie_metadata, aes(imdb_score)) +
 > Gross Money VS Imdb score (Profit being size of point; Point Colour being rating)
 > Also available on: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 
-
-```{r}
-movie_metadata %>%
-  top_n(15, profit) %>%
-  ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
-  geom_point() + 
-  geom_hline(aes(yintercept = 600)) + 
-  geom_vline(aes(xintercept = 7.75)) + 
-  geom_text_repel(aes(label = movie_title), size = 4) +
-  xlab("Imdb score") + 
-  ylab("Gross money earned in million dollars") + 
-  ggtitle("Commercial success Vs Critical acclaim") +
-  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-
 ```{r}
 movie_metadata %>%
   filter(imdb_score >5 ) %>% #Filter to show the graph only for vote_average values greater than 5
@@ -221,7 +171,6 @@ movie_metadata %>%
   ylab("") +
   geom_smooth()
 ```
-
 Return on investment vs runtime of films:
 
 ```{r}
@@ -251,6 +200,9 @@ ggarrange(a, b,
 
 ```{r}
 
+movie_metadata %>%
+  filter()
+
 
 ```
 
@@ -262,436 +214,22 @@ ggarrange(a, b,
 ### Link 3: http://rstudio-pubs-static.s3.amazonaws.com/342210_7c8d57cfdd784cf58dc077d3eb7a2ca3.html
 Literally works on our data, however, this link does a lot of pre-processing that we might need to take a look at. For example, they use the first word in the genre column as the genre of the movie. 
 
-Based on the massive movie information, it would be interesting to understand what are the important factors that make a movie more successful than others. So, we would like to analyze what kind of movies are more successful, in other words, get higher IMDB score. We also want to show the results of this analysis in an intuitive way by visualizing outcome using ggplot2 in R.
-
-In this project, we take IMDB scores as response variable and focus on operating predictions by analyzing the rest of variables in the IMDB 5000 movie data. The results can help film companies to understand the secret of generating a commercial success movie.
-
-Required Pre-processing:
-
-```{r}
-movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
-```
-
-In the IMDB data, we have some duplicate rows. We want to remove the 45 duplicated rows and keep the unique ones.
-
-```{r}
-# duplicate rows
-sum(duplicated(movie_metadata))
-```
-
-```{r Remove Duplicates}
-IMDB <- movie_metadata[!duplicated(movie_metadata), ]
-```
-
-```{r}
-missing.values <- aggr(IMDB, sortVars = T, prop = T, sortCombs = T, cex.lab = 1.5, cex.axis = .6, cex.numbers = 5, combined = F, gap = -.2)
-```
-
-Since gross and budget have too many missing values, and we want to keep these two variables for the following analysis, we can only delete rows with null values for gross and budget because imputation will not do a good job here.
-
-```{r}
-IMDB <- IMDB[!is.na(IMDB$gross), ]
-IMDB <- IMDB[!is.na(IMDB$budget), ]
-dim(IMDB)
-```
-
-Not too bad, we only omitted 23% of the observations. Now our data has 3857 observations.
-Let’s see how many complete cases we have.
-
-```{r}
-sum(complete.cases(IMDB))
-```
-
-So, there are still 3857 - 3768 = 89 rows with NAs.
-
-Let’s take a look at rest columns with missing values.
-
-```{r}
-colSums(sapply(IMDB, is.na))
-```
-
-Now aspect_ratio has the highest number of missing values. Before trying to impute the missing values, we want to check how important is this variable.
-
-```{r}
-table(IMDB$aspect_ratio)
-```
-
-The most common aspect ratios are 1.85 and 2.35. For analyzing purpose, we group other ratios together.
-
-In order to compute the mean of imdb score for different aspect_ratio, we need to replace NA with 0 first.
-
-```{r}
-IMDB$aspect_ratio[is.na(IMDB$aspect_ratio)] <- 0
-mean(IMDB$imdb_score[IMDB$aspect_ratio == 1.85])
-```
-
-```{r}
-mean(IMDB$imdb_score[IMDB$aspect_ratio == 2.35])
-```
-
-```{r}
-mean(IMDB$imdb_score[IMDB$aspect_ratio != 1.85 & IMDB$aspect_ratio != 2.35])
-```
-
-From the means of imdb score for different aspect ratios, we can see there is no significant difference, all the means fall in the range of 6.3~6.8. So, removing this variable won’t affect our following analysis.
-
-```{r}
-IMDB <- subset(IMDB, select = -c(aspect_ratio))
-```
-
-We notice that there are some 0 values which should also be regarded as missing value except for predictor facenumber_in_poster.
-
-First we need to replace NA with column average for facenumber_in_poster, then replace 0s in other predictors with NA, and lastly replace all NAs with their respective column mean.
-
-```{r}
-# replace NA with column average for facenumber_in_poster
-IMDB$facenumber_in_poster[is.na(IMDB$facenumber_in_poster)] <- round(mean(IMDB$facenumber_in_poster, na.rm = TRUE))
-# convert 0s into NAs for other predictors
-IMDB[,c(5,6,8,13,24,26)][IMDB[,c(5,6,8,13,24,26)] == 0] <- NA
-# impute missing value with column mean
-IMDB$num_critic_for_reviews[is.na(IMDB$num_critic_for_reviews)] <- round(mean(IMDB$num_critic_for_reviews, na.rm = TRUE))
-IMDB$duration[is.na(IMDB$duration)] <- round(mean(IMDB$duration, na.rm = TRUE))
-IMDB$director_facebook_likes[is.na(IMDB$director_facebook_likes)] <- round(mean(IMDB$director_facebook_likes, na.rm = TRUE))
-IMDB$actor_3_facebook_likes[is.na(IMDB$actor_3_facebook_likes)] <- round(mean(IMDB$actor_3_facebook_likes, na.rm = TRUE))
-IMDB$actor_1_facebook_likes[is.na(IMDB$actor_1_facebook_likes)] <- round(mean(IMDB$actor_1_facebook_likes, na.rm = TRUE))
-IMDB$cast_total_facebook_likes[is.na(IMDB$cast_total_facebook_likes)] <- round(mean(IMDB$cast_total_facebook_likes, na.rm = TRUE))
-IMDB$actor_2_facebook_likes[is.na(IMDB$actor_2_facebook_likes)] <- round(mean(IMDB$actor_2_facebook_likes, na.rm = TRUE))
-IMDB$movie_facebook_likes[is.na(IMDB$movie_facebook_likes)] <- round(mean(IMDB$movie_facebook_likes, na.rm = TRUE))
-
-```
-
-We find there are still some missing values in content_rating, which are marked as “”.
-
-```{r}
-table(IMDB$content_rating)
-```
-
-Blanks should be taken as missing value. Since these missing values cannot be replaced with reasonable data, we delete these rows.
-
-```{r}
-IMDB <- IMDB[!(IMDB$content_rating %in% ""),]
-```
-
-According to the history of naming these different content ratings, we find M = GP = PG, X = NC-17. We want to replace M and GP with PG, replace X with NC-17, because these two are what we use nowadays.
-
-```{r}
-IMDB$content_rating[IMDB$content_rating == 'M']   <- 'PG' 
-IMDB$content_rating[IMDB$content_rating == 'GP']  <- 'PG' 
-IMDB$content_rating[IMDB$content_rating == 'X']   <- 'NC-17'
-```
-
-We want to replace “Approved”, “Not Rated”, “Passed”, “Unrated” with the most common rating “R”.
-
-```{r}
-IMDB$content_rating[IMDB$content_rating == 'Approved']  <- 'R' 
-IMDB$content_rating[IMDB$content_rating == 'Not Rated'] <- 'R' 
-IMDB$content_rating[IMDB$content_rating == 'Passed']    <- 'R' 
-IMDB$content_rating[IMDB$content_rating == 'Unrated']   <- 'R' 
-IMDB$content_rating <- factor(IMDB$content_rating)
-table(IMDB$content_rating)
-```
-
-Now we only have 5 different content ratings.
-
-We have gross and budget information. So let’s add two colums: profit and percentage return on investment for further analysis.
-
-```{r}
-IMDB <- IMDB %>% 
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100)
-```
-
-> Is the color of a movie influential?
-
-```{r}
-table(IMDB$color)
-```
-
-More than 96% movies are colored, which indicates that this predictor is nearly constant. Let’s remove this predictor.
-
-> Is language an important factor for imdb score? What about country?
-
-```{r}
-table(IMDB$language)
-```
-
-Over 95% movies are in English, which means this variable is nearly constant. Let’s remove it.
-
-```{r}
-IMDB <- subset(IMDB, select = -c(language))
-```
-
-
-```{r}
-table(IMDB$country)
-```
-
-Around 79% movies are from USA, 8% from UK, 13% from other countries. So we group other countries together to make this categorical variable with less levels: USA, UK, Others.
-
-```{r}
-levels(IMDB$country) <- c(levels(IMDB$country), "Others")
-IMDB$country[(IMDB$country != 'USA')&(IMDB$country != 'UK')] <- 'Others' 
-IMDB$country <- factor(IMDB$country)
-table(IMDB$country)
-```
-
-DATA VISUALISATION
-
-Movie production just exploded after year 1990. It could be due to advancement in technology and commercialisation of internet.
-
-```{r}
-ggplot(IMDB, aes(title_year)) +
-  geom_bar() +
-  labs(x = "Year movie was released", y = "Movie Count", title = "Histogram of Movie released") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
-
-```{r}
-IMDB <- IMDB[IMDB$title_year >= 1980,]
-```
-
-
 1. Number of Movies Produced Per Year [ ]
 > Count of movies VS Year
-
-Top 20 movies based on its Profit
-```{r}
-IMDB %>%
-  filter(title_year %in% c(2000:2016)) %>%
-  arrange(desc(profit)) %>%
-  top_n(15, profit) %>%
-  ggplot(aes(x=budget, y=profit)) +
-  geom_point() +
-  geom_smooth() + 
-  geom_text_repel(aes(label=movie_title)) +
-  labs(x = "Budget $million", y = "Profit $million", title = "Top 10 Profitable Movies") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-These are the top 20 movies based on the Profit earned (Gross - Budget). It can be inferred from this plot that high budget movies tend to earn more profit. The trend is almost linear, with profit increasing with the increase in budget.
-
-
-Top 20 movies based on its Return on Investment
-```{r}
-movie_metadata %>%
-  filter(budget > 100000) %>%
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100) %>%
-  arrange(desc(profit)) %>%
-  top_n(15, profit) %>%
-  ggplot(aes(x=budget/1000000, y = return_on_investment_perc)) + 
-  geom_point(size = 2) + 
-  geom_smooth(size = 1) + 
-  geom_text_repel(aes(label = movie_title), size = 3) + 
-  xlab("Budget $million") + 
-  ylab("Percent Return on Investment") + 
-  ggtitle("20 Most Profitable Movies based on its Return on Investment")
-```
-
-These are the top 20 movies based on its Percentage Return on Investment ((profit/budget)*100).
-
-Since profit earned by a movie does not give a clear picture about its monetary success over the years, this analysis, over the absolute value of the Return on Investment(ROI) across its Budget, would provide better results.
-
-As hypothesized, the ROI is high for Low Budget Films and decreases as the budget of the movie increases.
-
 
 2. Most Successfull Directors [ ]
 > Table representation of Director and their average IMDb rating
 
-Top 20 directors with highest average IMDB score
-```{r}
-movie_metadata %>%
-  group_by(director_name) %>%
-  summarise(avg_imdb = mean(imdb_score)) %>%
-  arrange(desc(avg_imdb)) %>%
-  top_n(20, avg_imdb) %>%
-  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
-```
-
-Commercial Success v.s. Critical Acclaim
-
-```{r}
-IMDB %>%
-  top_n(20, profit) %>%
-  ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
-  geom_point() + 
-  geom_hline(aes(yintercept = 600)) + 
-  geom_vline(aes(xintercept = 7.75)) + 
-  geom_text_repel(aes(label = movie_title), size = 4) +
-  xlab("Imdb score") + 
-  ylab("Gross money earned in million dollars") + 
-  ggtitle("Commercial success Vs Critical acclaim") +
-  annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-This is an analysis on the Commercial Success acclaimed by the movie (Gross earnings and profit earned) v.s. its IMDB Score.
-
-As expected, there is not much correlation since most critically acclaimed movies do not do much well commercially.
-
-
 3. Relationship between number of FB likes and Imdb score [ ]
 > Imdb score VS movie FB likes
 
-```{r}
-IMDB %>%
-  plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
-```
-We divide this scatter plot by content-rating. Movie with extremely high Facebook likes tend to have higher imdb score. But the score for movie with low Facebook likes vary in a very wide range.
-
 4. Correlation Heatmap [ ]
 
-We have 1660 directors, and 3621 actors in this data.
-
-```{r}
-# number of directors
-sum(uniqueN(IMDB$director_name))
-```
-
-
-```{r}
-# number of actors
-sum(uniqueN(IMDB[, c("actor_1_name", "actor_2_name", "actor_3_name")]))
-```
-
-Since all the names are so different for the whole dataset, there is no point to use names to predict score.
-
-Same with plot keywords, they are too diverse to be used in the prediction.
-
-And movie link is also a redundant variable.
-
-```{r}
-IMDB <- subset(IMDB, select = -c(director_name, actor_2_name, actor_1_name,
-                                 movie_title, actor_3_name, plot_keywords, 
-                                 movie_imdb_link))
-```
-
-> Remove Linear Dependent Variables
-
-For the purpose of data exploration, we added two variables based on existing variables: profit and return_on_investment_perc. In order to avoid multicollinearity, here we remove these two added variables.
-
-```{r}
-IMDB <- subset(IMDB, select = -c(profit, return_on_investment_perc))
-```
-
-First we plot the correlation heatmap for our data.
-
-```{r}
-ggcorr(IMDB, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
-  ggtitle("Correlation Heatmap") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-Based on the heatmap, we can see some high correlations (greater than 0.7) between predictors.
-
-According to the highest correlation value 0.95, we find actor_1_facebook_likes is highly correlated with the cast_total_facebook_likes, and both actor2 and actor3 are also somehow correlated to the total. So we want to modify them into two variables: actor_1_facebook_likes and other_actors_facebook_likes.
-
-There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews. We want to keep num_voted_users and take the ratio of num_user_for_reviews and num_critic_for_reviews.
-
-```{r}
-# add up actor 2 and 3 facebook likes into other actors facebook likes
-IMDB$other_actors_facebook_likes <- IMDB$actor_2_facebook_likes + IMDB$actor_3_facebook_likes
-# use the ratio of critical reviews amount to total reviews amount
-IMDB$critic_review_ratio <- IMDB$num_critic_for_reviews / IMDB$num_user_for_reviews
-# delete columns
-IMDB <- subset(IMDB, select = -c(cast_total_facebook_likes, actor_2_facebook_likes, actor_3_facebook_likes, num_critic_for_reviews, num_user_for_reviews))
-```
-
-Now the correlation heatmap becomes like this.
-
-```{r}
-ggcorr(IMDB, label = TRUE, label_round = 2, label_size = 3, size = 2.5, hjust = .85) +
-  ggtitle("Correlation Heatmap") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-We don’t see any strong correlation (absolute value greater than 0.7) any more.
-
 5. Full-Grown Tree [ ]
-
-Our goal is to build a model, which can help us predict if a movie is good or bad. So we don’t really want an exact score to be predicted, we only want to know how good or how bad is the movie. Therefore, we bin the score into 4 buckets: less than 4, 4~6, 6~8 and 8~10, which represents bad, OK, good and excellent respectively.
-
-```{r}
-IMDB$binned_score <- cut(IMDB$imdb_score, breaks = c(0,4,6,8,10))
-```
-
-> Organise the dataset
-
-We want to reorder the columns to make the dataset easier to be understood. And we also renamed the columns to make the names shorter.
-
-```{r}
-IMDB <- IMDB[,c(9,4,5,14,12,2,3,13,1,6,10,7,8,11,15)]
-colnames(IMDB) <- c("budget", "gross", "user_vote", "critic_review_ratio",
-                    "movie_fb", "director_fb", "actor1_fb", "other_actors_fb",
-                    "duration", "face_number", "year", "country", "content",
-                    "imdb_score", "binned_score")
-```
-
-> Split Data
-
-Here we split data into training, validation and test sets with the ratio of 6:2:2.
-
-```{r}
-
-IMDB <- IMDB[!is.na(IMDB$imdb_score), ]
-
-colSums(sapply(IMDB, is.na))
-
-set.seed(45)
+> Random Forest
+> K-Nearest Neighbour
 
 
-train.index <- sample(row.names(IMDB), dim(IMDB)[1]*0.8)
-valid.index <- sample(setdiff(row.names(IMDB), train.index), dim(IMDB)[1]*0.2)
-test.index <- setdiff(row.names(IMDB), union(train.index, valid.index))
-
-
-train <- IMDB[train.index, ]
-valid <- IMDB[valid.index, ]
-test <- IMDB[test.index, ]
-
-train <-na.omit(train$imdb_score)
-
-test <- na.omit(test)
-```
-
-> Implement Algorithm
-
-> Classification Tree
-* Full-grown Tree
-
-```{r}
-# Full grown tree
-class.tree <- rpart(data = train, binned_score ~ . -imdb_score, method = "class")
-
-## plot tree
-prp(class.tree, type = 1, extra = 1, under = TRUE, split.font = 2, varlen = 0) 
-```
-If (user_vote >= 551000) then class = (8,10].
-If (83000 <= user_vote < 551000) then class = (6,8].
-If (user_vote < 83000) and (duration >= 106) then class = (6,8].
-If (user_vote < 83000) and (duration < 106) and (gross < 7900000) then class = (6,8].
-If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb < 4500) then class = (4,6].
-If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year < 2000) then class = (6,8].
-If (user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio < 1.2) then class = (4,6].
-If (user_vote < 41000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio >= 1.2) then class = (4,6].
-If (41000 <= user_vote < 83000) and (duration < 106) and (gross >= 7900000) and (movie_fb >= 4500) and (year >= 2000) and (critic_review_ratio >= 1.2) then class = (6,8].
-
-From these rules, we can conclude that movies with a lot of votes in imdb website tend to have a higher score, which really makes sense because popular movies will have a lot of fans to vote high scores for them.
-On the contrary, if a movie has fewer votes, it can still be a good movie if its duration is longer (rule #3).
-It is surprise to see that movies make less profit are good, but ok if they make more profit (rule #4).
-
-> Best-pruned Tree
-
-```{r}
-# cross-validation procedure
-# argument cp sets the smallest value for the complexity parameter.
-set.seed(51)
-cv.ct <- rpart(binned_score ~ . -imdb_score, data = train, method = "class", 
-               cp = 0.00001, minsplit = 5, xval = 5)
-printcp(cv.ct)
-```
 
 
 -----

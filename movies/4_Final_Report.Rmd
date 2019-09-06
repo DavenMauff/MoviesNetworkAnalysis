@@ -31,7 +31,7 @@ p {
 ## Introduction
 
 In this report, we will be analysing a dataset from [Kaggle](https://www.kaggle.com/rounakbanik/the-movies-dataset#links.csv), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results.
-When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment. Which genre would you guess is the most successful? Which actors do you think are the most popular? 
+When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment (ROI). Which genre would you guess is the most successful? Which actors do you think are the most popular? 
 
 
 We have split our Exploratory Data Analysis into four main parts:
@@ -438,6 +438,8 @@ movie_metadata %>%
   theme(panel.background = element_blank())
 ```
 
+The heat map allows us to see that the popular genres with high frequencys are constantly being produced more and more often over the years. It is evident by the darker shades of blue becomming more prominent in the latter years. 
+
 #### Which Genres are Popular?
 
 In our dataset we have Facebook Likes and IMDB scores associated with a movie. This can help give us an indication of how popular each genre is. 
@@ -494,6 +496,8 @@ score_votes_likes
 
 ##### Genres VS IMDB Scores
 
+Observing the graphs below, various genres consist of an array of different ratings. However, niche genres are more consistent  with their ratings, including musical; thriller; romance and western.
+
 ```{r fig.height = 10, fig.width = 10, fig.align="center"}  
 # genre wise distribution of scores using a custom plot function  
 facet_hist_plot(movie_metadata$imdb_score, 
@@ -501,6 +505,7 @@ facet_hist_plot(movie_metadata$imdb_score,
                 bwidth = 0.1)+
   scale_x_continuous(breaks = seq(0, 9.3, 1)) 
 ``` 
+
 
 
 ```{r include=FALSE, fig.align="center"}
@@ -545,6 +550,8 @@ bar_plot(arr_score[1:10,],
          deci = 1)
 ```
 
+The graph above allows us to see that a less produced category, bibliography, possess the most positive ratings.
+
 ##### Genres VS Facebook Likes
 
 Let's now have a look at the Facebook likes. 
@@ -562,6 +569,8 @@ bar_plot(arr_score[1:10,],
          deci = 1)
 ```
 
+Bibliography also produces the highest likes on facebook. From this information, should directors strive to create more bibliography's? This will be determined when looking at the ROI. 
+
 ### Popularity Analysis
 
 IMDB ratings VS Movie Count
@@ -575,6 +584,7 @@ ggplot(movie_metadata, aes(imdb_score)) +
  ggtitle("IMDB Ratings for Movies") +
   annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
+It is evident from the histogram that the majority of movies are rated between 6-8 out of 10. If a movie has a lower rating, it is clearly very unpopular or very bad. If a movie has a higher rating, it is evidently fantastic.
 
 Popularity over the years
 ```{r message=FALSE, fig.align="center"}
@@ -595,14 +605,14 @@ movies_pop <- movie_metadata %>%
    annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
    annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
 ```
-
+A spike in popularity in 2004 is obvious owing to the fact that there is a clear rise in popularity score.The creation of facebook and the effect of social media influenced this. 
 
 Facebook Likes VS IMDB Score
 ```{r}
 movie_metadata %>%
   plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
 ```
-
+It is evident that as a movie has higher ratings, the number of likes on facebook increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
 
 Top 20 directors with highest average IMDB score
 ```{r}
