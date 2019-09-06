@@ -142,6 +142,8 @@ e_values <- projected %>%
   as_adjacency_matrix(type="both") %>% 
   eigen()
 
+projected
+
 e_values['values'] %>% 
   as.data.frame() %>% 
   ggplot()+
@@ -186,6 +188,8 @@ power_cent %>%
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
   geom_density(aes(x=power))
+
+#So the distribution of Bonacich power is slightly positively skewed meaning that in general, vertices are considered more 'powerful' as their alters increase in power.
 ```
 
 ```{r fig.height=4}
@@ -230,7 +234,8 @@ node_comms <- node_comms[-1,]
 node_comms %>% 
   ggplot() +
   geom_bar(aes(x=comm)) +
-  scale_y_log10()
+  scale_y_log10() +
+  geom_vline(xintercept=c(51), linetype="dotted")
 ```
 
 ```{r}
@@ -240,13 +245,13 @@ node_comms %>%
   ggplot() +
   geom_bar(aes(x=comm))+
   scale_y_log10()+
+  geom_vline(xintercept=c(50.5), linetype="dotted")+
   NULL
-  
 ```
 
 ```{r}
 node_comms_filtered <- node_comms %>% 
-  filter(comm<51) 
+  filter(comm<=50) 
 
 
 #projected <- set_vertex_attr(projected, name = "g_comm", value = node_comms)
@@ -305,9 +310,11 @@ e_values_1['values'] %>%
   ggplot()+
   geom_density(aes(values)) +
   xlab("Eigen value")
+
+# Eigen values are negatively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 ```
 
-```{r fig.width=8, fig.height=6}
+```{r fig.width=8, fig.height=4}
 #Comm Centrality
 #Closeness
 close_cent <- filtered_actor_edges %>% 
@@ -323,10 +330,11 @@ close_cent %>%
   as.data.frame() %>% 
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
-  geom_density(aes(closeness))
+  geom_density(aes(closeness)) +
+  xlab("Closeness centrality")
 ```
 
-```{r fig.width=4}
+```{r fig.width=4, fig.height=3}
 #Boncich power centralities
 power_cent <- filtered_actor_edges %>% power_centrality(exponent = 0.9)
 
