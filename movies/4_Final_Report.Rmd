@@ -50,7 +50,7 @@ We have split our Exploratory Data Analysis into four main parts:
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
 ```{r}
-pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable)
+pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, prettydoc, rmdformats, VIM, ggplot2, stringr, tidyr, plotly, RColorBrewer, formattable, corrplot)
 ```
 
 We import the dataset like this:
@@ -623,6 +623,53 @@ movie_metadata %>%
   top_n(20, avg_imdb) %>%
   formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
+
+IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s.
+```{r}
+#Performing operations on Movies Vote Count over the years
+ movies_vote1 <- movie_metadata %>%
+  select(title_year, num_voted_users) %>%
+  group_by(title_year) %>%
+  summarise(count = sum(num_voted_users)) 
+
+ ggplot(movies_vote1, aes(x = title_year, y = count/1000)) +
+   geom_bar( stat = "identity") +
+   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
+   ylab("Vote count (in thousands)") +
+   xlab("Years") +
+   annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
+   annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+```
+
+Vote Counts VS IMDB score
+```{r  fig.height = 4, fig.width = 6, fig.align="center"}
+# plotting a boxplot for votes vs imdb_score  
+bp <- na.omit(movie_metadata) %>% 
+  ggplot(aes(x = vote_bucket, y = imdb_score)) +
+  geom_boxplot(aes(fill = vote_bucket), alpha = 0.7,
+               show.legend = F) +
+  stat_summary(fun.y = mean, geom = "point",
+               shape = 23) +
+  coord_flip() +
+  xlab("User Votes") +
+  ylab("IMDB Score") +
+  ggtitle("Box plot for User Votes vs IMDB Score") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, 
+                                  color = "darkgrey",
+                                  family = "Times"))
+ggplotly(bp) %>%
+  layout(margin = m, 
+        xaxis = a, 
+        yaxis = a,
+        legend = list(orientation = "h", size = 4,
+                       bgcolor = "#E2E2E2",
+                       bordercolor = "darkgrey",
+                       borderwidth = 1,
+                       x = 0,
+                       y = -0.3)) 
+```
+
 -----
 
 ## Network Analysis
