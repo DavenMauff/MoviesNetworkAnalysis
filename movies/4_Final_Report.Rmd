@@ -1136,9 +1136,6 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 
 
 ```{r}
-#Run if there is a problem with heatmap
-dev.off()
-
 #Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none")
 ```
