@@ -27,7 +27,7 @@ IMDB %>%
   ggplot() +
   geom_point(aes(x=aspect_ratio, y=movie_facebook_likes))
 
-
+##### Constructing Top 20######################################################################################################################
 
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
 
