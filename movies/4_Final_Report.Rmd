@@ -995,7 +995,7 @@ keywords_one_col %>%
 
 top_20
 ```
-
+Above we can see the most popular keywords describing the films in the dataset. 
 
 ```{r}
 #Placing Top 20 Words Against Movie Success
