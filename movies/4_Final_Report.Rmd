@@ -306,6 +306,8 @@ ggplot(movie_metadata, aes(title_year)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+As we can see, from the 1980's a quick and exponential rise of movies released occurred. 
+
 ### Movie Genre Analysis
 
 ```{r include=FALSE}
@@ -377,7 +379,7 @@ ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) +
 
 #### Split Genres
 
-As you can see, movies have multiple genres that its associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely the most accurate description.
+As you can see, movies have multiple genres that they are associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely to be the most accurate description.
 
 ```{r}
 head(movie_metadata$genres)
@@ -902,6 +904,8 @@ movie_metadata %>%
 ```
 In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
+
+
 #### Correlation Heatmap
 
 ```{r }
@@ -1147,14 +1151,14 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 ```
 
 
-```{r}
+```{r fig.width=7, fig.height=3}
 #Run if there is a problem with heatmap
-dev.off()
+#dev.off()
 
 #Heatmap
-heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none")
+heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
 ```
-
+As we can see from the above heat map, movies became far less descriptive with one keyword per movie as time progressed. This could be due to creating stories with various situations and genres to make stories more meaningful. 
 
 ```{r}
 #Filtering sentiments graph
