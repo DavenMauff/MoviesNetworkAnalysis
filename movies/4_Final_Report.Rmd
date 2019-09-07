@@ -842,7 +842,7 @@ xlab("Number of Films") + ylab("Avg Profit $millions") +
 ggtitle("Most Successful Directors")
 ```
 
-Looking at the most succesful directos, one can determine richer directors by singular succesful films, such as Tim Miller, or creating an array of succesful films with large budgets, such as James Cameron. 
+Looking at the most succesful directors, one can determine richer directors by singular succesful films, such as Tim Miller, or creating an array of succesful films with large budgets, such as James Cameron. 
 
 Top 20 movies based on its Profit
 
@@ -1195,7 +1195,7 @@ ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) +
   geom_line()
 ```
 
-To conclude on the preliminary analysis: The data has been arranged, cleaned and improved on to make relevant inferences and observations. It is evident from the analysis which films gross well, have good ratings and feature succesful actors and directors. It is also evident that details such as the content rating, aspect ratio
+To conclude on the preliminary analysis: The data has been arranged, cleaned and improved on to make relevant inferences and observations. It is evident from the analysis which films gross well, have good ratings and feature succesful actors and directors. It is also evident that details such as the content rating and aspect ratio effect popularity. From here we can start the network analysis and further assessment of the data. 
 
 -----
 
