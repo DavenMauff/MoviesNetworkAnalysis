@@ -920,8 +920,8 @@ movie_metadata %>%
  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
   geom_jitter(alpha = 0.5, col = "darkgreen") + 
   theme(axis.text.x=element_text(angle = 90, hjust = 1))+
-  ggtitle("Gross vs Content Rating")+
-  xlab("Gross (millions)")+
+  ggtitle("Gross vs Content Rating") +
+  xlab("Gross (millions)") +
   ylab("Rating") +
   geom_smooth() +
   coord_flip()
