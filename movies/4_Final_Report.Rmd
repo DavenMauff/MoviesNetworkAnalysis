@@ -510,10 +510,9 @@ as.data.frame(score_votes_likes)
 
 The most liked genres on Facebook is `Biography` (41000.900), `Adventure` (40494.340), and `Action` (38762.692). The most popular genres, based on IMDB scores, are `Biography` (7.9), `Crime` (6.9), `Documentary` (6.8), and `Drama` (6.8). It may be interesting to note that previously we saw that `Comedy` and `Drama` are produced the most frequently overall - yet it seems like the public scores `Biography`, `Crime`, `Documentary`, and `Drama` movies consistently high. This may also imply that there could be a vast range in scores for `Comedy` and `Drama`, justifying a fairly lower score than the rest. Furthermore, `Comedy`, `Action`, `Drama` have a very high number of voters - which may account for the lower overall average.
 
-
 ## Popularity Analysis
 
-#### IMDB ratings VS Movie Count
+### IMDB ratings VS Movie Count
 
 Let's have a look at the IMDB rating distribution on the number of movies that are produced. Below we can see that the data is slightly skewed to the left. We have a concentration of data among 6 out of 10 and a long tail to the left. The vast majority of the movies are given a score between 5 and 7.5, with fewer movies scoring higher than that.
 
@@ -538,7 +537,7 @@ min(imdb_score)
 mean(imdb_score)
 ```
 
-#### Popularity over the years
+### Popularity over the years
 
 Let's take a look at when Facebook started. From the graph it is clear that the number of Facebook likes for movies released post 2004 have increased dramatically. Old movies receive fewer likes, which is most likely due to Facebook marketing newer movies.
 
@@ -575,9 +574,6 @@ movie_metadata %>%
 
 There are three things to look at with this graph: Average IMDB score, average Facebook likes and the number of movies rated per content-rating. We can see that all movies have (on average) very similar IMDB scores, however, they differ higly on the number of Facebook likes. For example, movies rated `PG-13` receive much more Facebook likes (on average) than movies rated `NC-17`. Movies rated `R` receive (on average) more likes than movies rated `NC-17`, but still have relatively similar IMDB scores. 
 
-
-### IMDB Scores VS Facebook Likes
-
 We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
 
 ```{r message=FALSE, warning=FALSE}
@@ -587,25 +583,27 @@ ggplot(data = movie_metadata, aes(x = imdb_score, y = movie_facebook_likes)) +
   geom_smooth()
 ```
 
-### Top 20 directors with highest average IMDB score
-
-Let's take a look at the directors. We can see that the top IMDB rated directors have very similar scores (8.1 - 8.6). `Tony Kaye` has the highest rating of 8.6.
-
-```{r}
-# Displaying the avg_imdb score of directors
+### Gross VS Content Rating
+```{r message=FALSE, warning=FALSE}
+# Plotting the 20 most popular keywords
 movie_metadata %>%
-  group_by(director_name) %>%
-  summarise(avg_imdb = mean(imdb_score)) %>%
-  arrange(desc(avg_imdb)) %>%
-  top_n(20, avg_imdb) %>%
-  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
+  filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
+  na.omit() %>% 
+  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
+  geom_jitter(alpha = 0.5, col = "darkgreen") + 
+  theme(axis.text.x=element_text(angle = 90, hjust = 1))+
+  ggtitle("Gross vs Content Rating") +
+  xlab("Gross (millions)") +
+  ylab("Rating") +
+  geom_smooth() +
+  coord_flip()
 ```
 
 ### Vote Counts
 
-The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that Facebook influenced the number of rates per movie far higher than that of IMDB.
+The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that IMDB caused rapid growth in vote counts which was later amplified with the introduction of Facebook. 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
   select(title_year, num_voted_users) %>%
@@ -617,46 +615,11 @@ The IMDB rating system was first implemented in the 1990's. Social media platfor
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Vote count (in thousands)") +
    xlab("Years") +
+   scale_x_continuous(limits = c(1980, 2014)) +
    ggplot2::annotate("text", label = "Facebook",x = 2003, y = 21000, size = 3, colour = "blue",angle=90) + 
    ggplot2::annotate("text", label = "IMDB",x = 1989, y = 21000, size = 3, colour = "orange",angle=90)
 ```
 
-### Vote Counts VS IMDB score
-
-```{r echo=T}
-# breaking num_users_voted into 4 buckets 
-movie_metadata$vote_bucket <- cut(movie_metadata$num_voted_users, 
-                         c(0, 50000, 100000, 300000, 500000))
-```
-
-
-```{r  fig.height = 4, fig.width = 6, }
-# plotting a boxplot for votes vs imdb_score  
-bp <- na.omit(movie_metadata) %>% 
-  ggplot(aes(x = vote_bucket, y = imdb_score)) +
-  geom_boxplot(aes(fill = vote_bucket), alpha = 0.7,
-               show.legend = F) +
-  stat_summary(fun.y = mean, geom = "point",
-               shape = 23) +
-  coord_flip() +
-  xlab("User Votes") +
-  ylab("IMDB Score") +
-  ggtitle("Box plot for User Votes vs IMDB Score") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 14, 
-                                  color = "darkgrey",
-                                  family = "Times"))
-ggplotly(bp) %>%
-  layout(margin = m, 
-        xaxis = a, 
-        yaxis = a,
-        legend = list(orientation = "h", size = 4,
-                       bgcolor = "#E2E2E2",
-                       bordercolor = "darkgrey",
-                       borderwidth = 1,
-                       x = 0,
-                       y = -0.3)) 
-```
 
 ```{r warning=FALSE, include=FALSE, fig.height = 4, fig.width = 6,}
 # creating a function called scatter_plot for
@@ -699,66 +662,26 @@ scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score,
      "<br>Title:",
      alpha = 0.3)
 ```
-From the above scatter plot, it is evident that the majority of the movie ratings are clustered at 7.5 points.
+From the above scatter plot, it is evident that the majority  of the movie ratings are clustered at 6 points. We can also observe that users are more inclined to vote for a movie if they wish to give it a high score (above 7.5). Moreover, movies with lower IMDB scores receive fewer votes, since these movies are unlikely to become popular.
 
-Average score, avg votes and, avg user reviews
+### Top 20 directors with highest average IMDB score
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-# creating a function for plotting plotly line graph for title_year
-line_graph <- function(data, y, name){
- 
-  scat_p1 <- plot_ly(data, x = ~title_year, y = ~ y, 
-             name = name, type = 'scatter', mode = 'lines',
-             line = list(color = sample(brewer.pal(11, "Spectral"), 1))) %>%
-  layout(xaxis = list(title = "Title Year", zeroline = F,
-                      showline = F, 
-                      showticklabels = T),
-         yaxis = list(title = "Average Score"),
-         title = "Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year", 
-         font = list(family = "Serif", color = "grey"),
-         legend = list(orientation = "h", size = 6,
-                       bgcolor = "#E2E2E2",
-                       bordercolor = "darkgrey",
-                       borderwidth = 1),
-         margin = m)
-  scat_p1
-}
-```
+Let's take a look at the directors. We can see that the top IMDB rated directors have very similar scores (8.1 - 8.6). `Tony Kaye` has the highest rating of 8.6.
 
-
-Each line represents an average, for the imdb score, votes and user review. 
-```{r fig.height = 6, fig.width = 10, }
-# creating a data frame for average score, avg votes and, avg user reviews
-# by title year
-scat_year_score <- movie_metadata %>%
-  group_by(title_year) %>%
-  summarise(count = n(),
-            IMDB_Score = round(mean(imdb_score),1),
-            avg_votes = mean(num_voted_users),
-            avg_user_review = round(mean(num_user_for_reviews)))
-
-# plotting line graph for Avg score by title year 
-lp1 <- line_graph(scat_year_score, 
-                  scat_year_score$IMDB_Score, 
-                  "Average Score")
-
-# plotting line graph for Avg votes by title year
-lp2 <- line_graph(scat_year_score, 
-                  scat_year_score$avg_votes, 
-                  "Average Votes")
-
-# plotting line graph for Avg reviews by title year
-lp3 <- line_graph(scat_year_score,
-                  scat_year_score$avg_user_review,
-                  "Average User Review") 
-
-
-subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
-
+```{r}
+# Displaying the avg_imdb score of directors
+movie_metadata %>%
+  group_by(director_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
 
 
 ## Profit | Gross | Return of Interest
+
+In this part of the report we look at the budgets that were allocated as well as the gross profit that was achieved after the movie was released. We can observe that even though `The Host` had the highest budget, it doesn't appear to have generated a gross profit within the top 15. In fact the highest grossing movie is `Avatar`, which isn't even in the top 15 for highest allocated budget. 
 
 ```{r}
 # Plotting movie budget and gross
@@ -770,7 +693,7 @@ budget <- movie_metadata %>%
 x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Budgets")+
+  ggtitle("Top 15 Highest Movie Budgets")+
   xlab("")+
   ylab("Budget (in Millions)") + 
   coord_flip()
@@ -783,7 +706,7 @@ rev <- movie_metadata %>%
 y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Gross")+
+  ggtitle("Top 15 Highest Grossing Movie")+
   xlab("")+
   ylab("Gross (in Millions)") + 
   coord_flip() 
@@ -793,32 +716,32 @@ ggarrange(x, y,
           ncol = 1, nrow = 2)
 ```
 
-In the above graph, it is evident that the movies with with higher budgets do not essentially mean that they will equate to a high gross profit. 
+In summary, it is evident that the movies with with higher budgets do not essentially mean that they will equate to a high gross profit. We investigate this claim in the following graph.
 
-Most Successful Directors based on Profit
-```{r}
-#Top 20 most successful directors
-movie_metadata %>%
-        group_by(director_name) %>%
-  mutate(profit = gross - budget)%>%
-select(director_name, budget, gross, profit) %>%
-na.omit() %>% 
-summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
-mutate(avg_per_film = profit/films) %>%
-arrange(desc(avg_per_film)) %>% 
-top_n(20, avg_per_film) %>%
-ggplot( aes(x = films, y = avg_per_film/1000000)) + 
-geom_point(size = 1, color = "blue") + 
-geom_text_repel(aes(label = director_name), size = 3, color = "blue") + 
-xlab("Number of Films") + ylab("Avg Profit $millions") + 
-ggtitle("Most Successful Directors")
+### Top 20 movies based on its Return on Investment
+
+```{r message=FALSE, warning=FALSE}
+#Top 20 movies based on its Return on Investment
+movie_metadata %>% 
+  filter(budget >100000) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Percent Return on Investment") + 
+  ggtitle("20 Most Profitable Movies based on its Return on Investment")
 ```
+<br>
+Sucessful directors such as George Lucas also have profitable movies.  These are the top 20 movies based on its Percentage Return on Investment. ((profit/budget)*100). Since profit earned by a movie does not give a clear picture about its monetary success over the years (1980 to 2016), this analyses, over the absolute value of the Return on Investment(ROI) across its Budget, would provide better results. It is interesting to note that the ROI is high for low budget films and decreases as the budget of the movie increases.
 
-Looking at the most succesful directors, one can determine that the most successful director produced only one movie (Tim Miller) or creating an array of succesful films with large budgets, such as James Cameron. 
+### Top 20 movies based on its Profit
 
-Top 20 movies based on its Profit
-
-```{r }
+```{r message=FALSE, warning=FALSE}
 #Top 20 movies based on its Profit
 movie_metadata %>% 
   filter(title_year %in% c(2000:2016)) %>%
@@ -835,48 +758,29 @@ movie_metadata %>%
   ggtitle("20 Most Profitable Movies")
 ```
 
-When assessing the top 20 movies based on profit, Avatar has the highest profit margin, regioning in a similar area to director James cameron.
+These are the top 20 movies based on the Profit earned (Gross Earnings - Budget). It can be inferred from this plot that high budget movies tend to earn more profit. The trend is almost linear, with profit increasing with the increase in budget. When assessing the top 20 movies based on profit, Avatar has the highest profit margin, regioning in a similar area to director James cameron.
 
+### Most Successful Directors Based on Profit
 ```{r}
-#Top genres based on its Profit
-movie_metadata %>% 
-  filter(title_year %in% c(2000:2016)) %>%
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100) %>%
-  group_by(genre)%>%
-  na.omit() %>% 
-  summarise(av_profit = mean(profit), av_budget = mean(budget)) %>%
-  arrange(desc(av_profit)) %>% 
-  ggplot(aes(x=av_budget/10000, y=av_profit/10000)) + 
-  geom_jitter(size = 2) + 
-  geom_smooth(size = 1) + 
-  geom_text_repel(aes(label = genre), size = 3) + 
-  xlab("Budget $million") + 
-  ylab("Profit $million") + 
-  ggtitle("Average Return for each Genre")
+#Top 20 most successful directors
+movie_metadata %>%
+        group_by(director_name) %>%
+  mutate(profit = gross - budget)%>%
+select(director_name, budget, gross, profit) %>%
+na.omit() %>% 
+summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
+mutate(avg_per_film = profit/films) %>%
+arrange(desc(avg_per_film)) %>% 
+top_n(20, avg_per_film) %>%
+ggplot( aes(x = films, y = avg_per_film/1000000)) + 
+geom_point(size = 1, color = "maroon") + 
+geom_text_repel(aes(label = director_name), size = 3, color = "maroon") + 
+xlab("Number of Films") + ylab("Avg Profit $millions") + 
+ggtitle("Most Successful Directors")
 ```
 
-As we can see from the above graph, even though comedy and drama are the most popular to be produced, they, overall, are not profitable. The budgets from western and thriller movies are far smaller than that of other genres. 
-
-Top 20 movies based on its Return on Investment
-
-```{r}
-#Top 20 movies based on its Return on Investment
-movie_metadata %>% 
-  filter(budget >100000) %>%
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100) %>%
-  arrange(desc(profit)) %>% 
-  top_n(20, profit) %>%
-  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
-  geom_point(size = 2) + 
-  geom_smooth(size = 1) + 
-  geom_text_repel(aes(label = movie_title), size = 3) + 
-  xlab("Budget $million") + 
-  ylab("Percent Return on Investment") + 
-  ggtitle("20 Most Profitable Movies based on its Return on Investment")
-```
-Sucessful directors such as George Lucas also have profitable movies. 
+These are the top 20 most successful directors based on the average profit earned by the movies they directed. There’s an obvious downward trend between average profit and number of films. This could be because as one makes more movies, one could have more hits and misses, therefore the average goes down. It could also be due to film makers having a more diverse range of movies which could include smaller and/or high budget movies"
+Looking at the most succesful directors, one can determine that the most successful director produced only one movie (Tim Miller) or creating an array of succesful films with large budgets, such as James Cameron. 
 
 # Further Analysis
 
@@ -898,24 +802,8 @@ movie_metadata %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
-
-### The top 20 most popular key word
-
-```{r message=FALSE, warning=FALSE}
-# Plotting the 20 most popular keywords
-movie_metadata %>%
-  filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
-  na.omit() %>% 
-  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
-  geom_jitter(alpha = 0.5, col = "darkgreen") + 
-  theme(axis.text.x=element_text(angle = 90, hjust = 1))+
-  ggtitle("Gross vs Content Rating") +
-  xlab("Gross (millions)") +
-  ylab("Rating") +
-  geom_smooth() +
-  coord_flip()
-```
+This is an analysis on the Commercial Success acclaimed by the movie (Gross earnings and profit earned) vs its IMDB Score.
+As expected, there is not much correlation since most critically acclaimed movies do not do very well commercially.
 
 
 ## Correlation Heatmap
