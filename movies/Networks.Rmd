@@ -177,10 +177,11 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Centrality (Closeness)")
+  xlab("Centrality (Closeness)") + 
+  ylab("Frequency")
 ```
 <br>
-So the closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
+SThe closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
 
 
 Interpretively, the Boncich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations). (stolen from Wiki)

@@ -1131,7 +1131,9 @@ all_years <- all_years %>%
 
 ```
 
-Below is where the sentiment of keywords is calculated.
+## Calculating Sentiment
+
+Below is where the sentiment of keywords is calculated. The sentiment function used comes from the `syuzhet` package and it can detect the presence of eight different emotions, namely "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise" and, "trust". It is also able to calculate positive and negative valence. 
 ```{r}
 #Function for sentiment per year
 yearly_sentiment <- function(year, df) {
@@ -1158,154 +1160,61 @@ for (i in all_years$Year) {
 }
 ```
 
+### Sentiment results
+
 ```{r}
 #Making years integers
 sentiments$year <- strtoi(sentiments$year)
 ```
 
+As previously mentioned, thre number of movies dramatically increases from 1980 onwards so the calculated sentiments are filtered to reduce sensitivity of the data.
 ```{r}
 #Sort by year
-sentiments <- sentiments[with(sentiments, order(year)), ]
-#sentiments <- sentiments[order(year), ]
+sentiments_emotions <- sentiments[with(sentiments, order(year)), ] %>% 
+  filter(year >= 1980) %>% 
+  select(-positive, -negative)
 ```
 
-```{r}
+```{r warning=FALSE}
 #Heatmap for sentiments
-rnames <- sentiments[,1]
-mat_sentiments <- data.matrix(sentiments[,2:ncol(sentiments)])
+rnames <- sentiments_emotions[,1]
+mat_sentiments <- data.matrix(sentiments_emotions[,2:ncol(sentiments_emotions)])
 rownames(mat_sentiments) <- rnames
 mat_sentiments <- t(mat_sentiments)
 
 df_sentiment <-  as.data.frame(mat_sentiments)
-names_emotions <- c("anger", "anticipation", "disgust","fear","joy","sadness","surprise","trust","negative","positive")
+names_emotions <- c("anger", "anticipation", "disgust","fear","joy","sadness","surprise","trust")
 
 sentiments_graph <- cbind(names_emotions, df_sentiment)
 ```
 
 
-```{r}
-
+```{r warning=FALSE}
 #Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
 ```
+<br>
+What is immeadiately visible is the differences in type of emotions in plot keywords has reduced over the years. The movies 
 
-As we can see from the above heat map, movies became far less descriptive with one keyword per movie as time progressed. This could be due to creating stories with various situations and genres to make stories more meaningful.
 
-Here we filter for after the year 2000 to ensure meaninful inferences. 
-
+Below the trend of positive and negative sentiment is explored.
 ```{r}
 #Filtering sentiments graph
-sentiments_graph_filter <- sentiments %>%
-  filter(year >= 2000)
-
-#Other graphs
-# Showing trends between sentiment from the 2000's 
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anger)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Anger")
-
-
+sentiments_filter <- sentiments %>%
+  filter(year >= 1980)
 ```
-
-The level of anger in movies has remained fairly constant in recent years (2000-2016)
-
 
 ```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = anticipation)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
+sentiments_filter %>% 
+  ggplot(aes(x = year)) +
+  geom_line(aes(y = negative, color = 'postive')) +
+  geom_line(aes(y = positive, color = 'negative')) + 
+  ylab("Sentiment score") +
   xlab("Year") +
-  ylab("Anticipation")
+  ggtitle("Positive and negative sentiment of keywords across the years")
 ```
-
-The level of anticipation in movies has remained fairly constant in recent years (2000-2016)
-
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = disgust)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Disgust")
-```
-
-The level of disgust in movies has remained fairly constant in recent years (2000-2016)
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = fear)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Fear")
-```
-
-The level of fear has remained fairly constant with a slight rise.
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = joy)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Joy")
-```
-
-The level of joy in movies has remained fairly constant in recent years (2000-2016)
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = sadness)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Sadness")
-```
-
-The level of sadness has remained fairly constant with a slight rise followed by a shallow dip.
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = surprise)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Surprise")
-```
-
-Surprise is fairly constant with a very slight rise. 
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = trust)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Trust")
-```
-
-Trust has decreased overall from the beginning however has steadied out toward the end. 
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = negative)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Negative")
-```
-
-Negativity has remained fairly constant
-
-```{r}
-ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) + 
-  geom_point(alpha = 0.5) + 
-  geom_line()+  
-  xlab("Year") +
-  ylab("Positive")
-```
-
-Positivity has remained fairly constant and is rising in 2015. 
-
-
-
-To conclude on the preliminary analysis: The data has been arranged, cleaned and improved on to make relevant inferences and observations. It is evident from the analysis which films gross well, have good ratings and feature succesful actors and directors. It is also evident that details such as the content rating and aspect ratio effect popularity. From here we can start the network analysis and further assessment of the data. 
+<br>
+Generally speaking, the sentiment of common keywords used has been more positive, but has remained relatively constant, apart from the decrease in both positive and negative sentiment from around 1995 to 2010.
 
 -----
 
