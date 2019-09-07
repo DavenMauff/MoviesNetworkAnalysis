@@ -1354,7 +1354,7 @@ network(actor_edges, vertex.attr = actor_nodes, matrix.type = "edgelist", ignore
   plot()
 ```
 <br>
-Here a densely connected 'hairball' can be seen surrounded by many small nodes that are not connected to the main component.
+Here a densely connected core can be seen surrounded by many small nodes that are not connected to the main component.
 
 
 ```{r}
@@ -1465,7 +1465,7 @@ Most nodes have a relatively low page rank. The mean page rank is `r var_pr`.
 
 ### Community Detection
 
-Group Louvain optimises for modularity in the network and therefore tries to create densely connected clusters with sparse connections between the clusters.
+Group Louvain optimises for modularity in the network and therefore tries to create densely connected clusters with sparse connections between the clusters. The densely connected core may not allow for very modular communities to be identified.
 ```{r}
 node_comms <- as_tbl_graph(projected) %>% 
   activate(nodes) %>% 
@@ -2208,14 +2208,14 @@ The local centralities do not appear to have any correlation to the average movi
 ```{r}
 ratings_and_centrality %>% 
   group_by(comm) %>% 
-  summarise(avg_rating = mean(avg_rating), avg_e = mean(g_e_values), avg_c_c = mean(g_close_cent), avg_p_r = mean(g_page_rank), avg_p_c = mean(g_power_cent), num = n()) %>% 
+  summarise(avg_rating = mean(avg_rating), avg_e = mean(g_e_values), avg_c_c = mean(g_close_cent), avg_p_r = mean(g_page_rank), avg_p_c = mean(g_power_cent), num = n()) 
 ```
 <br>
 Across the three graphs, the mean centrality scores remain constant across communitites with the exception of the eigen vector centrality of community 1. 
 
 ### Concluding remarks
 
-It can be said that the centrality of nodes is not an indicator of success for movie ratings. The variance in movie ratings is relatively high for very central nodes as well as not as central nodes.
+It can be said that the centrality of nodes is not an indicator of success for movie ratings. The variance in movie ratings is relatively high for very central nodes as well as not as central nodes. There is doubt as to the reliability of the communities due to the densely connected nature of the graph. The 
 
 
 
