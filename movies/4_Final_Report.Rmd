@@ -416,6 +416,7 @@ genres_df <- as.data.frame(genres_matrix)
 
 `genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of ALL the genres. 
 
+
 ```{r}
 # Collapse all genres into one column
 genres_one_col <- gather(genres_df) %>% 
