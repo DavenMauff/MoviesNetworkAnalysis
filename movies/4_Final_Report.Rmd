@@ -1105,7 +1105,9 @@ truey_falsy_graph %>%
 #Sentiment
 
 keywords_from_split <- data.frame(lapply(keywords_split, "length<-", max(lengths(keywords_split))))
+```
 
+```{r}
 #Creating a list of titles and years seperatored by "|"
 titles <-  IMDB %>%
   select(movie_title)
@@ -1118,30 +1120,45 @@ for (x in 1:4998) {
   seperator="|"
   titles_years_list <- c(titles_years_list, paste(titles$movie_title[x], years$title_year[x], sep="|"))
 }
+```
 
+```{r}
 #Renaming columns to movie names
 movie_name_list <- IMDB$movie_title
 names(keywords_from_split) <- titles_years_list
+```
 
+```{r}
 #Adding column to the begining
 key_names <- c('key_word_1', 'key_word_2', 'key_word_3', 'key_word_4', 'key_word_5')
 keywords_from_split <- cbind(test_keys = key_names, keywords_from_split)
+```
 
+```{r}
 #Moving columns to rows
 keywords_from_split <- melt(keywords_from_split, id = "test_keys")
+```
 
+```{r}
 #Creating new column for year
 keywords_from_split_matrix <- do.call(rbind, strsplit(as.character(keywords_from_split$variable), "[|]"))
 keywords_from_split <- cbind(keywords_from_split, keywords_from_split_matrix)
 names(keywords_from_split) <- c("Key #", "Combined", "Keyword", "Title", "Year")
 keywords_from_split = keywords_from_split %>%
   select(`Key #`, Title, Year, Keyword)
+```
 
+```{r}
 #Replacing blank cells within keywords to NA's
 keywords_from_split$Keyword[keywords_from_split$Keyword == ""] <- NA
+```
+
+```{r}
 #Removing rows containing NA's
 keywords_from_split <- na.omit(keywords_from_split)
+```
 
+```{r}
 #All unique years
 all_years <- keywords_from_split %>% select(Year)
 all_years <- distinct(all_years)
@@ -1149,6 +1166,9 @@ all_years <- na.omit(all_years)
 all_years <- all_years %>%
   filter(Year != "NA")
 
+```
+
+```{r}
 #Function for sentiment per year
 yearly_sentiment <- function(year, df) {
   amount <- nrow(df %>%
@@ -1165,19 +1185,27 @@ yearly_sentiment <- function(year, df) {
 }
 
 sentiments <- data.frame()
+```
 
+```{r}
 #For-loop to capture all years
 for (i in all_years$Year) {
   sentiments <- rbind(sentiments,yearly_sentiment(i, keywords_from_split))
 }
+```
 
+```{r}
 #Making years integers
 sentiments$year <- strtoi(sentiments$year)
+```
 
+```{r}
 #Sort by year
 sentiments <- sentiments[with(sentiments, order(year)), ]
 #sentiments <- sentiments[order(year), ]
+```
 
+```{r}
 #Heatmap for sentiments
 rnames <- sentiments[,1]
 mat_sentiments <- data.matrix(sentiments[,2:ncol(sentiments)])
