@@ -1248,7 +1248,7 @@ options(scipen = 999)
 
 ```{r}
 ##read in data
-imdb = read.csv("../data-raw/movie_metadata.csv", sep=";")
+imdb = read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
 ### Constructing the network graph
