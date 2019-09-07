@@ -144,7 +144,7 @@ projected <- bipartite.projection(spread_graph, which = "true")
 
 Eigenvector centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. 
 ```{r}
-e_values <- readRDS(file="../data-out/g_eigen_values.RDs")
+e_values <- readRDS(file="../../g_eigen_values.RDs")
 
 projected <- projected %>% 
   set_vertex_attr(name = "g_e_values", value = e_values$values)
@@ -181,7 +181,7 @@ close_cent %>%
   ylab("Frequency")
 ```
 <br>
-SThe closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
+The closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
 
 
 Interpretively, the Boncich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations). (stolen from Wiki)
@@ -331,7 +331,7 @@ e_values_1['values'] %>%
   xlab("Eigen value")
 ```
 <br>
-Eigen values are negatively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
+Eigen values are positively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 close_cent <- g_comm_1_graph %>% 
@@ -424,7 +424,7 @@ e_values_2['values'] %>%
   xlab("Eigen value")
 ```
 <br>
-Eigen values are skewed to the right for global community 2. This means that most nodes are not connected to high scoring nodes.
+Eigen values are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 ##Comm Centrality
@@ -524,7 +524,7 @@ e_values_3['values'] %>%
   xlab("Eigen value")
 ```
 <br>
-Eigen values are skewed to the right for global community 3. This means that most nodes are not connected to high scoring nodes.
+Eigen values are negatively skewed for global community 3. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 close_cent <- g_comm_3_graph %>% 
