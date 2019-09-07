@@ -41,6 +41,7 @@ data-raw/
 */*.nb.html
 */*.knit.md
 */*.utf8.md
+*/*.html
 
 
 # Created by https://www.gitignore.io/api/python
