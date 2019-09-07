@@ -909,6 +909,7 @@ Sucessful directors such as George Lucas also have profitable movies.
 ### Further Analysis
 
 #### Commercial success Vs Critical acclaim
+
 ```{r }
 movie_metadata %>%
   top_n(15, profit) %>%
@@ -923,14 +924,14 @@ movie_metadata %>%
   ggplot2::annotate("text", x = 8.5, y = 700, label = "High ratings \n & High gross") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
-In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
+In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
 ```{r message=FALSE, warning=FALSE}
 movie_metadata %>%
   filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
   na.omit() %>% 
- ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
+  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
   geom_jitter(alpha = 0.5, col = "darkgreen") + 
   theme(axis.text.x=element_text(angle = 90, hjust = 1))+
   ggtitle("Gross vs Content Rating") +
@@ -939,6 +940,8 @@ movie_metadata %>%
   geom_smooth() +
   coord_flip()
 ```
+
+
 =======
 
 
