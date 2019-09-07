@@ -14,6 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
 ```
 
 ```{css, echo=FALSE}
@@ -616,8 +617,8 @@ The IMDB rating system was first implemented in the 1990's. Social media platfor
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Vote count (in thousands)") +
    xlab("Years") +
-   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
-   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 21000, size = 3, colour = "blue",angle=90) + 
+   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 21000, size = 3, colour = "orange",angle=90)
 ```
 
 ### Vote Counts VS IMDB score
