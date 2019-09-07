@@ -14,6 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
 ```
 
 ```{css, echo=FALSE}
@@ -179,7 +180,7 @@ We find  that `M = GP = PG, X = NC-17`, so let's replace `M` and `GP` with `PG`,
 # Renaming content ratings 
 movie_metadata$content_rating[movie_metadata$content_rating == 'M']   <- 'PG' 
 movie_metadata$content_rating[movie_metadata$content_rating == 'GP']  <- 'PG' 
-movie_metadata$content_rating[movie_metadata$content_rating == 'X']   <- 'NC-17'
+movie_metadata$content_rating[movie_metadata$content_rating == 'X']   <- 'NC-17' # No one under 17
 ```
 
 We want to replace `Approved`, `Not Rated`, `Passed`, `Unrated` with the most common rating `R`.
@@ -315,7 +316,6 @@ ggplot(movie_metadata, aes(title_year)) +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
-
 
 The graph above illustrate the number of movies released for the period 1980 - 2016. As we can see, from the 1980's a quick and exponential rise of movies released occurred.
 
@@ -515,22 +515,33 @@ The most liked genres on Facebook is `Biography` (41000.900), `Adventure` (40494
 
 #### IMDB ratings VS Movie Count
 
-Let's have a look at the IMDB rating distribution on the number of movies that are produced. Below we can see that the data is slightly skewed to the left around the average IMDB score, meaning that major
+Let's have a look at the IMDB rating distribution on the number of movies that are produced. Below we can see that the data is slightly skewed to the left. We have a concentration of data among 6 out of 10 and a long tail to the left. The vast majority of the movies are given a score between 5 and 7.5, with fewer movies scoring higher than that.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Plotting the IMDB ratings vs movie count
 ggplot(movie_metadata, aes(imdb_score)) +
- geom_histogram(bins = 50) +
- geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
- ylab("Movie Count") +
- xlab("IMDB Rating") +
- ggtitle("IMDB Ratings for Movies") +
+  geom_histogram(bins = 50) +
+  geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
+  ylab("Movie Count") +
+  xlab("IMDB Rating") +
+  scale_x_continuous(limits = c(0, 10)) +
+  ggtitle("IMDB Ratings for Movies") +
   ggplot2::annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
 
-It is evident from the histogram that the majority of movies are rated between 6-8 out of 10. If a movie has a lower rating, it could either be the fact that it was unpopular or very bad. If a movie has a higher rating, it is evidently fantastic.
+The lowest scored movie, titled `Justin Bieber: Never Say Never`, is `1.6` whereas the highest score is `9.3` for `The Shawshank Redemption`. The mean of the imdb scores is `6.433288`.
+
+```{r eval=FALSE, include=FALSE}
+imdb_score <- movie_metadata$imdb_score
+max(imdb_score)
+min(imdb_score)
+mean(imdb_score)
+```
 
 #### Popularity over the years
+
+Let's take a look at when Facebook started. From the graph it is clear that the number of Facebook likes for movies released post 2004 have increased dramatically. Old movies receive fewer likes, which is most likely due to Facebook marketing newer movies.
+
 ```{r message=FALSE, }
 #Creating the required subset of data 
 movies_pop <- movie_metadata %>%
@@ -543,36 +554,42 @@ movies_pop <- movie_metadata %>%
  ggplot(movies_pop, aes(x = title_year, y = avg)) +
    geom_point() +
    geom_smooth() + 
-   geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
-   ylab("Mean Popularity Score") +
-   xlab("Years") +
-   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
-   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
+   geom_vline(xintercept = c(2004),colour = c("blue")) +
+   ylab("Average Facebook Likes") +
+   xlab("Years Movie Was Produced") +
+   ggplot2::annotate("text", label = "Facebook",x = 2003.5, y = 10000, size = 3, colour = "blue",angle=90)
 ```
-
-A spike in popularity in 2004 is obvious owing to the fact that there is a clear rise in popularity score. The spike is attributed to the development of facebook and the effect social media has influenced this. 
 
 ### Facebook Likes VS IMDB Score
 ```{r}
 # Plotting the Facebook Likes VS IMDB Score
-movie_metadata %>%
-  plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
+movie_metadata %>% 
+  group_by(content_rating) %>% 
+  summarise(avg_fb_likes = mean(movie_facebook_likes), avg_imdb_score = mean(imdb_score), num=n()) %>% 
+  ggplot() +
+    geom_point(aes(x=avg_fb_likes, y=avg_imdb_score, color=content_rating, size=num), stat="identity") + 
+  scale_y_continuous(limits = c(0, 10)) +
+  xlab("Average Facebook Likes") +
+  ylab("Average imdb score")
 ```
-It is evident that as movie with a higher rating score, the more number of facebook likes increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
 
-#### Top 20 directors with highest average IMDB score
+There are three things to look at with this graph: Average IMDB score, average Facebook likes and the number of movies rated per content-rating. We can see that all movies have (on average) very similar IMDB scores, however, they differ higly on the number of Facebook likes. For example, movies rated `PG-13` receive much more Facebook likes (on average) than movies rated `NC-17`. Movies rated `R` receive (on average) more likes than movies rated `NC-17`, but still have relatively similar IMDB scores. 
+
+
+### IMDB Scores VS Facebook Likes
+
 We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
 
-```{r }
+```{r message=FALSE, warning=FALSE}
 #Plotting Facebook likes against IMDB score
 ggplot(data = movie_metadata, aes(x = imdb_score, y = movie_facebook_likes)) +
-  geom_point() +
-  stat_smooth(method="lm")
+  scale_x_continuous(limits = c(0, 10)) +
+  geom_smooth()
 ```
 
-Top 20 directors with highest average IMDB score
+### Top 20 directors with highest average IMDB score
 
-When examining the directors with the highest IMDB scores we can establish the highest 	average rating is 8.6. Hence, movies with higher ratings are either excellent and/or fluke occurences. 
+Let's take a look at the directors. We can see that the top IMDB rated directors have very similar scores (8.1 - 8.6). `Tony Kaye` has the highest rating of 8.6.
 
 ```{r}
 # Displaying the avg_imdb score of directors
@@ -583,6 +600,8 @@ movie_metadata %>%
   top_n(20, avg_imdb) %>%
   formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
+
+### Vote Counts
 
 The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that Facebook influenced the number of rates per movie far higher than that of IMDB.
 
@@ -598,11 +617,11 @@ The IMDB rating system was first implemented in the 1990's. Social media platfor
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Vote count (in thousands)") +
    xlab("Years") +
-   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 160, size = 3, colour = "blue",angle=90) + 
-   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 160, size = 3, colour = "orange",angle=90)
+   ggplot2::annotate("text", label = "Facebook",x = 2003, y = 21000, size = 3, colour = "blue",angle=90) + 
+   ggplot2::annotate("text", label = "IMDB",x = 1989, y = 21000, size = 3, colour = "orange",angle=90)
 ```
 
-Vote Counts VS IMDB score
+### Vote Counts VS IMDB score
 
 ```{r echo=T}
 # breaking num_users_voted into 4 buckets 
