@@ -62,7 +62,7 @@ We import the dataset like this:
 movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
-In the next section we can introduce our dataset and look its content. 
+In the next section we introduce our dataset and look its content. 
 
 -----
 
@@ -104,7 +104,7 @@ aspect_ratio             | Contains the size of the aspect ratio of a movie
 movie_facebook_likes     | Number of likes of the movie on its Facebook Page
 
 
-Furthermore, the dataset contains `5043` movies, spanning accross `96` years in 46 countries. There are `1693` unique director names and `5390` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
+Furthermore, the dataset contains `5043` movies, spanning across `96` years in 46 countries. There are `1693` unique director names and `5390` number of actors/actresses. Around `79%` of the movies are from the USA, `8%` from UK, and `13%` from other countries.
 
 The structure of the dataset can also be used to understand our data. We can run the following code chunk to see its structure.
 
@@ -113,18 +113,18 @@ The structure of the dataset can also be used to understand our data. We can run
 str(movie_metadata)
 ```
 
-In the next section we can start preparing the dataset for analyis by removing or simplifying some of the data.
+In the next section we can start preparing the dataset for analysis by removing and simplifying some of the data.
 
 -----
 
 ## Pre-Processing Data
 
-In this part of the report we attempt to look for various things that may have a negative or insignificant impact on the inferences we make on the dataset. Once we have sufficiently cleaned and prepared the dataset, we can commence with drawing various conclusions from the graphs we generate. 
+In this part of the report we attempt to look for various things that may have a negative or significant impact on the inferences we make on the dataset. Once we have sufficiently cleaned and prepared the dataset, we can commence with drawing various conclusions from the graphs we generate. 
 
 
 ### Duplicate Rows
 
-In `movie_metadata`, we have some duplicate rows, so we want to remove the 45 duplicated rows and keep the unique ones. 
+In the `movie_metadata` dataset, we can derive that their are 45 duplicated rows which needs to be removed and kept the unique ones.
 
 ```{r}
 # find duplicated rows
@@ -174,6 +174,7 @@ table(movie_metadata$content_rating)
 According to the history of naming these different content ratings, we find `M = GP = PG, X = NC-17`. We want to replace `M` and `GP` with `PG`, replace `X` with `NC-17`, because these two are what we use nowadays.
 
 ```{r}
+# Repacing content rating
 movie_metadata$content_rating[movie_metadata$content_rating == 'M']   <- 'PG' 
 movie_metadata$content_rating[movie_metadata$content_rating == 'GP']  <- 'PG' 
 movie_metadata$content_rating[movie_metadata$content_rating == 'X']   <- 'NC-17'
@@ -190,7 +191,7 @@ movie_metadata$content_rating <- factor(movie_metadata$content_rating)
 table(movie_metadata$content_rating)
 ```
 
-Blanks should be taken as missing value. Since these missing values cannot be replaced with reasonable data, we delete these rows.
+Blank spaces should be taken as missing value. Since these missing values cannot be replaced with reasonable data, we delete these rows.
 
 ```{r}
 # Remove rows with blank content ratings
@@ -203,7 +204,7 @@ movie_metadata <- movie_metadata[!(movie_metadata$content_rating %in% ""),]
 colSums(sapply(movie_metadata, is.na))
 ```
 
-We remove `aspect_ratio` because 1 it has a lot of missing values and 2 we will not be looking into the impact that it has on other data (we assume that it doesn't). 
+We remove `aspect_ratio` because 1. it has a lot of missing values and 2. we will not be looking into the impact that it has on other data (we assume that it doesn't). 
 
 ```{r}
 # Remove aspect_ratio column
@@ -234,7 +235,7 @@ Next, we take a look at the influence of `colour` vs `black and white`.
 table(movie_metadata$color)
 ```
 
-Since `3.4%`of the data is in black and white, we can remove the `color` column it. 
+Since `3.4%` of the data is in black and white, we can remove the `color` column it. 
 
 ```{r}
 # delete colour
@@ -257,12 +258,14 @@ Almost `95%` movies are in English, which means this variable is nearly constant
 Next, we can look at the different types of countries.
 
 ```{r}
+# Look at different countries 
 table(movie_metadata$country)
 ```
 
 Around `79%` movies are from USA, `8%` from UK, `13%` from other countries. So we group other countries together to make this categorical variable with less levels: `USA`, `UK`, `Others`.
 
 ```{r}
+# Grouping countries
 levels(movie_metadata$country) <- c(levels(movie_metadata$country), "Others")
 movie_metadata$country[(movie_metadata$country != 'USA')&(movie_metadata$country != 'UK')] <- 'Others' 
 movie_metadata$country <- factor(movie_metadata$country)
@@ -283,7 +286,8 @@ We can start by performing basic analyis on our data. Thereafter, we delve a bit
 
 Let's first have a look at the number of movies that are produced over the years.
 
-```{r }
+```{r}
+# Plotting the number of movies released
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
@@ -291,7 +295,7 @@ ggplot(movie_metadata, aes(title_year)) +
   geom_vline(xintercept=c(1980), linetype="dotted")
 ```
 
-From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
+From the graph, we can derive that there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
 
 ```{r}
 movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
@@ -299,19 +303,19 @@ movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
 
 Let's have a look at the movie counts now:
 
-```{r }
+```{r}
+# Plotting the number of movies released since 1980
 ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-As we can see, from the 1980's a quick and exponential rise of movies released occurred. 
+The graph above illustrate the number of movies released for the period 1980 - 2016.As we can see, from the 1980's a quick and exponential rise of movies released occurred. 
 
 ### Movie Genre Analysis
 
 ```{r include=FALSE}
-  
 # setting up plotly label, axis and text customizations
 f1 <- list(
   family = "Old Standard TT, serif",
@@ -362,7 +366,7 @@ Now we can delve into more specific things regarding movies, like `genres`.
 
 #### Top Genres
 
-```{r }
+```{r}
 genre = movie_metadata['genres']
 genre = data.frame(table(genre))
 genre = genre[order(genre$Freq,decreasing=TRUE),]
@@ -400,7 +404,7 @@ genres_df <- as.data.frame(genres_matrix)
 
 `genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of all the genres. 
 
-```{r }
+```{r}
 # Collapse all genres into one column
 genres_one_col <- gather(genres_df) %>% 
   select(value)
@@ -417,12 +421,13 @@ genres_one_col %>%
   ylab("Frequency") +
   NULL
 ```
-It is evident that the Drama and Comedy genre are the most popular to be produced. However, this does not mean that they are the most profitable, returning successful ROI’s. This will further be explored.
+
+It is evident that the genres `Drama` and `Comdey` are the most frequently produced. However, this does not mean that they are the most profitable, returning successful ROI’s. This will further be explored.
 
 
 Previously we assumed that the first genre is the most applicable, therefore, we choose the first column as the genre for the movie and append it to the dataframe. 
 ```{r}
-# Take old genres column away
+# Remove old genre column
 movie_metadata <- subset(movie_metadata, select = -c(genres))
 
 # Take first column of genres_df and add it to MAIN df
@@ -431,7 +436,8 @@ movie_metadata$genre <- genres_df$V1
 
 How does this distribution look like over the years? Lets have a look at the frequency of genres between the period of 1980 and 2016.
 
-```{r }
+```{r}
+# Plotting the movie genres produced
 movie_metadata %>%
  group_by(title_year, genre) %>%
  summarise(count = n()) %>%
@@ -444,7 +450,7 @@ movie_metadata %>%
   theme(panel.background = element_blank())
 ```
 
-The heat map allows us to see that the popular genres with high frequencys are constantly being produced more and more often over the years. It is evident by the darker shades of blue becomming more prominent in the latter years. 
+The heat map above, depicts the most desired genres that a represented with higher frequencies. It is evident by the darker shades of blue becoming more prominent in the latter years. 
 
 #### Which Genres are Popular?
 
@@ -503,7 +509,7 @@ as.data.frame(score_votes_likes)
 
 ##### Genres VS IMDB Scores
 
-Observing the graphs below, various genres consist of an array of different ratings. However, niche genres are more consistent  with their ratings, including musical; thriller; romance and western.
+Observing the graphs below, various genres consist of an array of different ratings. However, niche genres are more consistent with their ratings, including musical; thriller; romance and western.
 
 ```{r fig.height = 10, fig.width = 10, }  
 # genre wise distribution of scores using a custom plot function  
@@ -564,7 +570,6 @@ The graph above allows us to see that a less produced category, bibliography, po
 Let's now have a look at the Facebook likes. 
 
 ```{r }
-
 # plotting 10 highest rated genres 
 bar_plot(arr_score[1:10,],
          arr_score[1:10,]$avg_facebook_likes,
@@ -582,7 +587,8 @@ Biography also produces the highest likes on facebook. From this information, sh
 
 IMDB ratings VS Movie Count
 
-```{r }
+```{r}
+# Plotting the IMDB ratings vs movie count
 ggplot(movie_metadata, aes(imdb_score)) +
  geom_histogram(bins = 50) +
  geom_vline(xintercept = mean(movie_metadata$imdb_score,na.rm = TRUE),colour = "blue") +
@@ -591,9 +597,10 @@ ggplot(movie_metadata, aes(imdb_score)) +
  ggtitle("IMDB Ratings for Movies") +
   ggplot2::annotate("text", label = "Mean IMDB rating",x = 6.2, y = 50, size = 3, colour = "yellow",angle=90)
 ```
-It is evident from the histogram that the majority of movies are rated between 6-8 out of 10. If a movie has a lower rating, it is clearly very unpopular or very bad. If a movie has a higher rating, it is evidently fantastic.
 
-Popularity over the years
+It is evident from the histogram that the majority of movies are rated between 6-8 out of 10. If a movie has a lower rating, it could either be the fact that it was unpopular or very bad. If a movie has a higher rating, it is evidently fantastic.
+
+#### Popularity over the years
 ```{r message=FALSE, }
 #Creating the required subset of data 
 movies_pop <- movie_metadata %>%
@@ -602,7 +609,7 @@ movies_pop <- movie_metadata %>%
  group_by(title_year) %>%
  summarise(avg = mean(movie_facebook_likes)) 
 
-#Generating the popularity Vs time plot
+#Generating the popularity vs time plot
  ggplot(movies_pop, aes(x = title_year, y = avg)) +
    geom_point() +
    geom_smooth() + 
@@ -612,21 +619,23 @@ movies_pop <- movie_metadata %>%
    ggplot2::annotate("text", label = "Facebook",x = 2003, y = 80, size = 3, colour = "blue",angle=90)+
    ggplot2::annotate("text", label = "IMDB",x = 1989, y = 80, size = 3, colour = "orange",angle=90)
 ```
-<br>
 
-A spike in popularity in 2004 is obvious owing to the fact that there is a clear rise in popularity score.The creation of facebook and the effect of social media influenced this. 
+A spike in popularity in 2004 is obvious owing to the fact that there is a clear rise in popularity score. The spike is attributed to the development of facebook and the effect social media has influenced this. 
 
-Facebook Likes VS IMDB Score
+### Facebook Likes VS IMDB Score
 ```{r}
+# Plotting the Facebook Likes VS IMDB Score
 movie_metadata %>%
   plot_ly(x = ~movie_facebook_likes, y = ~imdb_score, color = ~content_rating , mode = "markers", text = ~content_rating, alpha = 0.7, type = "scatter")
 ```
-It is evident that as a movie has higher ratings, the number of likes on facebook increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
+It is evident that as movie with a higher rating score, the more number of facebook likes increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
 
-Top 20 directors with highest average IMDB score
+#### Top 20 directors with highest average IMDB score
 
-When examinning the directors with the highest IMDB scores, the highest average rating is 8.4. This means that movies with higher ratings are either excellent and/or fluke occurences. 
+When examining the directors with the highest IMDB scores we can establish the highest 	average rating is 8.6. Hence, movies with higher ratings are either excellent and/or fluke occurences. 
+
 ```{r}
+# Displaying the avg_imdb score of directors
 movie_metadata %>%
   group_by(director_name) %>%
   summarise(avg_imdb = mean(imdb_score)) %>%
@@ -635,7 +644,8 @@ movie_metadata %>%
   formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
 
-The IMDB rating systen started in 1990’s. Social media platforms like Facebook had started in the mid 2000’s. Facebook influenced the number of rates per movie far higher than that of IMDB.
+The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that Facebook influenced the number of rates per movie far higher than that of IMDB.
+
 ```{r}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
@@ -730,7 +740,9 @@ scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score,
      "<br>Title:",
      alpha = 0.3)
 ```
-From the above scatter plot, it is evident that the majority of movie ratings are close to the 7.5 point. 
+From the above scatter plot, it is evident that the majority of the movie ratings are clustered at 7.5 points.
+
+Average score, avg votes and, avg user reviews
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 # creating a function for plotting plotly line graph for title_year
@@ -757,8 +769,6 @@ line_graph <- function(data, y, name){
 
 Each line represents an average, for the imdb score, votes and user review. 
 ```{r fig.height = 6, fig.width = 10, }
-
-
 # creating a data frame for average score, avg votes and, avg user reviews
 # by title year
 scat_year_score <- movie_metadata %>%
@@ -791,7 +801,8 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 
 ### Profit | Gross | Return of Interest
 
-```{r }
+```{r}
+# Plotting movie budget and gross
 budget <- movie_metadata %>%
   select(movie_title, budget) %>%
   arrange(desc(budget)) %>%
@@ -823,10 +834,10 @@ ggarrange(x, y,
           ncol = 1, nrow = 2)
 ```
 
-In the above graph, it is evident that the movies with the highest budgets, do not essentially mean that they will equate to a high gross profit. 
+In the above graph, it is evident that the movies with with higher budgets do not essentially mean that they will equate to a high gross profit. 
 
 Most Successful Directors based on Profit
-```{r }
+```{r}
 #Top 20 most successful directors
 movie_metadata %>%
         group_by(director_name) %>%
@@ -844,7 +855,7 @@ xlab("Number of Films") + ylab("Avg Profit $millions") +
 ggtitle("Most Successful Directors")
 ```
 
-Looking at the most succesful directors, one can determine richer directors by singular succesful films, such as Tim Miller, or creating an array of succesful films with large budgets, such as James Cameron. 
+Looking at the most succesful directors, one can determine that the most successful director produced only one movie (Tim Miller) or creating an array of succesful films with large budgets, such as James Cameron. 
 
 Top 20 movies based on its Profit
 
@@ -865,9 +876,9 @@ movie_metadata %>%
   ggtitle("20 Most Profitable Movies")
 ```
 
-When assessing the top 20 movies based on profit, Avatar is in the highest profit region, regioning in a similar area to director James cameron.
+When assessing the top 20 movies based on profit, Avatar has the highest profit margin, regioning in a similar area to director James cameron.
 
-```{r }
+```{r}
 #Top genres based on its Profit
 movie_metadata %>% 
   filter(title_year %in% c(2000:2016)) %>%
@@ -888,7 +899,7 @@ movie_metadata %>%
 As we can see from the above graph, even though comedy and drama are the most popular to be produced, they, overall, are not profitable. The budgets from western and thriller movies are far smaller than that of other genres. 
 
 Top 20 movies based on its Return on Investment
-```{r }
+```{r}
 #Top 20 movies based on its Return on Investment
 movie_metadata %>% 
   filter(budget >100000) %>%
@@ -910,7 +921,8 @@ Sucessful directors such as George Lucas also have profitable movies.
 
 #### Commercial success Vs Critical acclaim
 
-```{r }
+```{r}
+# Plotting of the commercial success vs critical accliam
 movie_metadata %>%
   top_n(15, profit) %>%
   ggplot(aes(x = imdb_score, y = gross/10^6, size = profit/10^6, color = content_rating)) + 
@@ -927,7 +939,10 @@ movie_metadata %>%
 
 In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
+### The top 20 most popular key word
+
 ```{r message=FALSE, warning=FALSE}
+# Plotting the 20 most popular keywords
 movie_metadata %>%
   filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
   na.omit() %>% 
@@ -947,7 +962,8 @@ movie_metadata %>%
 
 #### Correlation Heatmap
 
-```{r }
+```{r}
+# Plotting the heatmap
 ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
   ggtitle("Correlation Heatmap") +
   theme(plot.title = element_text(hjust = 0.5))
