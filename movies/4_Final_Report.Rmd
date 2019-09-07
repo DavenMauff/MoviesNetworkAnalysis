@@ -1195,6 +1195,7 @@ ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) +
   geom_line()
 ```
 
+To conclude on the preliminary analysis: The data has been arranged, cleaned and improved on to make relevant inferences and observations. It is evident from the analysis which films gross well, have good ratings and feature succesful actors and directors. It is also evident that details such as the content rating, aspect ratio
 
 -----
 
