@@ -939,7 +939,10 @@ colSums(sapply(IMDB, is.na))
 IMDB <- movie_metadata
 ```
 
-```{r}
+## Exploration into Movie Plot Keywords
+
+Keywords from movie plot lines are given in a single column, split by a "|". The following code will seperate these words into seperate columns.
+```{r warning=FALSE}
 #Constructing Top 20
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
 
@@ -965,7 +968,6 @@ movies_with_keywords <- data.frame()
 IMDB_keyword_movie <- data.frame()
 ```
 
-
 ```{r }
 keywords_one_col %>%
   group_by(value) %>% 
@@ -973,13 +975,17 @@ keywords_one_col %>%
   filter(n > 30) %>% 
   ggplot() +
   geom_bar(aes(x = value, y=n), stat="identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
-
-top_20
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("Keyword") +
+  ylab("Frequency") +
+  ggtitle("Frequency of common keywords")
 ```
-
+<br>
 Above we can see the most popular keywords describing the films in the dataset. 
 
+
+The following code checks to see which movies contain common keywords.
 ```{r}
 #Placing Top 20 Words Against Movie Success
 
@@ -993,60 +999,79 @@ for (i in 1:20) {
   names(IMDB_true_false)[reference + i] <- top_20$value[i]  
 }
 
-truey <- data.frame()
+does_contain_common_key <- data.frame()
 for (keyword in top_20$value) {
-  truey <- rbind(truey, IMDB_true_false %>%
+  does_contain_common_key <- rbind(does_contain_common_key, IMDB_true_false %>%
                             filter(get(keyword) == TRUE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
     distinct(movie_title, .keep_all = T)
 }
 
-
-
-falsy <- data.frame()
+does_not_contain_common_key <- data.frame()
 for (keyword in top_20$value) {
-  falsy <- rbind(falsy, IMDB_true_false %>%
+  does_not_contain_common_key <- rbind(does_not_contain_common_key, IMDB_true_false %>%
                             filter(get(keyword) == FALSE) %>% select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords)) %>%
     distinct(movie_title, .keep_all = T)
 }
 ```
 
+
 ```{r}
-truey <- truey %>%
+head(does_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2)) 
+```
+<br>
+Here are two movies that contain at least one common plot keyword.
+
+```{r}
+head(does_not_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2), 2) 
+```
+Here are two movies that do not contain any of the common plot key words.
+
+
+```{r}
+does_contain_common_key <- does_contain_common_key %>%
   mutate(tri = "Top 20 Word")
 
-falsy <- falsy %>%
+does_not_contain_common_key <- does_not_contain_common_key %>%
   mutate(tri = "NOT Top 20 Word")
 
-truey_falsy <- full_join(falsy, truey, by = c("movie_title", "gross", "imdb_score", "movie_facebook_likes", "plot_keywords"))
+all_movies_keywords_indicated <- full_join(does_not_contain_common_key, does_contain_common_key, by = c("movie_title", "gross", "imdb_score", "movie_facebook_likes", "plot_keywords"))
 
-truey_falsy <- truey_falsy %>%
-  mutate(tri = coalesce(tri.y, tri.x)) %>%
-  select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords, tri)
+all_movies_keywords_indicated <- all_movies_keywords_indicated %>%
+  mutate(type = coalesce(tri.y, tri.x)) %>%
+  select(movie_title, gross, imdb_score, movie_facebook_likes, plot_keywords, type)
 
-truey_falsy <-  truey_falsy %>%
-  group_by(tri) %>%
+all_movies_keywords_indicated <-  all_movies_keywords_indicated %>%
+  group_by(type) %>%
   na.omit() %>%
-  mutate(avg = mean(gross))
+  mutate(avg_gross = mean(gross))
 
-truey_falsy_graph <- summarise(truey_falsy, avg = mean(gross))
 ```
 
 ```{r}
-truey_falsy_graph %>%
+options(scipen = 999)
+```
+
+```{r}
+summarise(all_movies_keywords_indicated, avg_gross = mean(gross)) %>%
   ggplot() +
-  geom_bar(aes(x = tri, y=avg, fill=tri), stat="identity", position="stack") +
-  theme(axis.text.x = element_blank()) 
+  geom_bar(aes(x = type, y=avg_gross, fill=type), stat="identity", position="stack") +
+  theme(axis.text.x = element_blank()) +
+  xlab("Type of movie") +
+  ylab("Average Gross")
 ```
+<br>
+This graph is comparing the average gross of a movie that contains at least one keyword from the list of top 20 most common plot keyword and movies that contain none of these popular keywords.
 
+The average gross for movies that do not contain one of the top 20 most common keywords appear to be higher.
 
+## Sentiment pre-processing
+
+The split keywords are needed in order to perform sentiment.
 ```{r}
-#Sentiment
-
 keywords_from_split <- data.frame(lapply(keywords_split, "length<-", max(lengths(keywords_split))))
 ```
 
-```{r}
-#Creating a list of titles and years seperatored by "|"
+```{r include=FALSE}
 titles <-  IMDB %>%
   select(movie_title)
 years <- IMDB %>%
@@ -1060,24 +1085,24 @@ for (x in 1:4998) {
 }
 ```
 
-```{r}
+```{r include=FALSE}
 #Renaming columns to movie names
 movie_name_list <- IMDB$movie_title
 names(keywords_from_split) <- titles_years_list
 ```
 
-```{r}
+```{r include=FALSE}
 #Adding column to the begining
 key_names <- c('key_word_1', 'key_word_2', 'key_word_3', 'key_word_4', 'key_word_5')
 keywords_from_split <- cbind(test_keys = key_names, keywords_from_split)
 ```
 
-```{r}
+```{r include=FALSE}
 #Moving columns to rows
 keywords_from_split <- melt(keywords_from_split, id = "test_keys")
 ```
 
-```{r}
+```{r include=FALSE}
 #Creating new column for year
 keywords_from_split_matrix <- do.call(rbind, strsplit(as.character(keywords_from_split$variable), "[|]"))
 keywords_from_split <- cbind(keywords_from_split, keywords_from_split_matrix)
@@ -1086,17 +1111,17 @@ keywords_from_split = keywords_from_split %>%
   select(`Key #`, Title, Year, Keyword)
 ```
 
-```{r}
+```{r include=FALSE}
 #Replacing blank cells within keywords to NA's
 keywords_from_split$Keyword[keywords_from_split$Keyword == ""] <- NA
 ```
 
-```{r}
+```{r include=FALSE}
 #Removing rows containing NA's
 keywords_from_split <- na.omit(keywords_from_split)
 ```
 
-```{r}
+```{r inlcude=FALSE}
 #All unique years
 all_years <- keywords_from_split %>% select(Year)
 all_years <- distinct(all_years)
@@ -1106,6 +1131,7 @@ all_years <- all_years %>%
 
 ```
 
+Below is where the sentiment of keywords is calculated.
 ```{r}
 #Function for sentiment per year
 yearly_sentiment <- function(year, df) {
@@ -1121,11 +1147,11 @@ yearly_sentiment <- function(year, df) {
   year_sentiment <- cbind(year, sentiments)
   return (year_sentiment)
 }
-
-sentiments <- data.frame()
 ```
 
 ```{r}
+sentiments <- data.frame()
+
 #For-loop to capture all years
 for (i in all_years$Year) {
   sentiments <- rbind(sentiments,yearly_sentiment(i, keywords_from_split))
