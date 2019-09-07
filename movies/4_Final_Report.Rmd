@@ -62,7 +62,7 @@ We import the dataset like this:
 movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
-In the next section we can introduce our dataset and look at its content. 
+In the next section we can introduce our dataset and look its content. 
 
 -----
 
@@ -203,7 +203,7 @@ movie_metadata <- movie_metadata[!(movie_metadata$content_rating %in% ""),]
 colSums(sapply(movie_metadata, is.na))
 ```
 
-We remove `aspect_ratio` because 1 it has a lot of missing values and 2 we will not be looking at the impact that it has on other data (we assume that it doesn't). 
+We remove `aspect_ratio` because 1 it has a lot of missing values and 2 we will not be looking into the impact that it has on other data (we assume that it doesn't). 
 
 ```{r}
 # Remove aspect_ratio column
@@ -214,7 +214,7 @@ movie_metadata <- subset(movie_metadata, select = -c(aspect_ratio))
 
 #### Gross and Budget
 
-As you can see, we have gross and budget information. So let’s add two colums: profit and percentage return on investment for further analysis.
+We have gross and budget information. So let’s add two colums: profit and percentage return on investment for further analysis.
 
 ```{r}
 # add profit and return of investment column
@@ -227,7 +227,7 @@ movie_metadata <- movie_metadata %>%
 
 #### Colour
 
-Next, we take a look at the `colour` vs `black and white`. 
+Next, we take a look at the influence of `colour` vs `black and white`. 
 
 ```{r}
 # Get colour display types of movies
@@ -254,7 +254,7 @@ Almost `95%` movies are in English, which means this variable is nearly constant
 
 #### Country
 
-We can also look at the different types of countries.
+Next, we can look at the different types of countries.
 
 ```{r}
 table(movie_metadata$country)
@@ -288,17 +288,16 @@ ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  geom_vline(xintercept=c(1980), linetype="dotted") +
-  ggplot2::annotate("text", label = "Year = 1980",x = 1979, y = 60, size = 3, colour = "blue",angle=90)
+  geom_vline(xintercept=c(1980), linetype="dotted")
 ```
 
-From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative of the data.
+From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
 
 ```{r}
 movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
 ```
 
-Let's have a look at the movie counts again. This looks much better to work with, as there are now a decent number of movies for every year.
+Let's have a look at the movie counts now:
 
 ```{r }
 ggplot(movie_metadata, aes(title_year)) +
@@ -306,6 +305,8 @@ ggplot(movie_metadata, aes(title_year)) +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1980 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
+
+As we can see, from the 1980's a quick and exponential rise of movies released occurred. 
 
 ### Movie Genre Analysis
 
@@ -362,16 +363,11 @@ Now we can delve into more specific things regarding movies, like `genres`.
 #### Top Genres
 
 ```{r }
-# store genres
 genre = movie_metadata['genres']
-
-# make genre a dataframe
 genre = data.frame(table(genre))
-
-# order based on frequency
 genre = genre[order(genre$Freq,decreasing=TRUE),]
 
-# Plot the top 20 genres
+# Top 20 genres with the most movies
 ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) + 
   geom_bar(stat = "identity", fill="blue") + 
   geom_text(aes(label=Freq),hjust=1.2, size=3.5)+
@@ -381,15 +377,15 @@ ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) +
   coord_flip()
 ```
 
-As you can see, movies have multiple genres that its associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely the most accurate description.
+#### Split Genres
+
+As you can see, movies have multiple genres that they are associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely to be the most accurate description.
 
 ```{r}
 head(movie_metadata$genres)
 ```
 
-#### Split Genres
-
-Here we split the genres and look at how they often they occurred since 1980. We split the genres separated by "|" into 8 different columns.
+Let's split the genres separated by "|" into 8 different columns.
 
 ```{r fig.height=5, fig.width=11, message=FALSE, warning=FALSE}
 # Split on "|"
@@ -421,9 +417,6 @@ genres_one_col %>%
   ylab("Frequency") +
   NULL
 ```
-
-<br>
-
 It is evident that the Drama and Comedy genre are the most popular to be produced. However, this does not mean that they are the most profitable, returning successful ROI’s. This will further be explored.
 
 
@@ -851,7 +844,7 @@ xlab("Number of Films") + ylab("Avg Profit $millions") +
 ggtitle("Most Successful Directors")
 ```
 
-Looking at the most succesful directos, one can determine richer directors by singular succesful films, such as Tim Miller, or creating an array of succesful films with large budgets, such as James Cameron. 
+Looking at the most succesful directors, one can determine richer directors by singular succesful films, such as Tim Miller, or creating an array of succesful films with large budgets, such as James Cameron. 
 
 Top 20 movies based on its Profit
 
@@ -911,7 +904,6 @@ movie_metadata %>%
 ```
 In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
-#### Content Rating VS Gross
 
 ```{r fig.width=8, message=FALSE, warning=FALSE}
 movie_metadata %>%
@@ -926,6 +918,8 @@ movie_metadata %>%
   geom_smooth() +
   coord_flip()
 ```
+=======
+
 
 #### Correlation Heatmap
 
@@ -1172,14 +1166,14 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 ```
 
 
-```{r}
+```{r fig.width=7, fig.height=3}
 #Run if there is a problem with heatmap
-dev.off()
+#dev.off()
 
 #Heatmap
-heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none")
+heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
 ```
-
+As we can see from the above heat map, movies became far less descriptive with one keyword per movie as time progressed. This could be due to creating stories with various situations and genres to make stories more meaningful. 
 
 ```{r}
 #Filtering sentiments graph
@@ -1220,6 +1214,7 @@ ggplot(sentiments_graph_filter, aes(x = as.numeric(year), y = positive)) +
   geom_line()
 ```
 
+To conclude on the preliminary analysis: The data has been arranged, cleaned and improved on to make relevant inferences and observations. It is evident from the analysis which films gross well, have good ratings and feature succesful actors and directors. It is also evident that details such as the content rating and aspect ratio effect popularity. From here we can start the network analysis and further assessment of the data. 
 
 -----
 
