@@ -1418,12 +1418,11 @@ close_cent %>%
   ylab("Frequency")
 ```
 <br>
-The closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
+There is a high number of nodes with high closeness and a high number of nodes with low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
 
 
 Interpretively, the Boncich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations).
 
-Essentially, the importance of an actor is defined by the importance of its alters, or other connected actors.
 ```{r }
 power_cent <- projected %>% power_centrality(exponent = 0.9)
 
@@ -1437,7 +1436,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  xlab("Boncich Power") +
+  ylab("Frequency")
 ```
 <br>
 So the distribution of Boncich power is slightly positively skewed meaning that in general, vertices are considered more 'powerful' as their alters increase in power. The mean power centrality is `r var_pc`.
@@ -1458,7 +1459,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 Most nodes have a relatively low page rank. The mean page rank is `r var_pr`.
@@ -1480,7 +1482,7 @@ projected <- projected %>%
 node_comms <- node_comms[-1,]
 ```
 
-#### Distribution of community size
+### Distribution of community size
 
 ```{r}
 node_comms <- projected %>%
@@ -1496,16 +1498,16 @@ node_comms %>%
 <br>
 This graph shows the distribution of community size. The community size is exponentially distributed, resulting in a few large communities and many smaller ones. Some form of filtering on community size is needed to remove the smaller communities.
 
-```{r}
+```{r warning=FALSE}
 node_comms %>% 
   filter(comm < 55) %>% 
   ggplot() +
   geom_bar(aes(x=comm))+
-  geom_vline(xintercept=c(17.5), linetype="dotted")+
+  geom_vline(xintercept=c(15.5), linetype="dotted")+
   NULL
 ```
 <br>
-After removing communities smaller than 100 actors, only 17 communities remain.
+After removing communities smaller than 100 actors, only 15 communities remain.
 
 ```{r}
 node_comms_filtered <- node_comms %>% 
@@ -1565,7 +1567,8 @@ e_values_1['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigenvalue")
+  xlab("Eigenvalue") +
+  ylab("Frequency")
 ```
 <br>
 Eigenvalues are positively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
@@ -1584,7 +1587,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The average closeness centrality is `r var`. When looking at a single community we expect a higher average closeness than when calculating for the whole graph which was `r var_cc`.
@@ -1603,7 +1607,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") + 
+  xlab("Boncich Power")
 ```
 <br>
 The average Boncich power centrality is `r var`.
@@ -1623,7 +1629,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The local mean page rank is `r var`, compared to the global mean of `r var_pr`.
@@ -1658,7 +1665,8 @@ e_values_2['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigenvalue")
+  xlab("Eigenvalue")+
+  ylab("Frequency")
 ```
 <br>
 Eigenvalues are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
@@ -1679,7 +1687,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The mean closeness centrality is `r var`.
@@ -1696,7 +1705,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") + 
+  xlab("Boncich Power")
 ```
 <br>
 The mean Boncich power centrality is `r var`.
@@ -1718,7 +1729,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The mean page rank for community 2 is `r var`.
@@ -1754,7 +1766,8 @@ e_values_3['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigenvalue")
+  xlab("Eigenvalue") +
+  ylab("Frequency")
 ```
 <br>
 Eigenvalues are negatively skewed for global community 3. This means that most nodes are not connected to high scoring nodes.
@@ -1773,7 +1786,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The mean closeness centrality is `r var`.
@@ -1792,7 +1806,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") +
+  xlab("Boncich Power")
 ```
 <br>
 The mean Boncich power centrality in community 3 is `r var`.
@@ -1812,7 +1828,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The mean page rank is `r var`.
