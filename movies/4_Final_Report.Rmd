@@ -864,7 +864,28 @@ movie_metadata %>%
   ylab("Profit $million") + 
   ggtitle("20 Most Profitable Movies")
 ```
+
 When assessing the top 20 movies based on profit, Avatar is in the highest profit region, regioning in a similar area to director James cameron.
+
+```{r }
+#Top genres based on its Profit
+movie_metadata %>% 
+  filter(title_year %in% c(2000:2016)) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  group_by(genre)%>%
+  na.omit() %>% 
+  summarise(av_profit = mean(profit), av_budget = mean(budget)) %>%
+  arrange(desc(av_profit)) %>% 
+  ggplot(aes(x=av_budget/10000, y=av_profit/10000)) + 
+  geom_jitter(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = genre), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Profit $million") + 
+  ggtitle("Average Return for each Genre")
+```
+As we can see from the above graph, even though comedy and drama are the most popular to be produced, they, overall, are not profitable. The budgets from western and thriller movies are far smaller than that of other genres. 
 
 Top 20 movies based on its Return on Investment
 ```{r }
