@@ -32,7 +32,7 @@ img.image-thumb {
 }
 ```
 
-## Introduction
+# Introduction
 
 In this report, we will be analysing a dataset from [Kaggle](https://www.kaggle.com/rounakbanik/the-movies-dataset#links.csv), which contains movies of different genres produced over a vast number of years. What makes this analysis interesting is that we can try and draw various conclusions based on a movie's popularity, directors or actors involved, year of production, and so forth. Moreover, we can construct various networks in an attempt to find meaningful and interesting results.
 When inspecting a database of films from recent years, various interesting inferences are uncovered. A film may have a high rating yet low return on investment (ROI). Which genre would you guess is the most successful? Which actors do you think are the most popular? 
@@ -49,7 +49,7 @@ We have split our Exploratory Data Analysis into four main parts:
 
 -----
 
-## Admin
+# Admin
 
 Before we start, let's keep this code chunk for importing the correct libraries and loading the appropriate dataset. We use pacman to load the following:
 
@@ -59,18 +59,18 @@ pacman::p_load(rjson, jsonlite, DT,  RJSONIO, data.table, dplyr, compareDF, pret
 
 We import the dataset like this:
 ```{r}
-movie_metadata <- read.csv("../data/movie_metadata.csv", sep=";")
+movie_metadata <- read.csv("../data/real_deal.csv")
 ```
 
 In the next section we introduce our dataset and look its content. 
 
 -----
 
-## Introducing The Dataset
+# Introducing The Dataset
 
-This section of the report is quite essential for our analysis. We cannot make any interesting inferences from the dataset if we do not know what is contained within it. In this section we will try to understand exactly what we are dealing with. Thereafter, we can begin to draw interesting results. We have already read in our dataset called `movie_metadata`, so we can see the following:
+This section of the report is quite essential for our analysis. We cannot make any interesting inferences from the dataset if we do not know what is contained within it. In this section we will try to understand exactly what we are dealing with. Thereafter, we can begin to draw interesting results. 
 
-The dataset contains 28 unique columns/variables, each of which are described in the table below:
+The `movie_metadata` dataset contains 28 unique columns/variables, each of which are described in the table below:
 
 Variable Name            | Description
 -------------------------|----------------------------------------------
@@ -117,12 +117,12 @@ In the next section we can start preparing the dataset for analysis by removing 
 
 -----
 
-## Pre-Processing Data
+# Pre-Processing Data
 
 In this part of the report we attempt to look for various things that may have a negative or significant impact on the inferences we make on the dataset. Once we have sufficiently cleaned and prepared the dataset, we can commence with drawing various conclusions from the graphs we generate. 
 
 
-### Duplicate Rows
+## Duplicate Rows
 
 In the `movie_metadata` dataset, we can derive that their are 45 duplicated rows which needs to be removed and kept the unique ones.
 
@@ -136,7 +136,7 @@ sum(duplicated(movie_metadata))
 movie_metadata <- movie_metadata[!duplicated(movie_metadata), ]
 ```
 
-### Missing Values
+## Missing Values
 
 Let's have a look at the number of NA values in our dataset:
 ```{r}
@@ -150,7 +150,7 @@ To help visualise this, have a look at the following heatmap of the missing valu
 missing.values <- aggr(movie_metadata, sortVars = T, prop = T, sortCombs = T, cex.lab = 1.5, cex.axis = .6, cex.numbers = 5, combined = F, gap = -.2)
 ```
 
-#### Gross and Budget
+## Gross and Budget
 
 Since `gross` and `budget` have too many missing values (874 and 488), and we want to keep these two variables for the following analysis, we can only delete rows with null values for gross and budget because imputation will not do a good job here.
 
@@ -162,19 +162,21 @@ dim(movie_metadata)
 ```
 
 The difference in observations have decreased by `4998 - 3857 = 1141` which is luckily only `22.8%` of the previous total observations.
-Let’s have a look at how many complete cases we have.
 
-#### Content Rating
+
+## Content Rating
+
+The dataset contains a vast range of content rating, which can be seen below:
 
 ```{r}
 # Look at all the different types of content ratings
 table(movie_metadata$content_rating)
 ```
 
-According to the history of naming these different content ratings, we find `M = GP = PG, X = NC-17`. We want to replace `M` and `GP` with `PG`, replace `X` with `NC-17`, because these two are what we use nowadays.
+We find  that `M = GP = PG, X = NC-17`, so let's replace `M` and `GP` with `PG`, and `X` with `NC-17`, because these are (apparently) what we use today.
 
 ```{r}
-# Repacing content rating
+# Renaming content ratings 
 movie_metadata$content_rating[movie_metadata$content_rating == 'M']   <- 'PG' 
 movie_metadata$content_rating[movie_metadata$content_rating == 'GP']  <- 'PG' 
 movie_metadata$content_rating[movie_metadata$content_rating == 'X']   <- 'NC-17'
@@ -198,7 +200,9 @@ Blank spaces should be taken as missing value. Since these missing values cannot
 movie_metadata <- movie_metadata[!(movie_metadata$content_rating %in% ""),]
 ```
 
-### Delete (Some) Rows
+## Delete (Some) Rows
+
+Let’s now have a look at how many complete cases we have.
 
 ```{r}
 colSums(sapply(movie_metadata, is.na))
@@ -211,11 +215,11 @@ We remove `aspect_ratio` because 1. it has a lot of missing values and 2. we wil
 movie_metadata <- subset(movie_metadata, select = -c(aspect_ratio))
 ```
 
-### Add a Column
+## Add a Column
 
-#### Gross and Budget
+### Gross and Budget
 
-We have gross and budget information. So let’s add two colums: profit and percentage return on investment for further analysis.
+We have gross and budget information. So let’s add two columns: `profit` and `percentage return on investment` for further analysis.
 
 ```{r}
 # add profit and return of investment column
@@ -224,9 +228,9 @@ movie_metadata <- movie_metadata %>%
          return_on_investment_perc = (profit/budget)*100)
 ```
 
-### Remove (Some) Columns
+## Remove (Some) Columns
 
-#### Colour
+### Colour
 
 Next, we take a look at the influence of `colour` vs `black and white`. 
 
@@ -238,11 +242,11 @@ table(movie_metadata$color)
 Since `3.4%` of the data is in black and white, we can remove the `color` column it. 
 
 ```{r}
-# delete colour
+# remove colour column
 movie_metadata <- subset(movie_metadata, select = -c(color))
 ```
 
-#### Language
+### Language
 
 Let's have a look at the different languages contained within the dataset.
 
@@ -253,12 +257,12 @@ table(movie_metadata$language)
 
 Almost `95%` movies are in English, which means this variable is nearly constant. Let’s remove it.
 
-#### Country
+### Country
 
 Next, we can look at the different types of countries.
 
 ```{r}
-# Look at different countries 
+# Look at different countries
 table(movie_metadata$country)
 ```
 
@@ -276,13 +280,13 @@ Now that we've cleaned up our dataset, we can now continue to explore our data e
 
 -----
 
-## Analysing Data
+# Analysing Data
 
 When inspecting a dataset of movies over the past few years, various interesting inferences can be uncovered. A movie may have a high rating yet low return on investment. Which genre is the most successful? Which actors are the most popular? These are some of the questions we aim to answer in this section.
 
 We can start by performing basic analyis on our data. Thereafter, we delve a bit deeper into more specific parts of the dataset, in hopes of uncovering interesting observations.
 
-### Basic Analysis
+## Basic Analysis
 
 Let's first have a look at the number of movies that are produced over the years.
 
@@ -292,10 +296,11 @@ ggplot(movie_metadata, aes(title_year)) +
   geom_bar() +
   labs(x = "Year movie was released", y = "Movie Count", title = "Number of Movies Released Per Year (1916 - 2016)") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  geom_vline(xintercept=c(1980), linetype="dotted")
+  geom_vline(xintercept=c(1980), linetype="dotted") +
+  ggplot2::annotate("text", label = "Year = 1980",x = 1979, y = 50, size = 3, colour = "blue", angle=90)
 ```
 
-From the graph, we can derive that there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative.
+From the graph, we see there aren’t many records of movies released before 1980. It’s better to remove those records because they might not be representative of the data.
 
 ```{r}
 movie_metadata <- movie_metadata[movie_metadata$title_year >= 1980,]
@@ -311,9 +316,10 @@ ggplot(movie_metadata, aes(title_year)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-The graph above illustrate the number of movies released for the period 1980 - 2016.As we can see, from the 1980's a quick and exponential rise of movies released occurred. 
 
-### Movie Genre Analysis
+The graph above illustrate the number of movies released for the period 1980 - 2016. As we can see, from the 1980's a quick and exponential rise of movies released occurred.
+
+## Movie Genre Analysis
 
 ```{r include=FALSE}
 # setting up plotly label, axis and text customizations
@@ -364,26 +370,32 @@ b1 <- list(x = 0.5, y = 1.0,
 
 Now we can delve into more specific things regarding movies, like `genres`. 
 
-#### Top Genres
+### Top Genres
 
 ```{r}
 genre = movie_metadata['genres']
+
+# Make genre a dataframe
 genre = data.frame(table(genre))
+
+# Order genres based on frequency
 genre = genre[order(genre$Freq,decreasing=TRUE),]
 
 # Top 20 genres with the most movies
 ggplot(genre[1:20,], aes(x=reorder(factor(genre), Freq), y=Freq, alpha=Freq)) + 
-  geom_bar(stat = "identity", fill="blue") + 
+  geom_bar(stat = "identity", fill="maroon") + 
   geom_text(aes(label=Freq),hjust=1.2, size=3.5)+
   xlab("Genre") + 
   ylab("Number of Movies") + 
-  ggtitle("Top 20 genres with the most movies") + 
+  ggtitle("Top 20 Genres with the most movies") + 
   coord_flip()
 ```
 
-#### Split Genres
+From the above a combination of `Comedy`, `Romance`, and `Drama` appears to be, by far, the most frequent produced genres. As you can see, movies have multiple genres that they are associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely to be the most accurate description of the movie.
 
-As you can see, movies have multiple genres that they are associated with. For analysis purposes, we choose to use the first word in the genre column, as this is likely to be the most accurate description.
+### Split Genres
+
+Here we first split the genres into multiple columns and merge them together.
 
 ```{r}
 head(movie_metadata$genres)
@@ -402,30 +414,35 @@ genres_matrix <- do.call(rbind, strsplit(movie_metadata$genres, '[|]'))
 genres_df <- as.data.frame(genres_matrix)
 ```
 
-`genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of all the genres. 
+`genre_df` consists of 8 columns, each with different genres. Let's have a look at the frequency of ALL the genres. 
 
 ```{r}
 # Collapse all genres into one column
 genres_one_col <- gather(genres_df) %>% 
   select(value)
 
-# Plot frequency of first column
-genres_one_col %>%
+# Top 30
+top30 <- genres_one_col %>%
   group_by(value) %>% 
   tally() %>% 
-  filter(n >= 30) %>% 
-  ggplot() +
-  geom_bar(aes(x = value, y=n), stat="identity") +
+  filter(n >= 30)
+
+# Plot frequency of first column
+top30 %>% 
+  ggplot(aes(x=reorder(factor(value), n), y=n, alpha=n)) +
+  geom_bar(stat="identity", fill="maroon") +
+  geom_text(aes(label=n),hjust=1.2, size=3.5) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   xlab("Genre") +
   ylab("Frequency") +
-  NULL
+  ggtitle("Movie Genre Frequency") +
+  coord_flip()
 ```
 
-It is evident that the genres `Drama` and `Comdey` are the most frequently produced. However, this does not mean that they are the most profitable, returning successful ROI’s. This will further be explored.
-
+It is evident that the `Drama` and `Comedy` genre are still the most popular to be produced. It is also interesting to note that `Romance` is fairly lower on the list as in the previous graph. This may imply that most movies predominantly co-occur with `Comedy` or `Drama`. `Romance` movies do not co-occur with any of the other genres as frequently as `Comedy` and `Drama` do. Additionally, the fact that `Comedy` and `Drama` occurs the most does not necessarily mean that they are the most profitable, returning successful ROI’s. We will try and explore this later on in the report.
 
 Previously we assumed that the first genre is the most applicable, therefore, we choose the first column as the genre for the movie and append it to the dataframe. 
+
 ```{r}
 # Remove old genre column
 movie_metadata <- subset(movie_metadata, select = -c(genres))
@@ -450,32 +467,13 @@ movie_metadata %>%
   theme(panel.background = element_blank())
 ```
 
-The heat map above, depicts the most desired genres that a represented with higher frequencies. It is evident by the darker shades of blue becoming more prominent in the latter years. 
+We can make one or two remarks from this heatmap: Firstly, we can see that `Action`, `Adventure`,`Comedy`, and `Drama` are genres that are predominantly used as the first term to associate with a movie. Secondly, we can see that `Romance`, which was previously high in frequency for co-occurring with `Comedy` and `Drama` is now very low. This means that there are very few movies that are predominantly `Romance`, meaning `Romance` is mostly the second, third, etc term to describe a movie.
 
-#### Which Genres are Popular?
+Additionally, we can also see that some genres, like `Action` and `Comedy` have picked up over the years. This is evident by looking at the darker shades of blue becoming more prominent in the latter years. 
 
-In our dataset we have Facebook Likes and IMDB scores associated with a movie. This can help give us an indication of how popular each genre is. 
+### Which Genres are Popular?
 
-```{r include=FALSE}
-# creating a function for plotting histogram using facet wrap
-facet_hist_plot <- function(x, xlabel, bwidth){
-  
-  hp <- ggplot(data = movie_metadata, mapping = aes(x = x))
-  hp + geom_histogram(aes(fill = genre), binwidth = bwidth,
-                      show.legend = F, 
-                      color = "black", size = 0.2, 
-                      alpha = 0.8) +
-    xlab(xlabel) +
-    theme_minimal() +
-    theme(legend.position = "none",
-          axis.text = element_text(size = 12, angle = 20),
-          axis.title = element_text(size = 14, 
-                                    family = "Times", 
-                                    color = "darkgrey",
-                                    face = "bold")) + 
-    facet_wrap(~ genre, scales = "free_y", ncol = 4)    
-  }
-```
+In our dataset we have Facebook Likes and IMDB scores associated with a movie. This can help give us an indication of how popular each genre is. There are different types of Facebook likes within the dataset, namely `director_facebook_likes`, `actor_3_facebook_likes`, `actor_1_facebook_likes`, `cast_total_facebook_likes`, `actor_2_facebook_likes`, and finally `movie_facebook_likes`. Let's add them all together for each movie. 
 
 ```{r}
 # Add column for total facebook likes
@@ -488,6 +486,8 @@ movie_metadata$total_facebook_likes <- movie_metadata$director_facebook_likes +
 ```{r include=FALSE}
 movie_metadata <- movie_metadata[!is.na(movie_metadata$total_facebook_likes), ]
 ```
+
+Now let's calculate the average IMDB score, average user votes, average Facebook likes and average number of reviewers for each genre.
 
 ```{r, fig.height = 4, fig.width = 6, }
 # creating a data frame containing avg score, avg votes and avg fb likes
@@ -503,89 +503,18 @@ score_votes_likes <- movie_metadata %>%
 # arranging data frame by average score
 arr_score <- arrange(score_votes_likes, desc(avg_facebook_likes))
 
+# Show data frame
 as.data.frame(score_votes_likes)
-
 ```
 
-##### Genres VS IMDB Scores
-
-Observing the graphs below, various genres consist of an array of different ratings. However, niche genres are more consistent with their ratings, including musical; thriller; romance and western.
-
-```{r fig.height = 10, fig.width = 10, }  
-# genre wise distribution of scores using a custom plot function  
-facet_hist_plot(movie_metadata$imdb_score, 
-                "Genre",
-                bwidth = 0.1)+
-  scale_x_continuous(breaks = seq(0, 9.3, 1)) 
-``` 
+The most liked genres on Facebook is `Biography` (41000.900), `Adventure` (40494.340), and `Action` (38762.692). The most popular genres, based on IMDB scores, are `Biography` (7.9), `Crime` (6.9), `Documentary` (6.8), and `Drama` (6.8). It may be interesting to note that previously we saw that `Comedy` and `Drama` are produced the most frequently overall - yet it seems like the public scores `Biography`, `Crime`, `Documentary`, and `Drama` movies consistently high. This may also imply that there could be a vast range in scores for `Comedy` and `Drama`, justifying a fairly lower score than the rest. Furthermore, `Comedy`, `Action`, `Drama` have a very high number of voters - which may account for the lower overall average.
 
 
+## Popularity Analysis
 
-```{r include=FALSE, }
-# creating a function for ploting bar graphs
-bar_plot <- function(data, x, y, info, xlabl, ylabl, title, 
-                      deci = NULL, suf = NULL){
-  if(is.null(suf)) suf <- ""
-  if(is.null(deci)) deci <- 0
-  b1 <- ggplot(data, aes(x = reorder(genre, x), 
-                               y = y, 
-                               text = paste("Genre:", genre,
-                                            info, 
-                                            round(y, deci), suf)))
-  
-  b1 + geom_bar(aes(fill = genre), stat = "identity", 
-           show.legend = F, color = "black", size = 0.2,
-           width = 0.7, alpha = 0.7) +
-  xlab(xlabl) +
-  ylab(ylabl) +
-  ggtitle(title) +
-  theme_minimal() +
-  theme(legend.position = "none",
-        plot.title = element_text(size = 14, 
-                                  color = "grey", family = "Times")) +
-  scale_fill_brewer(palette = "Spectral")
+#### IMDB ratings VS Movie Count
 
-ggplotly(tooltip = "text") %>%
-  layout(margin = m, xaxis = a, yaxis = a)
-}
-```
-
-
-```{r }
-# plotting 10 highest rated genres 
-bar_plot(arr_score[1:10,],
-         arr_score[1:10,]$avg_score,
-         arr_score[1:10,]$avg_score,
-         "| Average Score:",
-         "Genres",
-         "Average IMDB Score",
-         "Top 10 IMDB Scores Per Genre",
-         deci = 1)
-```
-
-The graph above allows us to see that a less produced category, bibliography, possess the most positive ratings.
-
-##### Genres VS Facebook Likes
-
-Let's now have a look at the Facebook likes. 
-
-```{r }
-# plotting 10 highest rated genres 
-bar_plot(arr_score[1:10,],
-         arr_score[1:10,]$avg_facebook_likes,
-         arr_score[1:10,]$avg_facebook_likes,
-         "| Average Score:",
-         "Genres",
-         "Average Facebook Likes",
-         "Top 10 Facebook Likes Per Genre",
-         deci = 1)
-```
-
-Biography also produces the highest likes on facebook. From this information, should directors strive to create more biography's? This will be determined when looking at the ROI. 
-
-### Popularity Analysis
-
-IMDB ratings VS Movie Count
+Let's have a look at the IMDB rating distribution on the number of movies that are produced. Below we can see that the data is slightly skewed to the left around the average IMDB score, meaning that major
 
 ```{r}
 # Plotting the IMDB ratings vs movie count
@@ -631,6 +560,16 @@ movie_metadata %>%
 It is evident that as movie with a higher rating score, the more number of facebook likes increases. This is probably due to the fact that a critic giving a movie a good rating, will increase the want of people to see and find more out about the move. 
 
 #### Top 20 directors with highest average IMDB score
+We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
+
+```{r }
+#Plotting Facebook likes against IMDB score
+ggplot(data = movie_metadata, aes(x = imdb_score, y = movie_facebook_likes)) +
+  geom_point() +
+  stat_smooth(method="lm")
+```
+
+Top 20 directors with highest average IMDB score
 
 When examining the directors with the highest IMDB scores we can establish the highest 	average rating is 8.6. Hence, movies with higher ratings are either excellent and/or fluke occurences. 
 
@@ -799,7 +738,7 @@ subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
 ```
 
 
-### Profit | Gross | Return of Interest
+## Profit | Gross | Return of Interest
 
 ```{r}
 # Plotting movie budget and gross
@@ -896,9 +835,11 @@ movie_metadata %>%
   ylab("Profit $million") + 
   ggtitle("Average Return for each Genre")
 ```
+
 As we can see from the above graph, even though comedy and drama are the most popular to be produced, they, overall, are not profitable. The budgets from western and thriller movies are far smaller than that of other genres. 
 
 Top 20 movies based on its Return on Investment
+
 ```{r}
 #Top 20 movies based on its Return on Investment
 movie_metadata %>% 
@@ -917,9 +858,9 @@ movie_metadata %>%
 ```
 Sucessful directors such as George Lucas also have profitable movies. 
 
-### Further Analysis
+# Further Analysis
 
-#### Commercial success Vs Critical acclaim
+## Commercial success Vs Critical acclaim
 
 ```{r}
 # Plotting of the commercial success vs critical accliam
@@ -957,10 +898,7 @@ movie_metadata %>%
 ```
 
 
-=======
-
-
-#### Correlation Heatmap
+## Correlation Heatmap
 
 ```{r}
 # Plotting the heatmap
@@ -975,13 +913,13 @@ According to the highest correlation value 0.95, we find actor_1_facebook_likes 
 
 There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews.
 
-#### Sentiment Analysis
+# Sentiment Analysis
 
-```{r}
+```{r include=FALSE}
 options(scipen = 999)
 ```
 
-```{r}
+```{r include=FALSE}
 IMDB <- read.csv("../data/real_deal.csv")
 
 #Removing Duplicates
@@ -996,26 +934,9 @@ IMDB <- subset(IMDB, select = -c(genres))
 colSums(sapply(IMDB, is.na))
 ```
 
-We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
-
-```{r }
-#Plotting Facebook likes against IMDB score
-ggplot(data = IMDB, aes(x = imdb_score, y = movie_facebook_likes)) +
-  geom_point() +
-  stat_smooth(method="lm")
+```{r eval=FALSE}
+IMDB <- movie_metadata
 ```
-
-
-```{r }
-#Plotting Aspect Ratio against Facebook likes
-IMDB %>% 
-  filter(aspect_ratio==1.85 | aspect_ratio==2.35) %>%
-  mutate(aspect_ratio=as.character((aspect_ratio))) %>%
-  ggplot() +
-  geom_point(aes(x=aspect_ratio, y=movie_facebook_likes))
-```
-
-From the above graph we can determine that users enjoy a higher aspect ratio on films. 
 
 ```{r}
 #Constructing Top 20
@@ -1235,9 +1156,7 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 ```
 
 
-```{r fig.width=7, fig.height=3}
-#Run if there is a problem with heatmap
-dev.off()
+```{r}
 
 #Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
@@ -1363,5 +1282,5 @@ To conclude on the preliminary analysis: The data has been arranged, cleaned and
 
 -----
 
-## Network Analysis
+# Network Analysis
 
