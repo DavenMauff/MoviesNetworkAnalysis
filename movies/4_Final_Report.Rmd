@@ -905,7 +905,7 @@ movie_metadata %>%
 In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
 
 
-```{r fig.width=8, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 movie_metadata %>%
   filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
   na.omit() %>% 
@@ -1015,6 +1015,7 @@ keywords_one_col %>%
 
 top_20
 ```
+
 Above we can see the most popular keywords describing the films in the dataset. 
 
 ```{r}
@@ -1168,11 +1169,12 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 
 ```{r fig.width=7, fig.height=3}
 #Run if there is a problem with heatmap
-#dev.off()
+dev.off()
 
 #Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
 ```
+
 As we can see from the above heat map, movies became far less descriptive with one keyword per movie as time progressed. This could be due to creating stories with various situations and genres to make stories more meaningful. 
 
 ```{r}
