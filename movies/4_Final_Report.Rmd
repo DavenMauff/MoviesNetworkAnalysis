@@ -510,10 +510,9 @@ as.data.frame(score_votes_likes)
 
 The most liked genres on Facebook is `Biography` (41000.900), `Adventure` (40494.340), and `Action` (38762.692). The most popular genres, based on IMDB scores, are `Biography` (7.9), `Crime` (6.9), `Documentary` (6.8), and `Drama` (6.8). It may be interesting to note that previously we saw that `Comedy` and `Drama` are produced the most frequently overall - yet it seems like the public scores `Biography`, `Crime`, `Documentary`, and `Drama` movies consistently high. This may also imply that there could be a vast range in scores for `Comedy` and `Drama`, justifying a fairly lower score than the rest. Furthermore, `Comedy`, `Action`, `Drama` have a very high number of voters - which may account for the lower overall average.
 
-
 ## Popularity Analysis
 
-#### IMDB ratings VS Movie Count
+### IMDB ratings VS Movie Count
 
 Let's have a look at the IMDB rating distribution on the number of movies that are produced. Below we can see that the data is slightly skewed to the left. We have a concentration of data among 6 out of 10 and a long tail to the left. The vast majority of the movies are given a score between 5 and 7.5, with fewer movies scoring higher than that.
 
@@ -538,7 +537,7 @@ min(imdb_score)
 mean(imdb_score)
 ```
 
-#### Popularity over the years
+### Popularity over the years
 
 Let's take a look at when Facebook started. From the graph it is clear that the number of Facebook likes for movies released post 2004 have increased dramatically. Old movies receive fewer likes, which is most likely due to Facebook marketing newer movies.
 
@@ -575,9 +574,6 @@ movie_metadata %>%
 
 There are three things to look at with this graph: Average IMDB score, average Facebook likes and the number of movies rated per content-rating. We can see that all movies have (on average) very similar IMDB scores, however, they differ higly on the number of Facebook likes. For example, movies rated `PG-13` receive much more Facebook likes (on average) than movies rated `NC-17`. Movies rated `R` receive (on average) more likes than movies rated `NC-17`, but still have relatively similar IMDB scores. 
 
-
-### IMDB Scores VS Facebook Likes
-
 We can infer a strong correlation between a movie's Facebook likes and its IMDB Score. This is expected, as a higher individual rating relates to higher viewer satisfaction; and hence it is expected to see an increase in positive online presence. Initially, this graph was constructed to see if there'd be a difference between viewer enjoyment and movie rating. Movie databases are often critisized for the nature of their rating scales, made by critics and placing priority on sentiments and plot, which may not fully coincide with viewer enjoyment. However, as seen below, this is not the case using IMDB's Scoring.
 
 ```{r message=FALSE, warning=FALSE}
@@ -587,25 +583,11 @@ ggplot(data = movie_metadata, aes(x = imdb_score, y = movie_facebook_likes)) +
   geom_smooth()
 ```
 
-### Top 20 directors with highest average IMDB score
-
-Let's take a look at the directors. We can see that the top IMDB rated directors have very similar scores (8.1 - 8.6). `Tony Kaye` has the highest rating of 8.6.
-
-```{r}
-# Displaying the avg_imdb score of directors
-movie_metadata %>%
-  group_by(director_name) %>%
-  summarise(avg_imdb = mean(imdb_score)) %>%
-  arrange(desc(avg_imdb)) %>%
-  top_n(20, avg_imdb) %>%
-  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
-```
-
 ### Vote Counts
 
-The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that Facebook influenced the number of rates per movie far higher than that of IMDB.
+The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that IMDB caused rapid growth in vote counts which was later amplified with the introduction of Facebook. 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 #Performing operations on Movies Vote Count over the years
  movies_vote1 <- movie_metadata %>%
   select(title_year, num_voted_users) %>%
@@ -617,46 +599,11 @@ The IMDB rating system was first implemented in the 1990's. Social media platfor
    geom_vline(xintercept = c(1990,2004),colour = c("orange","blue")) +
    ylab("Vote count (in thousands)") +
    xlab("Years") +
+   scale_x_continuous(limits = c(1980, 2014)) +
    ggplot2::annotate("text", label = "Facebook",x = 2003, y = 21000, size = 3, colour = "blue",angle=90) + 
    ggplot2::annotate("text", label = "IMDB",x = 1989, y = 21000, size = 3, colour = "orange",angle=90)
 ```
 
-### Vote Counts VS IMDB score
-
-```{r echo=T}
-# breaking num_users_voted into 4 buckets 
-movie_metadata$vote_bucket <- cut(movie_metadata$num_voted_users, 
-                         c(0, 50000, 100000, 300000, 500000))
-```
-
-
-```{r  fig.height = 4, fig.width = 6, }
-# plotting a boxplot for votes vs imdb_score  
-bp <- na.omit(movie_metadata) %>% 
-  ggplot(aes(x = vote_bucket, y = imdb_score)) +
-  geom_boxplot(aes(fill = vote_bucket), alpha = 0.7,
-               show.legend = F) +
-  stat_summary(fun.y = mean, geom = "point",
-               shape = 23) +
-  coord_flip() +
-  xlab("User Votes") +
-  ylab("IMDB Score") +
-  ggtitle("Box plot for User Votes vs IMDB Score") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 14, 
-                                  color = "darkgrey",
-                                  family = "Times"))
-ggplotly(bp) %>%
-  layout(margin = m, 
-        xaxis = a, 
-        yaxis = a,
-        legend = list(orientation = "h", size = 4,
-                       bgcolor = "#E2E2E2",
-                       bordercolor = "darkgrey",
-                       borderwidth = 1,
-                       x = 0,
-                       y = -0.3)) 
-```
 
 ```{r warning=FALSE, include=FALSE, fig.height = 4, fig.width = 6,}
 # creating a function called scatter_plot for
@@ -699,66 +646,26 @@ scatter_plot(movie_metadata$num_voted_users, movie_metadata$imdb_score,
      "<br>Title:",
      alpha = 0.3)
 ```
-From the above scatter plot, it is evident that the majority of the movie ratings are clustered at 7.5 points.
+From the above scatter plot, it is evident that the majority  of the movie ratings are clustered at 6 points. We can also observe that users are more inclined to vote for a movie if they wish to give it a high score (above 7.5). Moreover, movies with lower IMDB scores receive fewer votes, since these movies are unlikely to become popular.
 
-Average score, avg votes and, avg user reviews
+### Top 20 directors with highest average IMDB score
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-# creating a function for plotting plotly line graph for title_year
-line_graph <- function(data, y, name){
- 
-  scat_p1 <- plot_ly(data, x = ~title_year, y = ~ y, 
-             name = name, type = 'scatter', mode = 'lines',
-             line = list(color = sample(brewer.pal(11, "Spectral"), 1))) %>%
-  layout(xaxis = list(title = "Title Year", zeroline = F,
-                      showline = F, 
-                      showticklabels = T),
-         yaxis = list(title = "Average Score"),
-         title = "Line Graph for Avg Score/Avg Votes/Avg User Review by Title Year", 
-         font = list(family = "Serif", color = "grey"),
-         legend = list(orientation = "h", size = 6,
-                       bgcolor = "#E2E2E2",
-                       bordercolor = "darkgrey",
-                       borderwidth = 1),
-         margin = m)
-  scat_p1
-}
-```
+Let's take a look at the directors. We can see that the top IMDB rated directors have very similar scores (8.1 - 8.6). `Tony Kaye` has the highest rating of 8.6.
 
-
-Each line represents an average, for the imdb score, votes and user review. 
-```{r fig.height = 6, fig.width = 10, }
-# creating a data frame for average score, avg votes and, avg user reviews
-# by title year
-scat_year_score <- movie_metadata %>%
-  group_by(title_year) %>%
-  summarise(count = n(),
-            IMDB_Score = round(mean(imdb_score),1),
-            avg_votes = mean(num_voted_users),
-            avg_user_review = round(mean(num_user_for_reviews)))
-
-# plotting line graph for Avg score by title year 
-lp1 <- line_graph(scat_year_score, 
-                  scat_year_score$IMDB_Score, 
-                  "Average Score")
-
-# plotting line graph for Avg votes by title year
-lp2 <- line_graph(scat_year_score, 
-                  scat_year_score$avg_votes, 
-                  "Average Votes")
-
-# plotting line graph for Avg reviews by title year
-lp3 <- line_graph(scat_year_score,
-                  scat_year_score$avg_user_review,
-                  "Average User Review") 
-
-
-subplot(lp1, lp2, lp3, nrows = 3, heights = c(0.33, 0.33, 0.33))
-
+```{r}
+# Displaying the avg_imdb score of directors
+movie_metadata %>%
+  group_by(director_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
 ```
 
 
 ## Profit | Gross | Return of Interest
+
+In this part of the report we look at the budgets that were allocated as well as the gross profit that was achieved after the movie was released. We can observe that even though `The Host` had the highest budget, it doesn't appear to have generated a gross profit within the top 15. In fact the highest grossing movie is `Avatar`, which isn't even in the top 15 for highest allocated budget. 
 
 ```{r}
 # Plotting movie budget and gross
@@ -770,7 +677,7 @@ budget <- movie_metadata %>%
 x <- ggplot(budget, aes(x = reorder(movie_title, -desc(budget)), y = budget/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Budgets")+
+  ggtitle("Top 15 Highest Movie Budgets")+
   xlab("")+
   ylab("Budget (in Millions)") + 
   coord_flip()
@@ -783,7 +690,7 @@ rev <- movie_metadata %>%
 y <- ggplot(rev, aes(x = (reorder(movie_title, -desc(gross))), y = gross/1000000)) +
   geom_bar( stat = "identity")+ 
   theme(axis.text.x=element_text(hjust=1))+
-  ggtitle("Movie Gross")+
+  ggtitle("Top 15 Highest Grossing Movie")+
   xlab("")+
   ylab("Gross (in Millions)") + 
   coord_flip() 
@@ -793,32 +700,32 @@ ggarrange(x, y,
           ncol = 1, nrow = 2)
 ```
 
-In the above graph, it is evident that the movies with with higher budgets do not essentially mean that they will equate to a high gross profit. 
+In summary, it is evident that the movies with with higher budgets do not essentially mean that they will equate to a high gross profit. We investigate this claim in the following graph.
 
-Most Successful Directors based on Profit
-```{r}
-#Top 20 most successful directors
-movie_metadata %>%
-        group_by(director_name) %>%
-  mutate(profit = gross - budget)%>%
-select(director_name, budget, gross, profit) %>%
-na.omit() %>% 
-summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
-mutate(avg_per_film = profit/films) %>%
-arrange(desc(avg_per_film)) %>% 
-top_n(20, avg_per_film) %>%
-ggplot( aes(x = films, y = avg_per_film/1000000)) + 
-geom_point(size = 1, color = "blue") + 
-geom_text_repel(aes(label = director_name), size = 3, color = "blue") + 
-xlab("Number of Films") + ylab("Avg Profit $millions") + 
-ggtitle("Most Successful Directors")
+### Top 20 movies based on its Return on Investment
+
+```{r message=FALSE, warning=FALSE}
+#Top 20 movies based on its Return on Investment
+movie_metadata %>% 
+  filter(budget >100000) %>%
+  mutate(profit = gross - budget,
+         return_on_investment_perc = (profit/budget)*100) %>%
+  arrange(desc(profit)) %>% 
+  top_n(20, profit) %>%
+  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
+  geom_point(size = 2) + 
+  geom_smooth(size = 1) + 
+  geom_text_repel(aes(label = movie_title), size = 3) + 
+  xlab("Budget $million") + 
+  ylab("Percent Return on Investment") + 
+  ggtitle("20 Most Profitable Movies based on its Return on Investment")
 ```
+<br>
+Sucessful directors such as George Lucas also have profitable movies.  These are the top 20 movies based on its Percentage Return on Investment. ((profit/budget)*100). Since profit earned by a movie does not give a clear picture about its monetary success over the years (1980 to 2016), this analyses, over the absolute value of the Return on Investment(ROI) across its Budget, would provide better results. It is interesting to note that the ROI is high for low budget films and decreases as the budget of the movie increases.
 
-Looking at the most succesful directors, one can determine that the most successful director produced only one movie (Tim Miller) or creating an array of succesful films with large budgets, such as James Cameron. 
+### Top 20 movies based on its Profit
 
-Top 20 movies based on its Profit
-
-```{r }
+```{r message=FALSE, warning=FALSE}
 #Top 20 movies based on its Profit
 movie_metadata %>% 
   filter(title_year %in% c(2000:2016)) %>%
@@ -835,48 +742,29 @@ movie_metadata %>%
   ggtitle("20 Most Profitable Movies")
 ```
 
-When assessing the top 20 movies based on profit, Avatar has the highest profit margin, regioning in a similar area to director James cameron.
+These are the top 20 movies based on the Profit earned (Gross Earnings - Budget). It can be inferred from this plot that high budget movies tend to earn more profit. The trend is almost linear, with profit increasing with the increase in budget. When assessing the top 20 movies based on profit, Avatar has the highest profit margin, regioning in a similar area to director James cameron.
 
+### Most Successful Directors Based on Profit
 ```{r}
-#Top genres based on its Profit
-movie_metadata %>% 
-  filter(title_year %in% c(2000:2016)) %>%
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100) %>%
-  group_by(genre)%>%
-  na.omit() %>% 
-  summarise(av_profit = mean(profit), av_budget = mean(budget)) %>%
-  arrange(desc(av_profit)) %>% 
-  ggplot(aes(x=av_budget/10000, y=av_profit/10000)) + 
-  geom_jitter(size = 2) + 
-  geom_smooth(size = 1) + 
-  geom_text_repel(aes(label = genre), size = 3) + 
-  xlab("Budget $million") + 
-  ylab("Profit $million") + 
-  ggtitle("Average Return for each Genre")
+#Top 20 most successful directors
+movie_metadata %>%
+        group_by(director_name) %>%
+  mutate(profit = gross - budget)%>%
+select(director_name, budget, gross, profit) %>%
+na.omit() %>% 
+summarise(films = n(), budget = sum(as.numeric(budget)), gross = sum(as.numeric(gross)), profit = sum(as.numeric(profit))) %>%
+mutate(avg_per_film = profit/films) %>%
+arrange(desc(avg_per_film)) %>% 
+top_n(20, avg_per_film) %>%
+ggplot( aes(x = films, y = avg_per_film/1000000)) + 
+geom_point(size = 1, color = "maroon") + 
+geom_text_repel(aes(label = director_name), size = 3, color = "maroon") + 
+xlab("Number of Films") + ylab("Avg Profit $millions") + 
+ggtitle("Most Successful Directors")
 ```
 
-As we can see from the above graph, even though comedy and drama are the most popular to be produced, they, overall, are not profitable. The budgets from western and thriller movies are far smaller than that of other genres. 
-
-Top 20 movies based on its Return on Investment
-
-```{r}
-#Top 20 movies based on its Return on Investment
-movie_metadata %>% 
-  filter(budget >100000) %>%
-  mutate(profit = gross - budget,
-         return_on_investment_perc = (profit/budget)*100) %>%
-  arrange(desc(profit)) %>% 
-  top_n(20, profit) %>%
-  ggplot(aes(x=budget/1000000, y=return_on_investment_perc)) + 
-  geom_point(size = 2) + 
-  geom_smooth(size = 1) + 
-  geom_text_repel(aes(label = movie_title), size = 3) + 
-  xlab("Budget $million") + 
-  ylab("Percent Return on Investment") + 
-  ggtitle("20 Most Profitable Movies based on its Return on Investment")
-```
-Sucessful directors such as George Lucas also have profitable movies. 
+These are the top 20 most successful directors based on the average profit earned by the movies they directed. There’s an obvious downward trend between average profit and number of films. This could be because as one makes more movies, one could have more hits and misses, therefore the average goes down. It could also be due to film makers having a more diverse range of movies which could include smaller and/or high budget movies"
+Looking at the most succesful directors, one can determine that the most successful director produced only one movie (Tim Miller) or creating an array of succesful films with large budgets, such as James Cameron. 
 
 # Further Analysis
 
@@ -898,29 +786,13 @@ movie_metadata %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-In the above graph we can compare content rating to the content rating inference as well as the higher grossing films with sucessful directors. 
-
-### The top 20 most popular key word
-
-```{r message=FALSE, warning=FALSE}
-# Plotting the 20 most popular keywords
-movie_metadata %>%
-  filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
-  na.omit() %>% 
-  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
-  geom_jitter(alpha = 0.5, col = "darkgreen") + 
-  theme(axis.text.x=element_text(angle = 90, hjust = 1))+
-  ggtitle("Gross vs Content Rating") +
-  xlab("Gross (millions)") +
-  ylab("Rating") +
-  geom_smooth() +
-  coord_flip()
-```
+This is an analysis on the Commercial Success acclaimed by the movie (Gross earnings and profit earned) vs its IMDB Score.
+As expected, there is not much correlation since most critically acclaimed movies do not do very well commercially.
 
 
 ## Correlation Heatmap
 
-```{r}
+```{r warning=FALSE}
 # Plotting the heatmap
 ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
   ggtitle("Correlation Heatmap") +
@@ -929,9 +801,9 @@ ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2
 
 Based on the heatmap, we can see some high correlations (greater than 0.7) between predictors.
 
-According to the highest correlation value 0.95, we find actor_1_facebook_likes is highly correlated with the cast_total_facebook_likes, and both actor2 and actor3 are also somehow correlated to the total. So we want to modify them into two variables: actor_1_facebook_likes and other_actors_facebook_likes.
+There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews which makes sense as more popular films will have more attentiion and therefore a greater number of critics and users rating it.
 
-There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews.
+There is a strong negative correlation between profit and budget. This implies that the return on investment for big budget fims is relatively low. Movies with a small budget tend to have a higher return on investment.
 
 # Sentiment Analysis
 
@@ -1298,7 +1170,7 @@ options(scipen = 999)
 imdb = read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
-### Constructing the network graph
+## Constructing the network graph
 
 Actors will be the nodes. Edges exist only if the actors have appeared in a movie together.
 
@@ -1424,9 +1296,9 @@ projected <- bipartite.projection(spread_graph, which = "true")
 ```
 
 
-### Network measures
+## Network measures
 
-Eigenvector centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. 
+Eigenvalue centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. 
 ```{r}
 e_values <- readRDS(file="../../g_eigen_values.RDs")
 
@@ -1437,12 +1309,12 @@ e_values['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigen value") 
+  xlab("Eigenvalue") 
 ```
 <br>
-Eigen values are negatively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
+Eigenvalues are negatively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 
-In a connected graph, the normalized closeness centrality (or closeness) of a node is the average length of the shortest path between the node and all other nodes in the graph. Thus the more central a node is, the closer it is to all other nodes. (stolen from Wiki)
+In a connected graph, the normalized closeness centrality (or closeness) of a node is the average length of the shortest path between the node and all other nodes in the graph. Thus the more central a node is, the closer it is to all other nodes.
 
 An actor will be well connected if other many actors can be reached in a short number of hops.
 ```{r warning=FALSE}
@@ -1465,16 +1337,15 @@ close_cent %>%
   ylab("Frequency")
 ```
 <br>
-The closeness distribution is very interesting. There is a high number of nodes with a relatively high and relatively low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
+There is a high number of nodes with high closeness and a high number of nodes with low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
 
 
-Interpretively, the Boncich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations). (stolen from Wiki)
+Interpretively, the Boncich power measure corresponds to the notion that the power of a vertex is recursively defined by the sum of the power of its alters. The nature of the recursion involved is then controlled by the power exponent: positive values imply that vertices become more powerful as their alters become more powerful (as occurs in cooperative relations), while negative values imply that vertices become more powerful only as their alters become weaker (as occurs in competitive or antagonistic relations).
 
-Essentially, the importance of an actor is defined by the importance of alters, or other connected actors.
 ```{r }
 power_cent <- projected %>% power_centrality(exponent = 0.9)
 
-var_pc <- max(power_cent)
+var_pc <- mean(power_cent)
 
 projected <- projected %>% 
   set_vertex_attr(name = "g_power_cent", value = power_cent)
@@ -1484,10 +1355,12 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  xlab("Boncich Power") +
+  ylab("Frequency")
 ```
 <br>
-So the distribution of Boncich power is slightly positively skewed meaning that in general, vertices are considered more 'powerful' as their alters increase in power. The max power centrality is `r var_pc`.
+So the distribution of Boncich power is slightly positively skewed meaning that in general, vertices are considered more 'powerful' as their alters increase in power. The mean power centrality is `r var_pc`.
 
 The PageRank algorithm ignores edge weights when calculating the importance of nodes. The more likely an actor will be found when randomly searching through movies, the higher the assigned PageRank.
 ```{r}
@@ -1505,12 +1378,13 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 Most nodes have a relatively low page rank. The mean page rank is `r var_pr`.
 
-### Community Detection
+## Community Detection
 
 Group Louvain optimises for modularity in the network and therefore tries to create densely connected clusters with sparse connections between the clusters. The densely connected core may not allow for very modular communities to be identified.
 ```{r}
@@ -1527,7 +1401,7 @@ projected <- projected %>%
 node_comms <- node_comms[-1,]
 ```
 
-#### Distribution of community size
+### Distribution of community size
 
 ```{r}
 node_comms <- projected %>%
@@ -1543,16 +1417,16 @@ node_comms %>%
 <br>
 This graph shows the distribution of community size. The community size is exponentially distributed, resulting in a few large communities and many smaller ones. Some form of filtering on community size is needed to remove the smaller communities.
 
-```{r}
+```{r warning=FALSE}
 node_comms %>% 
   filter(comm < 55) %>% 
   ggplot() +
   geom_bar(aes(x=comm))+
-  geom_vline(xintercept=c(17.5), linetype="dotted")+
+  geom_vline(xintercept=c(15.5), linetype="dotted")+
   NULL
 ```
 <br>
-After removing communities smaller than 100 actors, only 17 communities remain.
+After removing communities smaller than 100 actors, only 15 communities remain.
 
 ```{r}
 node_comms_filtered <- node_comms %>% 
@@ -1561,7 +1435,7 @@ node_comms_filtered <- node_comms %>%
 projected <- set_vertex_attr(projected, name = "Label", value = projected$name)
 ```
 
-#### Visualising the network
+## Visualising the network
 
 The 17 remaining communities were analysed in gephi. The nodes are coloured and grouped by community, while the size of the node and text are dependent on the degree of the node.
 
@@ -1612,10 +1486,11 @@ e_values_1['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigen value")
+  xlab("Eigenvalue") +
+  ylab("Frequency")
 ```
 <br>
-Eigen values are positively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
+Eigenvalues are positively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 close_cent <- g_comm_1_graph %>% 
@@ -1631,7 +1506,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The average closeness centrality is `r var`. When looking at a single community we expect a higher average closeness than when calculating for the whole graph which was `r var_cc`.
@@ -1650,7 +1526,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") + 
+  xlab("Boncich Power")
 ```
 <br>
 The average Boncich power centrality is `r var`.
@@ -1670,7 +1548,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The local mean page rank is `r var`, compared to the global mean of `r var_pr`.
@@ -1705,10 +1584,11 @@ e_values_2['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigen value")
+  xlab("Eigenvalue")+
+  ylab("Frequency")
 ```
 <br>
-Eigen values are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
+Eigenvalues are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 ##Comm Centrality
@@ -1726,7 +1606,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The mean closeness centrality is `r var`.
@@ -1743,7 +1624,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") + 
+  xlab("Boncich Power")
 ```
 <br>
 The mean Boncich power centrality is `r var`.
@@ -1765,7 +1648,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The mean page rank for community 2 is `r var`.
@@ -1776,10 +1660,6 @@ attributes <- vertex_attr(g_comm_2_graph)
 
 g_comm_2_nodes <-  data.frame(name = attributes['name'], comm = attributes['comm'], g_e_values=attributes['g_e_values'], g_close_cent=attributes['g_close_cent'], g_page_rank = attributes['g_page_rank'], g_power_cent = attributes['g_power_cent'], local_e_values  = attributes['local_e_values'], local_page_rank = attributes['local_page_rank'], local_close_cent = attributes['local_power_cent'], local_close_cent = attributes['local_close_cent'], stringsAsFactors=FALSE)
 ```
-
-
-
-
 
 
 
@@ -1805,10 +1685,11 @@ e_values_3['values'] %>%
   as.data.frame() %>% 
   ggplot()+
   geom_density(aes(values)) +
-  xlab("Eigen value")
+  xlab("Eigenvalue") +
+  ylab("Frequency")
 ```
 <br>
-Eigen values are negatively skewed for global community 3. This means that most nodes are not connected to high scoring nodes.
+Eigenvalues are negatively skewed for global community 3. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
 close_cent <- g_comm_3_graph %>% 
@@ -1824,7 +1705,8 @@ close_cent %>%
   dplyr::rename(closeness = '.') %>% 
   ggplot()+
   geom_density(aes(closeness)) +
-  xlab("Closeness centrality")
+  xlab("Closeness centrality") +
+  ylab("Frequency")
 ```
 <br>
 The mean closeness centrality is `r var`.
@@ -1843,7 +1725,9 @@ power_cent %>%
   dplyr::rename(power = '.') %>% 
   mutate(power = as.numeric(power)) %>% 
   ggplot() +
-  geom_density(aes(x=power))
+  geom_density(aes(x=power)) +
+  ylab("Frequency") +
+  xlab("Boncich Power")
 ```
 <br>
 The mean Boncich power centrality in community 3 is `r var`.
@@ -1863,7 +1747,8 @@ page_ranks$vector %>%
   mutate(page_r = as.numeric(page_r)) %>% 
   ggplot() +
   geom_density(aes(x=page_r)) +
-  xlab("Page Rank")
+  xlab("Page Rank") +
+  ylab("Frequency")
 ```
 <br>
 The mean page rank is `r var`.
@@ -1876,134 +1761,129 @@ g_comm_3_nodes <-  data.frame(name = attributes['name'], comm = attributes['comm
 ```
 
 
-
-
-### Highlighting nodes using different menasures of importance.
+## Highlighting nodes using different measures of importance.
 
 The top nodes from selected communities will be compared to see which measure is the best indicator of higher ratings. 
 
-##### Overall measures
+### Overall measures
 
-###### Highest degree
+#### Highest degree
 ```{r echo=FALSE}
 V(projected)$name[degree(projected)==max(degree(projected))]
 ```
 Morgan Freeman has the highest degree of any node in th graph and could therefore be seen as an influential node, however he may not be a central one. Morgan Freeman has acted with the greatest number of distinct actors according to the movies in this dataset.
 
-###### Closeness centrality
+#### Closeness centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", node_comms_filtered[which.max(node_comms_filtered$g_close_cent),]$name))
 ```
 Due to the high degree, it is not surprising that Morgan Freeman has the highest level of closeness centrality across the graph.
 
 
-###### Highest Page Ranking
+#### Highest Page Ranking
 ```{r echo=FALSE}
 print(paste0("Highest global Page rank: ", node_comms_filtered[which.max(node_comms_filtered$g_page_rank),]$name))
 ```
 Morgan Freeman is considered the most important node by the PageRank algorithm
 
-###### Highest Boncich Power centrality
+#### Highest Boncich Power centrality
 ```{r echo=FALSE}
 print(paste0("Highest global Boncich power centrality: ", node_comms_filtered[which.max(node_comms_filtered$g_power_cent),]$name))
 ```
-This actor himself is not considered the most influential however he has the most influential connections.
 
 
-##### Community 1
+### Community 1
 ```{r echo=FALSE, out.width="100" }
 knitr::include_graphics("../data-out/pretty_pics/g_comm_1.png")
 ```
 
-###### Highest degree
+#### Highest degree
 ```{r echo=FALSE}
 V(g_comm_1_graph)$name[degree(g_comm_1_graph)==max(degree(g_comm_1_graph))]
 ```
 
-###### Closeness centrality
+#### Closeness centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$g_close_cent),]$name))
 print(paste0("Highest local closeness centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_close_cent),]$name))
 ```
 
-###### Highest Page Ranking
+#### Highest Page Ranking
 ```{r echo=FALSE}
 print(paste0("Highest global page rank: ", g_comm_1_nodes[which.max(g_comm_1_nodes$g_page_rank),]$name))
 print(paste0("Highest local page rank: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_page_rank),]$name))
 ```
 
-###### Highest Boncich Power centrality
+#### Highest Boncich Power centrality
 ```{r echo=FALSE}
 print(paste0("Highest global power centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$g_power_cent),]$name))
 print(paste0("Highest local power centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_power_cent),]$name))
 ```
 
 
-##### Community 2
+### Community 2
 
 ```{r echo=FALSE, out.width="100"}
 knitr::include_graphics("../data-out/pretty_pics/g_comm_2.png")
 ```
 
-###### Highest degree
+#### Highest degree
 ```{r}
 V(g_comm_2_graph)$name[degree(g_comm_2_graph)==max(degree(g_comm_2_graph))]
 ```
 
-###### Closeness centrality
+#### Closeness centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$g_close_cent),]$name))
 print(paste0("Highest global closeness centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_close_cent),]$name))
 ```
 
-###### Highest Page Ranking
+#### Highest Page Ranking
 ```{r echo=FALSE}
 print(paste0("Highest global Page rank: ", g_comm_2_nodes[which.max(g_comm_2_nodes$g_page_rank),]$name))
 print(paste0("Highest local Page rank: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_page_rank),]$name))
 ```
 
-###### Highest Boncich Power centrality
+#### Highest Boncich Power centrality
 ```{r echo=FALSE}
 print(paste0("Highest global Boncich power centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$g_power_cent),]$name))
 print(paste0("Highest local Boncich power centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_power_cent),]$name))
 ```
-The actors Gary Coleman and Pamela Anderson have the highest global and local Boncich power centrality, respectively. This means that across the whole graph (but limited to vertices in community 2), Gary Coleman has the most powerful connections while Pamela Anderson has the highest number of powerful connections within community 2.
 
 
 
-##### Community 3
+### Community 3
 
 ```{r echo=FALSE, out.width="100"}
 knitr::include_graphics("../data-out/pretty_pics/g_comm_3.png")
 ```
 
-###### Highest degree
+#### Highest degree
 ```{r echo=FALSE}
 V(g_comm_3_graph)$name[degree(g_comm_3_graph)==max(degree(g_comm_3_graph))]
 ```
 
-###### Closeness centrality
+#### Closeness centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$g_close_cent),]$name))
 print(paste0("Highest local closeness centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_close_cent),]$name))
 ```
 
-###### Highest Page Ranking
+#### Highest Page Ranking
 ```{r echo=FALSE}
 print(paste0("Highest global Page rank: ", g_comm_3_nodes[which.max(g_comm_3_nodes$g_page_rank),]$name))
 print(paste0("Highest local Page rank: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_page_rank),]$name))
 ```
 
-###### Highest Boncich Power centrality
+#### Highest Boncich Power centrality
 ```{r echo=FALSE}
 print(paste0("Highest global Boncich power centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$g_power_cent),]$name))
 print(paste0("Highest local Boncich power centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_power_cent),]$name))
 ```
-The actors Tabu and Charlize Theron have the highest global and local Boncich power centrality, respectively. This means that across the whole graph (but limited to vertices in community 3), Tabu has the most powerful connections while Charlize Theron has the highest number of powerful connections within community 3.
 
 
 
-### Analysis of centrality measures and ratings
+## Analysis of centrality measures and ratings
 
 Here the average rating of movies starred in for each actor is calculated.
 ```{r warning=FALSE}
@@ -2046,124 +1926,7 @@ average_imdb_actor_ratings <- full_join(average_imdb_actor_ratings, temp3) %>%
 average_imdb_actor_ratings <- average_imdb_actor_ratings[-1,]
 ```
 
-#### Overall 
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Morgan Freeman')                    
-```
-<br>
-Morgan Freeman has an average movie rating of 7.7605. In terms of the overall graph, this actor has the highest degree, closeness centrality and page rank.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Matt Keeslar')                    
-```
-<br>
-Matt Keeslar has an average movie rating of 7. In terms of the overall graph, this actor has the highest Boncich centrality meaning he has very influential alters.
-
-##### Community 1
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Tom Wilkinson')                    
-```
-<br>
-Tom Wilkinson has an average movie rating of 7.077083. In terms of community 1, this actor has the highest degree, global closeness centrality and global as well as local page rank.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Miranda Richardson')                    
-```
-<br>
-Miranda Richardson has an average movie rating of 6.855. In terms of community 1, this actor has the highest local closeness centrality meaning she is very central within community 1 but not overall in the graph.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'R. Marcos Taylor')                    
-```
-<br>
-R. Marcos Taylor has an average movie rating of 7.9. In terms of community 1, this actor has the highest global Boncich centrality meaning that across the graph he has influential alters.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Eric Sykes')                    
-```
-<br>
-Eric Sykes has an average movie rating of 7.6. In terms of community 1, this actor has the highest local Boncich centrality meaning that if only looking at community 1, Eric Sykes has the most influential alters.
-
-
-##### Community 2
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Scarlett Johansson')                    
-```
-<br>
-Scarlett Johansson has an average movie rating of 7.522159. In terms of community 2, this actor has the highest degree.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Kristin Scott Thomas')                    
-```
-<br>
-Kristin Scott Thomas has an average movie rating of 6.939583. In terms of community 2, this actor has the highest global closeness centrality meaning she is very central overall in the graph but not the most central if only looking at community 2.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Rachael Harris')                    
-```
-<br>
-Rachael Harris has an average movie rating of 6.208333. In terms of community 2, this actor has the highest local closeness centrality meaning she is very central within community 2 but not overall in the graph.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Steve Coogan')                    
-```
-<br>
-Steve Coogan has an average movie rating of 6.2875. In terms of community 2, this actor has the highest global page rank.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Richard Schiff')                    
-```
-<br>
-Richard Schiff has an average movie rating of 6.143333. In terms of community 2, this actor has the highest local page rank.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Gary Coleman')                    
-```
-<br>
-Gary Coleman has an average movie rating of 6.15. In terms of community 2, this actor has the highest global Boncich centrality and has influential alters across the network.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Pamela Anderson')                    
-```
-<br>
-Pamela Anderson has an average movie rating of 5.5. In terms of community 2, this actor has the highest local Boncich centrality and has influential alters within community 2.
-
-#####Community 3
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Morgan Freeman')                    
-```
-<br>
-Morgan Freeman has an average movie rating of 7.7605. In terms of community 3, this actor has the highest degree, closeness centrality and page rank in terms of both local and global calculations.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Tabu')                    
-```
-<br>
-Tabu acts primarily in Hindi films and is the only actor highlighted not from Western films. The average movie rating is 7.8 and in terms of community 3, Tabu has the highest global Boncich centrality.
-
-```{r}
-average_imdb_actor_ratings %>% 
-  filter(actor == 'Charlize Theron')                    
-```
-<br>
-Charlize Theron has an average movie rating of 6.586667 and has the highest local Boncich power centrality within community 3.
-
-##### Centrality measures and ratings
+### Centrality measures and ratings
 ```{r warning=FALSE}
 
 temp1 <- average_imdb_actor_ratings %>% 
@@ -2185,9 +1948,9 @@ ratings_and_centrality <- do.call("rbind", list(temp1, temp2, temp3))
 ratings_and_centrality %>% 
   ggplot() +
   geom_smooth(aes(x = g_e_values, y = avg_rating), method = 'loess') +
-  xlab("Global Eigen values") +
+  xlab("Global Eigenvalues") +
   ylab("Avg movie rating") +
-  ggtitle("Global Eigen values vs Average Movie rating")
+  ggtitle("Global Eigenvalues vs Average Movie rating")
 ```
 ```{r}
 ratings_and_centrality %>% 
@@ -2221,9 +1984,9 @@ None of the graphs show any strong correlation between the global centrality and
 ratings_and_centrality %>% 
   ggplot() +
   geom_smooth(aes(x = local_e_values, y = avg_rating), method = 'loess') +
-  xlab("Eigen vector Centrality") +
+  xlab("Eigenvalue Centrality") +
   ylab("Avg movie rating") +
-  ggtitle("Local Eigen vector Centrality vs Average Movie rating")
+  ggtitle("Local Eigenvalue Centrality vs Average Movie rating")
 ```
 ```{r}
 ratings_and_centrality %>% 
@@ -2258,11 +2021,15 @@ ratings_and_centrality %>%
   summarise(avg_rating = mean(avg_rating), avg_e = mean(g_e_values), avg_c_c = mean(g_close_cent), avg_p_r = mean(g_page_rank), avg_p_c = mean(g_power_cent), num = n()) 
 ```
 <br>
-Across the three graphs, the mean centrality scores remain constant across communitites with the exception of the eigen vector centrality of community 1. 
+Across the three graphs, the mean centrality scores remain constant across communitites with the exception of the eigenvalue centrality of community 1. 
 
-### Concluding remarks
+## Concluding remarks
 
-It can be said that the centrality of nodes is not an indicator of success for movie ratings. The variance in movie ratings is relatively high for very central nodes as well as not as central nodes. There is doubt as to the reliability of the communities due to the densely connected nature of the graph. The 
+It can be said that the centrality of nodes is not an indicator of success for movie ratings. It is hypothesised that the actors are central because of some movie successes, and that having actors with high centrality does not guarantee movie success. The variance in movie ratings is relatively high for very central nodes as well as not as central nodes. 
+
+There is doubt as to the reliability of the communities due to the densely connected nature of the graph. The was not one very large and many other smaller communities idenitfied which is an indication that the communities can be used for some level of analysis and the Group Lovain was relatively succesful. 
+
+
 
 
 
