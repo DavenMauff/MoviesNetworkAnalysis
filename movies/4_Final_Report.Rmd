@@ -1189,7 +1189,7 @@ actors <- actors %>%
 The nodelist will only contain each actor's name once.
 
 ```{r}
-##make the nodelist
+# make the nodelist
 actor_nodes <- actors %>% 
   gather() %>% 
   select(value) %>% 
@@ -1201,7 +1201,7 @@ head(actor_nodes, 5)
 Because each movie has three top actors given, some column manipulation is needed to format the data into the two "to" and "from" columns required for the edgelist.
 
 ```{r}
-##make the edgelist for actor_1 and actor_2
+# make the edgelist for actor_1 and actor_2
 temp_edges_1_2 <- actors %>% 
   select(actor_1_name, actor_2_name) %>% 
   na.omit() %>% 
@@ -1217,7 +1217,7 @@ head(temp_edges_1_2, 5)
 ```
 
 ```{r}
-## edgelist for actor_1 and actor_3
+# edgelist for actor_1 and actor_3
 temp_edges_1_3 <- actors %>% 
   select(actor_1_name, actor_3_name) %>% 
   na.omit() %>% 
@@ -1227,7 +1227,7 @@ temp_edges_1_3 <- actors %>%
 temp_edges_1_3[temp_edges_1_3==""] <- NA
 temp_edges_1_3[temp_edges_1_3==" "] <- NA
 
-##remove both values if there is even one NA present, eg Tom Hardy -> NA
+# remove both values if there is even one NA present, eg Tom Hardy -> NA
 temp_edges_1_3 <- temp_edges_1_3%>% 
   na.omit()
 
@@ -1235,7 +1235,7 @@ head(temp_edges_1_3, 5)
 ```
 
 ```{r}
-## edgelist for actor_2 and actor_3
+# edgelist for actor_2 and actor_3
 temp_edges_2_3 <- actors %>% 
   select(actor_2_name, actor_3_name) %>% 
   na.omit() %>% 
@@ -1253,7 +1253,7 @@ head(temp_edges_2_3, 5)
 
 
 ```{r}
-##Combine the three sets of edges
+# Combine the three sets of edges
 actor_edges <- data.frame(from = "", to = "")
 
 actor_edges <- do.call("rbind", list(temp_edges_1_2, temp_edges_1_3, temp_edges_2_3))
@@ -1266,7 +1266,7 @@ head(actor_edges)
 ```
 
 ```{r}
-##create the graph
+#create the graph
 actors_in_same_movies <- graph_from_data_frame(actor_edges, directed = F)
 ```
 
@@ -1280,12 +1280,12 @@ network(actor_edges, vertex.attr = actor_nodes, matrix.type = "edgelist", ignore
 Here a densely connected core can be seen surrounded by many small nodes that are not connected to the main component.
 
 ```{r}
-##write to graphml for Gephi purposes
+#write to graphml for Gephi purposes
 write.graph(actors_in_same_movies, "../data-out/graphs/actors_in_same_movies.graphml", format=c("graphml"))
 ```
 
 ```{r}
-##Weight edges instead of duplicate edges
+#Weight edges instead of duplicate edges
 casted_actors <- actor_edges %>% 
   mutate(val = 1) %>% 
   select(from, to, val) %>% 
@@ -1302,7 +1302,7 @@ projected <- bipartite.projection(spread_graph, which = "true")
 ## Network Measures
 
 Eigenvalue centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. 
-```{r}
+```{r message=FALSE, warning=FALSE}
 e_values <- readRDS(file="../../g_eigen_values.RDs")
 
 projected <- projected %>% 
@@ -1431,7 +1431,7 @@ node_comms %>%
 
 After removing communities smaller than 100 actors, only 15 communities remain.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 node_comms_filtered <- node_comms %>% 
   filter(comm <= 53) 
 
@@ -1593,8 +1593,8 @@ e_values_2['values'] %>%
 Eigenvalues are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
-##Comm Centrality
-##Closeness
+# Comm Centrality
+# Closeness
 close_cent <- g_comm_2_graph %>% 
   closeness()
 
@@ -1636,7 +1636,7 @@ The mean Boncich power centrality is `r var`.
 
 
 ```{r}
-##Page Rank
+# Page Rank
 page_ranks <- g_comm_2_graph %>% 
   page_rank()
 
@@ -1764,11 +1764,11 @@ g_comm_3_nodes <-  data.frame(name = attributes['name'], comm = attributes['comm
 ```
 
 
-## Highlighting nodes using different measures of importance.
+## Highlighting nodes using different measures of importance
 
 The top nodes from selected communities will be compared to see which measure is the best indicator of higher ratings. 
 
-### Overall measures
+## Overall measures
 
 #### Highest degree
 ```{r echo=FALSE}
@@ -1802,12 +1802,12 @@ print(paste0("Highest global Boncich power centrality: ", node_comms_filtered[wh
 knitr::include_graphics("../data-out/pretty_pics/g_comm_1.png")
 ```
 
-#### Highest degree
+#### Highest Degree
 ```{r echo=FALSE}
 V(g_comm_1_graph)$name[degree(g_comm_1_graph)==max(degree(g_comm_1_graph))]
 ```
 
-#### Closeness centrality
+#### Closeness Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$g_close_cent),]$name))
 print(paste0("Highest local closeness centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_close_cent),]$name))
@@ -1819,7 +1819,7 @@ print(paste0("Highest global page rank: ", g_comm_1_nodes[which.max(g_comm_1_nod
 print(paste0("Highest local page rank: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_page_rank),]$name))
 ```
 
-#### Highest Boncich Power centrality
+#### Highest Boncich Power Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global power centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$g_power_cent),]$name))
 print(paste0("Highest local power centrality: ", g_comm_1_nodes[which.max(g_comm_1_nodes$local_power_cent),]$name))
@@ -1832,12 +1832,12 @@ print(paste0("Highest local power centrality: ", g_comm_1_nodes[which.max(g_comm
 knitr::include_graphics("../data-out/pretty_pics/g_comm_2.png")
 ```
 
-#### Highest degree
+#### Highest Degree
 ```{r}
 V(g_comm_2_graph)$name[degree(g_comm_2_graph)==max(degree(g_comm_2_graph))]
 ```
 
-#### Closeness centrality
+#### Closeness Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$g_close_cent),]$name))
 print(paste0("Highest global closeness centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_close_cent),]$name))
@@ -1849,7 +1849,7 @@ print(paste0("Highest global Page rank: ", g_comm_2_nodes[which.max(g_comm_2_nod
 print(paste0("Highest local Page rank: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_page_rank),]$name))
 ```
 
-#### Highest Boncich Power centrality
+#### Highest Boncich Power Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global Boncich power centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$g_power_cent),]$name))
 print(paste0("Highest local Boncich power centrality: ", g_comm_2_nodes[which.max(g_comm_2_nodes$local_power_cent),]$name))
@@ -1863,12 +1863,12 @@ print(paste0("Highest local Boncich power centrality: ", g_comm_2_nodes[which.ma
 knitr::include_graphics("../data-out/pretty_pics/g_comm_3.png")
 ```
 
-#### Highest degree
+#### Highest Degree
 ```{r echo=FALSE}
 V(g_comm_3_graph)$name[degree(g_comm_3_graph)==max(degree(g_comm_3_graph))]
 ```
 
-#### Closeness centrality
+#### Closeness Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$g_close_cent),]$name))
 print(paste0("Highest local closeness centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_close_cent),]$name))
@@ -1880,7 +1880,7 @@ print(paste0("Highest global Page rank: ", g_comm_3_nodes[which.max(g_comm_3_nod
 print(paste0("Highest local Page rank: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_page_rank),]$name))
 ```
 
-#### Highest Boncich Power centrality
+#### Highest Boncich Power Centrality
 ```{r echo=FALSE}
 print(paste0("Highest global Boncich power centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$g_power_cent),]$name))
 print(paste0("Highest local Boncich power centrality: ", g_comm_3_nodes[which.max(g_comm_3_nodes$local_power_cent),]$name))
@@ -1888,7 +1888,7 @@ print(paste0("Highest local Boncich power centrality: ", g_comm_3_nodes[which.ma
 
 
 
-## Analysis of centrality measures and ratings
+## Analysis of Centrality Measures and Ratings
 
 Here the average rating of movies starred in for each actor is calculated.
 ```{r warning=FALSE}
@@ -1931,8 +1931,8 @@ average_imdb_actor_ratings <- full_join(average_imdb_actor_ratings, temp3) %>%
 average_imdb_actor_ratings <- average_imdb_actor_ratings[-1,]
 ```
 
-### Centrality measures and ratings
-```{r warning=FALSE}
+### Centrality Measures and Ratings
+```{r message=FALSE, warning=FALSE}
 
 temp1 <- average_imdb_actor_ratings %>% 
   dplyr::rename(name = actor) %>% 
@@ -2028,7 +2028,7 @@ ratings_and_centrality %>%
 
 Across the three graphs, the mean centrality scores remain constant across communitites with the exception of the eigenvalue centrality of community 1. 
 
-## Concluding remarks
+## Concluding Remarks
 
 It can be said that the centrality of nodes is not an indicator of success for movie ratings. It is hypothesised that the actors are central because of some movie successes, and that having actors with high centrality does not guarantee movie success. The variance in movie ratings is relatively high for very central nodes as well as not as central nodes. 
 
