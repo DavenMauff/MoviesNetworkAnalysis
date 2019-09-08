@@ -583,22 +583,6 @@ ggplot(data = movie_metadata, aes(x = imdb_score, y = movie_facebook_likes)) +
   geom_smooth()
 ```
 
-### Gross VS Content Rating
-```{r message=FALSE, warning=FALSE}
-# Plotting the 20 most popular keywords
-movie_metadata %>%
-  filter(imdb_score >6 ) %>% #Filter to show the graph only for vote_average values greater than 6
-  na.omit() %>% 
-  ggplot(aes(x = gross/1000000, y = content_rating), height=0) + 
-  geom_jitter(alpha = 0.5, col = "darkgreen") + 
-  theme(axis.text.x=element_text(angle = 90, hjust = 1))+
-  ggtitle("Gross vs Content Rating") +
-  xlab("Gross (millions)") +
-  ylab("Rating") +
-  geom_smooth() +
-  coord_flip()
-```
-
 ### Vote Counts
 
 The IMDB rating system was first implemented in the 1990's. Social media platforms like Facebook had started in the mid 2000’s. It is evident that IMDB caused rapid growth in vote counts which was later amplified with the introduction of Facebook. 
