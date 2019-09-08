@@ -720,7 +720,7 @@ movie_metadata %>%
   ylab("Percent Return on Investment") + 
   ggtitle("20 Most Profitable Movies based on its Return on Investment")
 ```
-<br>
+
 Sucessful directors such as George Lucas also have profitable movies.  These are the top 20 movies based on its Percentage Return on Investment. ((profit/budget)*100). Since profit earned by a movie does not give a clear picture about its monetary success over the years (1980 to 2016), this analyses, over the absolute value of the Return on Investment(ROI) across its Budget, would provide better results. It is interesting to note that the ROI is high for low budget films and decreases as the budget of the movie increases.
 
 ### Top 20 movies based on its Profit
@@ -1268,6 +1268,7 @@ actors_in_same_movies <- graph_from_data_frame(actor_edges, directed = F)
 ```
 
 Here is a simple network plot of the constructed network.
+
 ```{r echo=F }
 network(actor_edges, vertex.attr = actor_nodes, matrix.type = "edgelist", ignore.eval = FALSE, directed = F) %>% 
   plot()
