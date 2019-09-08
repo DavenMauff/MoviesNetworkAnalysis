@@ -1187,6 +1187,7 @@ actors <- actors %>%
 ```
 
 The nodelist will only contain each actor's name once.
+
 ```{r}
 ##make the nodelist
 actor_nodes <- actors %>% 
@@ -1196,7 +1197,9 @@ actor_nodes <- actors %>%
 
 head(actor_nodes, 5)
 ```
+
 Because each movie has three top actors given, some column manipulation is needed to format the data into the two "to" and "from" columns required for the edgelist.
+
 ```{r}
 ##make the edgelist for actor_1 and actor_2
 temp_edges_1_2 <- actors %>% 
@@ -1273,9 +1276,8 @@ Here is a simple network plot of the constructed network.
 network(actor_edges, vertex.attr = actor_nodes, matrix.type = "edgelist", ignore.eval = FALSE, directed = F) %>% 
   plot()
 ```
-<br>
-Here a densely connected core can be seen surrounded by many small nodes that are not connected to the main component.
 
+Here a densely connected core can be seen surrounded by many small nodes that are not connected to the main component.
 
 ```{r}
 ##write to graphml for Gephi purposes
@@ -1297,7 +1299,7 @@ projected <- bipartite.projection(spread_graph, which = "true")
 ```
 
 
-## Network measures
+## Network Measures
 
 Eigenvalue centrality (also called eigencentrality) is a measure of the influence of a node in a network. It assigns relative scores to all nodes in the network based on the concept that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes. 
 ```{r}
@@ -1312,7 +1314,7 @@ e_values['values'] %>%
   geom_density(aes(values)) +
   xlab("Eigenvalue") 
 ```
-<br>
+
 Eigenvalues are negatively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 
 In a connected graph, the normalized closeness centrality (or closeness) of a node is the average length of the shortest path between the node and all other nodes in the graph. Thus the more central a node is, the closer it is to all other nodes.
@@ -1337,7 +1339,7 @@ close_cent %>%
   xlab("Centrality (Closeness)") + 
   ylab("Frequency")
 ```
-<br>
+
 There is a high number of nodes with high closeness and a high number of nodes with low closeness. This is due to the graph having many small components and one very densely connected large component. The mean value is `r var_cc`.
 
 
@@ -1360,7 +1362,7 @@ power_cent %>%
   xlab("Boncich Power") +
   ylab("Frequency")
 ```
-<br>
+
 So the distribution of Boncich power is slightly positively skewed meaning that in general, vertices are considered more 'powerful' as their alters increase in power. The mean power centrality is `r var_pc`.
 
 The PageRank algorithm ignores edge weights when calculating the importance of nodes. The more likely an actor will be found when randomly searching through movies, the higher the assigned PageRank.
@@ -1382,7 +1384,7 @@ page_ranks$vector %>%
   xlab("Page Rank") +
   ylab("Frequency")
 ```
-<br>
+
 Most nodes have a relatively low page rank. The mean page rank is `r var_pr`.
 
 ## Community Detection
@@ -1415,7 +1417,7 @@ node_comms %>%
   scale_y_log10()+
   NULL
 ```
-<br>
+
 This graph shows the distribution of community size. The community size is exponentially distributed, resulting in a few large communities and many smaller ones. Some form of filtering on community size is needed to remove the smaller communities.
 
 ```{r warning=FALSE}
@@ -1426,7 +1428,7 @@ node_comms %>%
   geom_vline(xintercept=c(15.5), linetype="dotted")+
   NULL
 ```
-<br>
+
 After removing communities smaller than 100 actors, only 15 communities remain.
 
 ```{r}
@@ -1443,7 +1445,7 @@ The 17 remaining communities were analysed in gephi. The nodes are coloured and 
 ```{r echo=FALSE, out.width="100" }
 knitr::include_graphics("../data-out/pretty_pics/all_the_comms.png")
 ```
-<br>
+
 It is clear that the remaining communities are very densely connected meaning that even after optimising for modularity, actors have many connections outside their community. These dense connections may have negatively impacted the results of the Group Louvain and there is concern as to the true modularity of these communities.
 
 
@@ -1466,7 +1468,7 @@ top_comms_nodes
 filtered_actor_edges <- subgraph(projected, top_comms_nodes$name)
 ```
 
-#### Analysis of Global Comm 1
+### Analysis of Global Comm 1
 
 ```{r warning=FALSE}
 g_comm_1_nodes <-  top_comms_nodes %>% 
@@ -1490,7 +1492,7 @@ e_values_1['values'] %>%
   xlab("Eigenvalue") +
   ylab("Frequency")
 ```
-<br>
+
 Eigenvalues are positively skewed for global community 1. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
@@ -1510,9 +1512,8 @@ close_cent %>%
   xlab("Closeness centrality") +
   ylab("Frequency")
 ```
-<br>
-The average closeness centrality is `r var`. When looking at a single community we expect a higher average closeness than when calculating for the whole graph which was `r var_cc`.
 
+The average closeness centrality is `r var`. When looking at a single community we expect a higher average closeness than when calculating for the whole graph which was `r var_cc`.
 
 ```{r}
 power_cent <- g_comm_1_graph %>% power_centrality(exponent = 0.9)
@@ -1531,7 +1532,7 @@ power_cent %>%
   ylab("Frequency") + 
   xlab("Boncich Power")
 ```
-<br>
+
 The average Boncich power centrality is `r var`.
 
 ```{r warning=TRUE}
@@ -1552,7 +1553,7 @@ page_ranks$vector %>%
   xlab("Page Rank") +
   ylab("Frequency")
 ```
-<br>
+
 The local mean page rank is `r var`, compared to the global mean of `r var_pr`.
 
 Creating the graph of centrality measures for community 1.
@@ -1563,7 +1564,7 @@ g_comm_1_nodes <-  data.frame(name = attributes['name'], comm = attributes['comm
 ```
 
 
-#### Analysis of Global Comm 2
+### Analysis of Global Comm 2
 
 This is the creation of the subgraph that will only contain vertices listed in community 2.
 ```{r warning=FALSE}
@@ -1588,7 +1589,7 @@ e_values_2['values'] %>%
   xlab("Eigenvalue")+
   ylab("Frequency")
 ```
-<br>
+
 Eigenvalues are positively skewed for global community 2. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
@@ -1610,8 +1611,9 @@ close_cent %>%
   xlab("Closeness centrality") +
   ylab("Frequency")
 ```
-<br>
+
 The mean closeness centrality is `r var`.
+
 ```{r}
 power_cent <- g_comm_2_graph %>% power_centrality(exponent = 0.9)
 
@@ -1629,7 +1631,7 @@ power_cent %>%
   ylab("Frequency") + 
   xlab("Boncich Power")
 ```
-<br>
+
 The mean Boncich power centrality is `r var`.
 
 
@@ -1652,7 +1654,7 @@ page_ranks$vector %>%
   xlab("Page Rank") +
   ylab("Frequency")
 ```
-<br>
+
 The mean page rank for community 2 is `r var`.
 
 Creating the graph of centrality measures for community 2.
@@ -1664,7 +1666,7 @@ g_comm_2_nodes <-  data.frame(name = attributes['name'], comm = attributes['comm
 
 
 
-#### Analysis of Global Comm 3
+### Analysis of Global Comm 3
 
 This is the creation of the subgraph that will only contain vertices listed in community 3.
 ```{r warning=FALSE}
@@ -1689,7 +1691,7 @@ e_values_3['values'] %>%
   xlab("Eigenvalue") +
   ylab("Frequency")
 ```
-<br>
+
 Eigenvalues are negatively skewed for global community 3. This means that most nodes are not connected to high scoring nodes.
 
 ```{r}
@@ -1709,7 +1711,7 @@ close_cent %>%
   xlab("Closeness centrality") +
   ylab("Frequency")
 ```
-<br>
+
 The mean closeness centrality is `r var`.
 
 
@@ -1730,7 +1732,7 @@ power_cent %>%
   ylab("Frequency") +
   xlab("Boncich Power")
 ```
-<br>
+
 The mean Boncich power centrality in community 3 is `r var`.
 
 ```{r}
@@ -1751,7 +1753,7 @@ page_ranks$vector %>%
   xlab("Page Rank") +
   ylab("Frequency")
 ```
-<br>
+
 The mean page rank is `r var`.
 
 Creating the graph of centrality measures for community 3.
@@ -1772,12 +1774,14 @@ The top nodes from selected communities will be compared to see which measure is
 ```{r echo=FALSE}
 V(projected)$name[degree(projected)==max(degree(projected))]
 ```
+
 Morgan Freeman has the highest degree of any node in th graph and could therefore be seen as an influential node, however he may not be a central one. Morgan Freeman has acted with the greatest number of distinct actors according to the movies in this dataset.
 
 #### Closeness centrality
 ```{r echo=FALSE}
 print(paste0("Highest global closeness centrality: ", node_comms_filtered[which.max(node_comms_filtered$g_close_cent),]$name))
 ```
+
 Due to the high degree, it is not surprising that Morgan Freeman has the highest level of closeness centrality across the graph.
 
 
@@ -1977,7 +1981,7 @@ ratings_and_centrality %>%
   ylab("Avg movie rating") +
   ggtitle("Global Boncich Power Centrality vs Average Movie rating")
 ```
-<br>
+
 None of the graphs show any strong correlation between the global centrality and the average rating of the movie. It will now be explored whether using local centrality measures will produce a different outcome.
 
 
@@ -2013,7 +2017,7 @@ ratings_and_centrality %>%
   ylab("Avg movie rating") +
   ggtitle("Local Boncich Power Centrality vs Average Movie rating")
 ```
-<br>
+
 The local centralities do not appear to have any correlation to the average movie rating. 
 
 ```{r}
@@ -2021,7 +2025,7 @@ ratings_and_centrality %>%
   group_by(comm) %>% 
   summarise(avg_rating = mean(avg_rating), avg_e = mean(g_e_values), avg_c_c = mean(g_close_cent), avg_p_r = mean(g_page_rank), avg_p_c = mean(g_power_cent), num = n()) 
 ```
-<br>
+
 Across the three graphs, the mean centrality scores remain constant across communitites with the exception of the eigenvalue centrality of community 1. 
 
 ## Concluding remarks
