@@ -960,7 +960,10 @@ IMDB <- movie_metadata
 
 ## Exploration into Movie Plot Keywords
 
-Keywords from movie plot lines are given in a single column, split by a "|". The following code will seperate these words into seperate columns.
+The document contained varies plot keywords from tag-lines of movies; however, it may be interesting to note that the keywords were not random by nature and were framed to contain further insight into the movie at hand. This specifically allowed for the use of sentiment analysis to further understand movie plots and the underlying emotion behind storylines. Furthermore, this section became specifically interesting when analysing both the top selection of keywords used, as well as the change in sentiment of these keywords over time. Lastly, all data was normalized by the amount of data captured per year for each movie, therefore not allowing for skewed results to years containing a higher movie count. 
+
+Moreover, keywords were formatted within a single column and delimited by “|”. In order to continue the analysis, each keyword was first split and added to its own column. Thereafter, the frequency of each word could be calculated before selecting the top 20 words most often used overall. 
+
 ```{r warning=FALSE}
 #Constructing Top 20
 keywords_split <- str_split(IMDB$plot_keywords, pattern="[|]", n=5)
@@ -1000,11 +1003,15 @@ keywords_one_col %>%
   ylab("Frequency") +
   ggtitle("Frequency of common keywords")
 ```
-<br>
-Above we can see the most popular keywords describing the films in the dataset. 
 
+Interestingly enough, there seems to be a larger difference between the top five words, and other words captured within the list, indicating a trend towards certain words overall based on the larger difference of frequency. Specifically, these words are:
 
-The following code checks to see which movies contain common keywords.
+- love
+- fight
+- cult film
+- monster 
+- party 
+
 ```{r}
 #Placing Top 20 Words Against Movie Success
 
@@ -1033,18 +1040,7 @@ for (keyword in top_20$value) {
 }
 ```
 
-
-```{r}
-head(does_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2)) 
-```
-<br>
-Here are two movies that contain at least one common plot keyword.
-
-```{r}
-head(does_not_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2), 2) 
-```
-Here are two movies that do not contain any of the common plot key words.
-
+In addition, movies containing these words were then plotted against indicators of movies success, specifically, Facebook likes, IMDB score and gross. Furthermore, these variables were included on an average per year basis to correlate to the above analysis. Lastly, varies movies where these words occurred together were also compared.
 
 ```{r}
 does_contain_common_key <- does_contain_common_key %>%
@@ -1071,6 +1067,26 @@ options(scipen = 999)
 ```
 
 ```{r}
+summarise(all_movies_keywords_indicated, avg_facebook_likes = mean(movie_facebook_likes)) %>%
+  ggplot() +
+  geom_bar(aes(x = type, y=avg_facebook_likes, fill=type), stat="identity", position="stack") +
+  theme(axis.text.x = element_blank()) +
+  xlab("Type of movie") +
+  ylab("Average Facebook Likes")
+```
+
+
+```{r}
+summarise(all_movies_keywords_indicated, avg_imdb_score = mean(imdb_score)) %>%
+  ggplot() +
+  geom_bar(aes(x = type, y=avg_imdb_score, fill=type), stat="identity", position="stack") +
+  theme(axis.text.x = element_blank()) +
+  xlab("Type of movie") +
+  ylab("Average IMDB Score")
+```
+
+
+```{r}
 summarise(all_movies_keywords_indicated, avg_gross = mean(gross)) %>%
   ggplot() +
   geom_bar(aes(x = type, y=avg_gross, fill=type), stat="identity", position="stack") +
@@ -1078,10 +1094,20 @@ summarise(all_movies_keywords_indicated, avg_gross = mean(gross)) %>%
   xlab("Type of movie") +
   ylab("Average Gross")
 ```
-<br>
-This graph is comparing the average gross of a movie that contains at least one keyword from the list of top 20 most common plot keyword and movies that contain none of these popular keywords.
 
-The average gross for movies that do not contain one of the top 20 most common keywords appear to be higher.
+Many of the top 20 keywords captured were negative by sentiment and may have contributed to a lower comparison when correlating the average Facebook likes per year for a given movie for movies containing a top 20 keyword and movies that do not, as it hinges specifically on public sentiment. However, there is evidence that movies both containing and not containing these keywords were ranked very similarly according to their average IMDB Score. Lastly, results show that movies not containing these keywords had a higher gross than movies that did, however, there may be many variables contributing to this statistic, including lower public sentiment of negatively perceived phrases as noted above. 
+
+```{r}
+head(does_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2)) 
+```
+
+Two movies containing at least one common plot keyword.
+
+```{r}
+head(does_not_contain_common_key %>% select(movie_title, plot_keywords) %>% sample_n(2), 2) 
+```
+
+Here are two movies that do not contain any of the common plot key words.
 
 ## Sentiment pre-processing
 
@@ -1152,7 +1178,8 @@ all_years <- all_years %>%
 
 ## Calculating Sentiment
 
-Below is where the sentiment of keywords is calculated. The sentiment function used comes from the `syuzhet` package and it can detect the presence of eight different emotions, namely "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise" and, "trust". It is also able to calculate positive and negative valence. 
+Below is where the sentiment of keywords is calculated. The sentiment function used comes from the `syuzhet` package and it can detect the presence of eight different emotions, namely "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise" and, "trust". It is also able to calculate positive and negative valence. In addition, a sentiment analysis was run on all keywords included for each movie through the dataset, as opposed to the frequently occurring words. In addition, this allowed for an overall sentiment trend mapped between different years. 
+
 ```{r}
 #Function for sentiment per year
 yearly_sentiment <- function(year, df) {
@@ -1186,7 +1213,7 @@ for (i in all_years$Year) {
 sentiments$year <- strtoi(sentiments$year)
 ```
 
-As previously mentioned, thre number of movies dramatically increases from 1980 onwards so the calculated sentiments are filtered to reduce sensitivity of the data.
+Excluding the heat map, all proceeding analyses were only considered for the years following 2000. This was done to maintain data-integrity, as movie count drastically increases from 1980 onwards, and therefore filtering by years with higher movies counts reduced sensitivity to the data. In addition, some years contained few enough results to skew analysis towards a specific sentiment or emotion, and therefore normalisation may only be accurately attributed to years with varying sentiments. However, for the heat map, a generalized trend was analyzed as opposed to specific sentiments and therefore all years were considered. 
 ```{r}
 #Sort by year
 sentiments_emotions <- sentiments[with(sentiments, order(year)), ] %>% 
@@ -1212,15 +1239,14 @@ sentiments_graph <- cbind(names_emotions, df_sentiment)
 #Heatmap
 heatmap.2(mat_sentiments, Rowv=NA, Colv=NA, scale="row", col=colorRampPalette(c("white","darkblue")),  margins=c(5,10), trace = "none") 
 ```
-<br>
-What is immeadiately visible is the differences in type of emotions in plot keywords has reduced over the years. The movies 
+
+The heat map shows a general trend towards a more neutralized sentiment over the years, however, this may again be attributed to lower movie counts in previous years skewing data towards specific sentiment based on the data captured for that year. However, generally speaking, there does seem to be a trend towards positive sentiments, which may also be specifically seen in later years with joy, surprise and anticipation being the the highest sentiment in 2016 where the highest number of movies were captured.
 
 
-Below the trend of positive and negative sentiment is explored.
 ```{r}
 #Filtering sentiments graph
 sentiments_filter <- sentiments %>%
-  filter(year >= 1980)
+  filter(year >= 2000)
 ```
 
 ```{r}
@@ -1232,8 +1258,29 @@ sentiments_filter %>%
   xlab("Year") +
   ggtitle("Positive and negative sentiment of keywords across the years")
 ```
-<br>
-Generally speaking, the sentiment of common keywords used has been more positive, but has remained relatively constant, apart from the decrease in both positive and negative sentiment from around 1995 to 2010.
+
+Both the generalized trend towards positive sentiments (seen by the blue line over the red), in addition, to the specific increasing trend in positive sentiment in later years can be seen below.
+
+Lastly, specific graphs were constructed for joy, surprise and trust; the most prominent sentiments in the year 2016 in order to depict the trend of these specific sentiments throughout the 2000’s and furthermore investigate whether this is a noteworthy trend through the years or a specific spike in 2016.
+
+```{r}
+ggplot(sentiments_filter, aes(x = as.numeric(year), y = joy)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+```
+
+```{r}
+ggplot(sentiments_filter, aes(x = as.numeric(year), y = surprise)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+```
+
+```{r}
+ggplot(sentiments_filter, aes(x = as.numeric(year), y = trust)) + 
+  geom_point(alpha = 0.5) + 
+  geom_line()
+```
+
 
 -----
 
@@ -1248,7 +1295,7 @@ options(scipen = 999)
 
 ```{r}
 ##read in data
-imdb = read.csv("../data-raw/movie_metadata.csv", sep=";")
+imdb = read.csv("../data/movie_metadata.csv", sep=";")
 ```
 
 ### Constructing the network graph
