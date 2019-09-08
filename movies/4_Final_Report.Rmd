@@ -808,7 +808,7 @@ As expected, there is not much correlation since most critically acclaimed movie
 
 ## Correlation Heatmap
 
-```{r}
+```{r warning=FALSE}
 # Plotting the heatmap
 ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2, hjust = .85) +
   ggtitle("Correlation Heatmap") +
@@ -817,9 +817,9 @@ ggcorr(movie_metadata, label = TRUE, label_round = 2, label_size = 2.8, size = 2
 
 Based on the heatmap, we can see some high correlations (greater than 0.7) between predictors.
 
-According to the highest correlation value 0.95, we find actor_1_facebook_likes is highly correlated with the cast_total_facebook_likes, and both actor2 and actor3 are also somehow correlated to the total. So we want to modify them into two variables: actor_1_facebook_likes and other_actors_facebook_likes.
+There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews which makes sense as more popular films will have more attentiion and therefore a greater number of critics and users rating it.
 
-There are high correlations among num_voted_users, num_user_for_reviews and num_critic_for_reviews.
+There is a strong negative correlation between profit and budget. This implies that the return on investment for big budget fims is relatively low. Movies with a small budget tend to have a higher return on investment.
 
 # Sentiment Analysis
 
